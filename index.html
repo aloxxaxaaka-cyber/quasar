@@ -1,16 +1,227 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Пример кнопки</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iqua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050308;
+    --ink:#f1eefb;
+    --ink-faint:#5b5170;
+    --violet:#8b5cf6;
+    --violet-bright:#c3b2ff;
+    --violet-deep:#4c2f8c;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html, body{
+    height:100%;
+    overflow:hidden;
+    background:var(--bg);
+  }
+
+  body{
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--violet); color:#050308; }
+  :focus-visible{ outline:1px solid var(--violet-bright); outline-offset:4px; }
+
+  /* ---------- background: light pillar ---------- */
+
+  .bg-pillar{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:-2;
+    pointer-events:none;
+  }
+
+  /* soft radial spotlight that follows the cursor */
+  .spotlight{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),
+                rgba(139,92,246,0.16), transparent 60%);
+    mix-blend-mode:screen;
+    transition:background .08s linear;
+  }
+
+  /* ---------- stage ---------- */
+
+  .stage{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  .mark{
+    position:relative;
+    display:flex;
+    font-weight:700;
+    font-size:clamp(4rem, 16vw, 12rem);
+    letter-spacing:-0.03em;
+    line-height:1;
+    user-select:none;
+  }
+
+  .mark .halo{
+    position:absolute;
+    inset:-20% -10%;
+    filter:blur(38px);
+    opacity:0.55;
+    z-index:-1;
+    background:linear-gradient(90deg, var(--violet-deep), var(--violet-bright), var(--violet-deep));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    animation:breathe 5s ease-in-out infinite;
+  }
+
+  .mark .halo, .mark .core{
+    background-size:200% 100%;
+  }
+
+  .mark .core{
+    background:linear-gradient(100deg, #e7defc 0%, var(--violet-bright) 30%, var(--ink) 55%, var(--violet-bright) 80%, #e7defc 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:
+      0 0 18px rgba(195,178,255,0.35),
+      0 0 46px rgba(139,92,246,0.25);
+    animation:shimmer 9s linear infinite;
+  }
+
+  @keyframes shimmer{
+    0%{ background-position:0% 50%; }
+    100%{ background-position:200% 50%; }
+  }
+  @keyframes breathe{
+    0%,100%{ opacity:0.4; filter:blur(34px); }
+    50%{ opacity:0.65; filter:blur(46px); }
+  }
+  @keyframes riseIn{
+    from{ opacity:0; filter:blur(22px); transform:translateY(14px); }
+    to{ opacity:1; filter:blur(0px); transform:translateY(0); }
+  }
+
+  .mark{
+    animation:riseIn 1.3s cubic-bezier(.2,.7,.2,1) both;
+    animation-delay:.15s;
+  }
+
+  .contact{
+    position:fixed;
+    bottom:2.4rem;
+    right:2.4rem;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--ink-faint);
+    letter-spacing:0.02em;
+    opacity:0;
+    animation:fadeIn 1s ease-out .9s forwards;
+  }
+  .contact a{
+    color:inherit;
+    text-decoration:none;
+    transition:color .3s ease;
+  }
+  .contact a:hover{ color:var(--violet-bright); }
+
+  @keyframes fadeIn{
+    to{ opacity:1; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .mark, .mark .halo, .mark .core, .contact{
+      animation:none !important;
+      opacity:1 !important;
+      filter:none !important;
+    }
+  }
+</style>
 </head>
 <body>
 
-    <button type="button" onclick="alert('IP: 185.73.214.42
+<svg class="bg-pillar" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pillarGrad" gradientUnits="userSpaceOnUse" x1="0" y1="1180" x2="2000" y2="-80">
+      <stop offset="0%"  stop-color="#8b5cf6" stop-opacity="0"/>
+      <stop offset="20%" stop-color="#6d3fd6" stop-opacity="0.30"/>
+      <stop offset="42%" stop-color="#c3b2ff" stop-opacity="0.8"/>
+      <stop offset="58%" stop-color="#8b5cf6" stop-opacity="0.5"/>
+      <stop offset="82%" stop-color="#4c2f8c" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#4c2f8c" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="55%" r="75%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.75"/>
+    </radialGradient>
+    <filter id="pillarGlowWide" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <filter id="pillarGlowSoft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0"/>
+    </filter>
+  </defs>
 
-MAC: 7A:3F:91:B2:44:C8
+  <rect width="1920" height="1080" fill="#050308"/>
 
-GPS: 50.4501° N, 30.5234° ')">Нажми меня</button>
+  <path d="M -120 1200 C 280 970, 480 760, 740 610 C 940 490, 1000 360, 1240 260 C 1440 185, 1600 120, 2040 -100"
+        fill="none" stroke="url(#pillarGrad)" stroke-width="52" stroke-linecap="round" filter="url(#pillarGlowWide)"/>
+  <path d="M -120 1200 C 280 970, 480 760, 740 610 C 940 490, 1000 360, 1240 260 C 1440 185, 1600 120, 2040 -100"
+        fill="none" stroke="url(#pillarGrad)" stroke-width="7" stroke-linecap="round" filter="url(#pillarGlowSoft)"/>
+
+  <path d="M 1040 440 C 1140 385, 1260 345, 1560 235 C 1660 198, 1760 215, 1860 165"
+        fill="none" stroke="url(#pillarGrad)" stroke-width="20" stroke-linecap="round" opacity="0.6" filter="url(#pillarGlowWide)"/>
+
+  <rect width="1920" height="1080" filter="url(#grain)"/>
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>
+
+<div class="spotlight" id="spotlight"></div>
+
+<div class="stage">
+  <div class="mark" id="mark">
+    <span class="halo" aria-hidden="true">iqua</span>
+    <span class="core">iqua</span>
+  </div>
+</div>
+
+<div class="contact"><a href="mailto:hello@iqua.dev">hello@iqua.dev</a></div>
+
+<script>
+  // курсор двигает мягкое фиолетовое пятно света
+  const spot = document.getElementById('spotlight');
+  window.addEventListener('pointermove', (e) => {
+    spot.style.setProperty('--mx', e.clientX + 'px');
+    spot.style.setProperty('--my', e.clientY + 'px');
+  });
+
+  // на мобильных без курсора — пятно тихо дышит в центре
+  if (window.matchMedia('(hover: none)').matches){
+    spot.style.setProperty('--mx', '50%');
+    spot.style.setProperty('--my', '42%');
+  }
+</script>
 
 </body>
 </html>
