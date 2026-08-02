@@ -452,8 +452,8 @@ async function renderChatList(q){
 }
 
 async function loadActiveChats(){
-  try{const s=await getDocs(collection(db,'chats'));const myChats=[];
-  s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID)return;if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
+  try{const q=query(collection(db,'chats'),where('participants','array-contains',currentUser.uid));const s=await getDocs(q);const myChats=[];
+  s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID)return;myChats.push({id:d.id,...data})});
   myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
   for(const chat of myChats){
     const otherUid=chat.participants.find(p=>p!==currentUser.uid);
@@ -632,11 +632,10 @@ renderChatList('');
 </script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
-const app=initializeApp(firebaseConfig);getAnalytics(app);
+const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841"};
+const app=initializeApp(firebaseConfig);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
 window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where};
 initApp();
