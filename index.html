@@ -303,7 +303,7 @@ a:hover{text-decoration:underline}
 
 <script>
 function initApp(){
-const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs}=window.firebaseFns;
+const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}=window.firebaseFns;
 
 const html=document.documentElement;
 const themeBtn=document.getElementById('themeToggle');
@@ -363,9 +363,10 @@ authLogoutBtn.addEventListener('click',async()=>{await signOut(auth);closeProfil
 
 function updateIdentityUI(name,email,avatar){const short=initials(name||email);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
 
-async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();usersCache[d.id]={name:data.displayName||data.email||'',avatar:data.avatar||'',nick:data.nick||data.email?.split('@')[0]||''}})}catch(e){}}
+async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const nick=data.nick||data.email?.split('@')[0]||d.id.slice(0,8);usersCache[d.id]={name:data.displayName||data.email||'',avatar:data.avatar||'',nick:nick};if(data.nick!==nick)updateDoc(doc(db,'users',d.id),{nick:nick}).catch(()=>{})})}catch(e){}}
 
 function makeChatId(uid1,uid2){return[uid1,uid2].sort().join('_')}
+const GLOBAL_CHAT_ID='global';
 
 const chatListEl=document.getElementById('chatList'),chatBodyEl=document.getElementById('chatBody'),chatLockedEl=document.getElementById('chatLocked'),chatInputRowEl=document.getElementById('chatInputRow'),chatInputEl=document.getElementById('chatInput'),chatSendBtn=document.getElementById('chatSend'),chatLoginBtn=document.getElementById('chatLoginBtn'),chatSearchInput=document.getElementById('chatSearchInput'),chatMainHeaderEl=document.getElementById('chatMainHeader'),chatMainAvatarEl=document.getElementById('chatMainAvatar'),chatMainNameEl=document.getElementById('chatMainName'),chatMainStatusEl=document.getElementById('chatMainStatus');
 
@@ -373,13 +374,46 @@ let activeChatId=null,activeChatUser=null,unsubscribeChat=null,isFirstChatSnapsh
 
 chatLoginBtn.addEventListener('click',()=>{closeAuth();openAuth();setMode('login')});
 
-function renderChatList(q){
+function renderGlobalChatItem(){
+  const item=document.createElement('div');
+  item.className='chat-item'+(activeChatId===GLOBAL_CHAT_ID?' active':'');
+  item.style.animationDelay='0s';
+  item.innerHTML='<div class="chat-item-avatar" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><span class="material-symbols-outlined" style="color:#fff;font-size:20px">public</span></div><div class="chat-item-info"><div class="chat-item-name">Общий чат</div><div class="chat-item-last">Все участники сайта</div></div>';
+  item.addEventListener('click',()=>openGlobalChat());
+  chatListEl.appendChild(item);
+}
+
+function openGlobalChat(){
+  if(!currentUser){chatLockedEl.classList.remove('hidden');chatInputRowEl.classList.add('hidden');return}
+  activeChatId=GLOBAL_CHAT_ID;activeChatUser={uid:'global',name:'Общий чат',avatar:'',nick:'general'};
+  chatMainHeaderEl.classList.remove('hidden');
+  chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:20px">public</span>';
+  chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';
+  chatMainNameEl.textContent='Общий чат';
+  chatMainStatusEl.textContent='Все участники';
+  document.querySelectorAll('.chat-item').forEach(el=>el.classList.remove('active'));
+  const items=chatListEl.querySelectorAll('.chat-item');
+  if(items[0])items[0].classList.add('active');
+  chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
+  subscribeChat();
+}
+
+function openGlobalChatWithDoc(){
+  const ref=doc(db,'chats',GLOBAL_CHAT_ID);
+  getDoc(ref).then(snap=>{
+    if(!snap.exists()){setDoc(ref,{type:'global',name:'Общий чат',lastMessage:'',lastMessageAt:serverTimestamp()}).catch(()=>{})}
+  }).catch(()=>{});
+}
+
+async function renderChatList(q){
   if(!currentUser){chatListEl.innerHTML='<div class="chat-empty"><span class="material-symbols-outlined" style="font-size:32px;color:var(--border);display:block;margin-bottom:8px">forum</span>Войдите, чтобы видеть чаты</div>';return}
+  chatListEl.innerHTML='';
+  renderGlobalChatItem();
   if(q){
     const s=q.toLowerCase();const results=[];
     for(const [uid,d] of Object.entries(usersCache)){if(uid===currentUser.uid)continue;if(d.name.toLowerCase().includes(s)||d.nick.toLowerCase().includes(s))results.push({uid,...d})}
-    if(results.length===0){chatListEl.innerHTML='<div class="chat-empty"><span class="material-symbols-outlined" style="font-size:32px;color:var(--border);display:block;margin-bottom:8px">person_search</span>Никого не нашли</div>';return}
-    chatListEl.innerHTML='';results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item';item.style.animationDelay=(i*.05)+'s';item.innerHTML='<div class="chat-item-avatar">'+(p.avatar?'<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+p.name+'</div><div class="chat-item-last">@'+p.nick+'</div></div><button class="btn btn-primary" style="padding:5px 12px;font-size:11px" data-uid="'+uid+'">Написать</button>';item.querySelector('button').addEventListener('click',e=>{e.stopPropagation();startChatWith(uid)});chatListEl.appendChild(item)});
+    if(results.length===0){chatListEl.innerHTML+='<div class="chat-empty" style="padding:16px"><span class="material-symbols-outlined" style="font-size:24px;color:var(--border);display:block;margin-bottom:4px">person_search</span>Никого не нашли</div>';return}
+    results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item';item.style.animationDelay=((i+1)*.05)+'s';item.innerHTML='<div class="chat-item-avatar">'+(p.avatar?'<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+p.name+'</div><div class="chat-item-last">@'+p.nick+'</div></div>';item.addEventListener('click',()=>startChatWith(uid));chatListEl.appendChild(item)});
     return;
   }
   loadActiveChats();
@@ -387,10 +421,9 @@ function renderChatList(q){
 
 async function loadActiveChats(){
   try{const s=await getDocs(collection(db,'chats'));const myChats=[];
-  s.forEach(d=>{const data=d.data();if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
-  if(myChats.length===0){    chatListEl.innerHTML='<div class="chat-empty"><span class="material-symbols-outlined" style="font-size:32px;color:var(--border);display:block;margin-bottom:8px">chat</span>Пока нет чатов</div>';return}
-  chatListEl.innerHTML='';myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
-  myChats.forEach((chat,i)=>{const otherUid=chat.participants.find(p=>p!==currentUser.uid);const other=usersCache[otherUid]||{name:'Пользователь',avatar:'',nick:''};const item=document.createElement('div');item.className='chat-item'+(activeChatId===chat.id?' active':'');item.style.animationDelay=(i*.05)+'s';item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+'</div><div class="chat-item-last">'+(chat.lastMessage||'@'+other.nick)+'</div></div>';item.addEventListener('click',()=>openChatWith(otherUid));chatListEl.appendChild(item)})
+  s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID)return;if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
+  myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
+  myChats.forEach((chat,i)=>{const otherUid=chat.participants.find(p=>p!==currentUser.uid);const other=usersCache[otherUid]||{name:'Пользователь',avatar:'',nick:''};const item=document.createElement('div');item.className='chat-item'+(activeChatId===chat.id?' active':'');item.style.animationDelay=((i+1)*.05)+'s';item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+'</div><div class="chat-item-last">'+(chat.lastMessage||'@'+other.nick)+'</div></div>';item.addEventListener('click',()=>openChatWith(otherUid));chatListEl.appendChild(item)})
   }catch(e){}
 }
 
@@ -407,6 +440,7 @@ function openChatWith(uid){
   activeChatId=makeChatId(currentUser.uid,uid);activeChatUser={uid,...other};
   chatMainHeaderEl.classList.remove('hidden');
   chatMainAvatarEl.innerHTML=other.avatar?'<img src="'+other.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initials(other.name);
+  chatMainAvatarEl.style.background='';
   chatMainNameEl.textContent=other.name+' (@'+other.nick+')';
   chatMainStatusEl.textContent='Личный чат';
   document.querySelectorAll('.chat-item').forEach(el=>el.classList.remove('active'));
@@ -435,13 +469,15 @@ async function sendMessage(){
   const avatar=usersCache[currentUser.uid]?.avatar||'';
   try{
     await addDoc(collection(db,'chats',activeChatId,'messages'),{uid:currentUser.uid,name,avatar,text:text.slice(0,500),createdAt:serverTimestamp()});
-    await updateDoc(doc(db,'chats',activeChatId),{lastMessage:text.slice(0,100),lastMessageAt:serverTimestamp(),lastMessageName:name});
+    if(activeChatId!==GLOBAL_CHAT_ID){
+      await updateDoc(doc(db,'chats',activeChatId),{lastMessage:text.slice(0,100),lastMessageAt:serverTimestamp(),lastMessageName:name});
+    }
     chatInputEl.value='';
   }catch(e){showToast('Ошибка',friendlyError(e.code))}
   finally{chatSendBtn.disabled=false}
 }
 chatSendBtn.addEventListener('click',sendMessage);
-chatInputEl.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage()});
+chatInputEl.addEventListener('keydown',e=>{if(e.key==='En17:51 02.08.2026ter')sendMessage()});
 
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
@@ -452,6 +488,7 @@ onAuthStateChanged(auth,async user=>{
     profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+formatDate(data.createdAt):'';profileEmailEl.textContent=user.email||'';
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
     await loadAllUsers();renderChatList('');
+    openGlobalChatWithDoc();
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
   }catch(e){}
     chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
@@ -474,12 +511,12 @@ renderChatList('');
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where};
 initApp();
 </script>
 </body>
