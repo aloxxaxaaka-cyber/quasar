@@ -4,211 +4,126 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>iqua</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#050308;
-    --ink:#f1eefb;
-    --ink-faint:#5b5170;
-    --violet:#8b5cf6;
-    --violet-bright:#c3b2ff;
-    --violet-deep:#4c2f8c;
-    --panel:#0c0912;
-    --panel-border:rgba(139,92,246,0.25);
-    --danger:#ff6b81;
-  }
-
   *{ box-sizing:border-box; margin:0; padding:0; }
 
   html, body{
     height:100%;
-    overflow:hidden;
-    background:var(--bg);
+    background:#ffffff;
   }
 
   body{
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    -webkit-font-smoothing:antialiased;
+    color:#222222;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:13px;
   }
 
-  ::selection{ background:var(--violet); color:#050308; }
-  :focus-visible{ outline:1px solid var(--violet-bright); outline-offset:4px; }
-
-  /* ---------- background: WebGL light pillar ---------- */
-
-  #pillarContainer{
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    z-index:-2;
-    pointer-events:none;
-    mix-blend-mode:screen;
-  }
-  #pillarContainer canvas{
-    display:block;
-    width:100% !important;
-    height:100% !important;
-  }
-  .pillar-fallback{
-    position:fixed;
-    inset:0;
-    z-index:-2;
-    background:radial-gradient(120% 90% at 70% 100%, rgba(139,92,246,0.35), transparent 60%);
-  }
-
-  .spotlight{
-    position:fixed;
-    inset:0;
-    z-index:-1;
-    pointer-events:none;
-    background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),
-                rgba(139,92,246,0.16), transparent 60%);
-    mix-blend-mode:screen;
-    transition:background .08s linear;
-  }
+  a{ color:#1a0dab; text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  a:visited{ color:#609; }
 
   /* ---------- stage ---------- */
 
   .stage{
-    height:100%;
+    min-height:100vh;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
     position:relative;
+    padding:2rem 1rem;
   }
 
-  .mark{
-    position:relative;
-    display:flex;
-    font-weight:700;
-    font-size:clamp(4rem, 16vw, 12rem);
-    letter-spacing:-0.03em;
-    line-height:1;
+  .logo{
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight:bold;
+    font-size:clamp(3.2rem, 13vw, 6rem);
+    letter-spacing:-0.01em;
     user-select:none;
+    line-height:1;
+  }
+  .logo span{ display:inline-block; }
+  .logo .c1{ color:#3369e8; }
+  .logo .c2{ color:#d93025; }
+  .logo .c3{ color:#eeb211; }
+  .logo .c4{ color:#3369e8; }
+
+  .tagline{
+    margin-top:0.6rem;
+    color:#70757a;
+    font-size:13px;
   }
 
-  .mark .halo{
-    position:absolute;
-    inset:-20% -10%;
-    filter:blur(38px);
-    opacity:0.55;
-    z-index:-1;
-    background:linear-gradient(90deg, var(--violet-deep), var(--violet-bright), var(--violet-deep));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    animation:breathe 5s ease-in-out infinite;
-  }
-
-  .mark .halo, .mark .core{
-    background-size:200% 100%;
-  }
-
-  .mark .core{
-    background:linear-gradient(100deg, #e7defc 0%, var(--violet-bright) 30%, var(--ink) 55%, var(--violet-bright) 80%, #e7defc 100%);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    text-shadow:
-      0 0 18px rgba(195,178,255,0.35),
-      0 0 46px rgba(139,92,246,0.25);
-    animation:shimmer 9s linear infinite;
-  }
-
-  @keyframes shimmer{
-    0%{ background-position:0% 50%; }
-    100%{ background-position:200% 50%; }
-  }
-  @keyframes breathe{
-    0%,100%{ opacity:0.4; filter:blur(34px); }
-    50%{ opacity:0.65; filter:blur(46px); }
-  }
-  @keyframes riseIn{
-    from{ opacity:0; filter:blur(22px); transform:translateY(14px); }
-    to{ opacity:1; filter:blur(0px); transform:translateY(0); }
-  }
-
-  .mark{
-    animation:riseIn 1.3s cubic-bezier(.2,.7,.2,1) both;
-    animation-delay:.15s;
-  }
-
-  .contact{
-    position:fixed;
-    bottom:2.4rem;
-    right:2.4rem;
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.72rem;
-    color:var(--ink-faint);
-    letter-spacing:0.02em;
-    opacity:0;
-    animation:fadeIn 1s ease-out .9s forwards;
-  }
-  .contact a{
-    color:inherit;
-    text-decoration:none;
-    transition:color .3s ease;
-  }
-  .contact a:hover{ color:var(--violet-bright); }
-
-  @keyframes fadeIn{
-    to{ opacity:1; }
-  }
-
-  /* ---------- top-right controls ---------- */
-
-  .top-controls{
-    position:fixed;
-    top:2.2rem;
-    right:2.4rem;
-    z-index:20;
+  .nav-links{
+    margin-top:1.6rem;
     display:flex;
-    gap:0.7rem;
-    opacity:0;
-    animation:fadeIn 1s ease-out .9s forwards;
-  }
-
-  .pill-btn{
-    display:flex;
+    gap:0.9rem;
     align-items:center;
-    gap:0.5rem;
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.72rem;
-    letter-spacing:0.04em;
-    color:var(--ink-faint);
-    background:transparent;
-    border:1px solid var(--panel-border);
-    padding:0.45rem 1.1rem 0.45rem 0.45rem;
-    border-radius:999px;
+    font-size:13px;
+  }
+  .nav-links .sep{ color:#c0c0c0; }
+  .nav-links button.linklike{
+    background:none;
+    border:none;
+    padding:0;
+    font:inherit;
+    color:#1a0dab;
     cursor:pointer;
-    transition:color .25s ease, border-color .25s ease, background .25s ease;
   }
-  .pill-btn.no-avatar{ padding:0.55rem 1.1rem; }
-  .pill-btn:hover{
-    color:var(--violet-bright);
-    border-color:var(--violet);
-    background:rgba(139,92,246,0.08);
-  }
-  .pill-btn .avatar{
-    width:22px;
-    height:22px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
-    color:#050308;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    font-size:0.62rem;
-    font-weight:700;
-    flex-shrink:0;
-  }
-  .pill-btn.logged-in .avatar{ display:flex; }
+  .nav-links button.linklike:hover{ text-decoration:underline; }
 
-  /* ---------- shared overlay ---------- */
+  .footer-contact{
+    position:fixed;
+    bottom:1rem;
+    left:0;
+    right:0;
+    text-align:center;
+    color:#70757a;
+    font-size:12px;
+  }
+  .footer-contact a{ color:#1a0dab; }
+
+  /* ---------- classic google-ish buttons ---------- */
+
+  .btn{
+    display:inline-block;
+    padding:7px 16px;
+    font-family:Arial, sans-serif;
+    font-size:13px;
+    color:#444;
+    border:1px solid;
+    border-color:#dcdcdc #cfcfcf #c6c6c6;
+    border-radius:2px;
+    background:#f5f5f5;
+    background-image:linear-gradient(#f5f5f5, #f1f1f1);
+    cursor:pointer;
+    text-align:center;
+  }
+  .btn:hover{
+    border-color:#c6c6c6;
+    box-shadow:0 1px 1px rgba(0,0,0,0.1);
+    color:#222;
+  }
+  .btn:active{ background:#f1f1f1; box-shadow:inset 0 1px 2px rgba(0,0,0,0.1); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; box-shadow:none; }
+
+  .btn-blue{
+    color:#fff;
+    border-color:#3079ed;
+    background:#4d90fe;
+    background-image:linear-gradient(#4d90fe, #4787ed);
+  }
+  .btn-blue:hover{
+    border-color:#2f5bb7;
+    background:#357ae8;
+    background-image:linear-gradient(#4d90fe, #357ae8);
+    color:#fff;
+  }
+  .btn-blue:active{ background:#357ae8; box-shadow:inset 0 1px 2px rgba(0,0,0,0.3); }
+
+  .btn-block{ width:100%; padding:9px 0; font-size:13px; }
+
+  /* ---------- panel / card ---------- */
 
   .overlay{
     position:fixed;
@@ -217,406 +132,247 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    background:rgba(5,3,8,0.72);
-    backdrop-filter:blur(6px);
+    background:rgba(255,255,255,0.5);
     opacity:0;
     pointer-events:none;
-    transition:opacity .25s ease;
+    transition:opacity .15s ease;
   }
-  .overlay.open{
-    opacity:1;
-    pointer-events:auto;
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  .card{
+    background:#ffffff;
+    border:1px solid #ebebeb;
+    border-radius:2px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.25);
   }
 
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--panel-border);
-    border-radius:18px;
-    box-shadow:0 30px 80px rgba(0,0,0,0.55), 0 0 60px rgba(139,92,246,0.08);
-    transform:translateY(10px);
-    transition:transform .3s cubic-bezier(.2,.7,.2,1);
-  }
-  .overlay.open .panel{
-    transform:translateY(0);
+  .card-auth{
+    width:min(340px, 90vw);
+    padding:1.6rem 1.6rem 1.4rem;
   }
 
-  .auth-panel{
-    width:min(360px, 90vw);
-    padding:2rem 1.8rem 1.8rem;
-  }
-
-  .panel-header{
+  .card-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:1.4rem;
+    margin-bottom:1rem;
+    padding-bottom:0.7rem;
+    border-bottom:1px solid #ebebeb;
   }
-  .panel-title{
-    font-weight:600;
-    font-size:1.05rem;
-    letter-spacing:-0.01em;
+  .card-title{
+    font-size:18px;
+    color:#202124;
+    font-weight:normal;
   }
-  .panel-close{
-    background:none;
-    border:none;
-    color:var(--ink-faint);
-    font-size:1.1rem;
-    cursor:pointer;
-    line-height:1;
-    padding:0.2rem 0.4rem;
-    transition:color .2s ease;
+  .card-close{
+    background:none; border:none; cursor:pointer;
+    font-size:15px; color:#777; line-height:1; padding:2px 6px;
   }
-  .panel-close:hover{ color:var(--violet-bright); }
+  .card-close:hover{ color:#000; }
 
-  .auth-tabs{
+  .tabs{
     display:flex;
-    gap:0.4rem;
-    margin-bottom:1.3rem;
-    background:rgba(255,255,255,0.03);
-    border-radius:10px;
-    padding:0.25rem;
+    border-bottom:1px solid #ebebeb;
+    margin-bottom:1rem;
   }
-  .auth-tab{
+  .tab{
     flex:1;
     text-align:center;
-    padding:0.5rem 0;
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.72rem;
-    letter-spacing:0.03em;
-    color:var(--ink-faint);
+    padding:8px 0;
     background:none;
     border:none;
-    border-radius:8px;
+    border-bottom:2px solid transparent;
+    color:#70757a;
     cursor:pointer;
-    transition:color .2s ease, background .2s ease;
+    font-size:13px;
   }
-  .auth-tab.active{
-    color:var(--ink);
-    background:rgba(139,92,246,0.16);
+  .tab.active{
+    color:#1a73e8;
+    border-bottom-color:#1a73e8;
   }
 
-  .field{
-    display:flex;
-    flex-direction:column;
-    gap:0.4rem;
-    margin-bottom:0.9rem;
-  }
-  .field label{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.65rem;
-    letter-spacing:0.04em;
-    color:var(--ink-faint);
-    text-transform:uppercase;
-  }
+  .field{ margin-bottom:0.8rem; display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11px; color:#70757a; }
   .field input, .field textarea{
-    background:rgba(255,255,255,0.03);
-    border:1px solid var(--panel-border);
-    border-radius:8px;
-    padding:0.65rem 0.8rem;
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    font-size:0.88rem;
+    border:1px solid #d9d9d9;
+    border-radius:2px;
+    padding:7px 8px;
+    font-family:Arial, sans-serif;
+    font-size:13px;
+    color:#222;
     outline:none;
     resize:none;
-    transition:border-color .2s ease, background .2s ease;
+    background:#fff;
   }
-  .field input:disabled{ color:var(--ink-faint); cursor:not-allowed; }
   .field input:focus, .field textarea:focus{
-    border-color:var(--violet);
-    background:rgba(139,92,246,0.06);
+    border-color:#4d90fe;
+    box-shadow:0 0 0 1px #4d90fe inset;
   }
-
-  .btn-primary{
-    width:100%;
-    padding:0.75rem;
-    border:none;
-    border-radius:8px;
-    background:linear-gradient(100deg, var(--violet-deep), var(--violet), var(--violet-bright));
-    background-size:200% 100%;
-    color:#050308;
-    font-weight:600;
-    font-size:0.88rem;
-    cursor:pointer;
-    margin-top:0.3rem;
-    transition:background-position .4s ease, transform .15s ease;
-  }
-  .btn-primary:hover{ background-position:100% 0; }
-  .btn-primary:active{ transform:scale(0.98); }
-  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
-
-  .btn-ghost{
-    width:100%;
-    padding:0.65rem;
-    border-radius:8px;
-    border:1px solid var(--panel-border);
-    background:transparent;
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    font-size:0.85rem;
-    cursor:pointer;
-    transition:border-color .2s ease, color .2s ease;
-  }
-  .btn-ghost:hover{
-    border-color:var(--violet);
-    color:var(--violet-bright);
-  }
+  .field input:disabled{ background:#f5f5f5; color:#999; }
 
   .divider{
-    display:flex;
-    align-items:center;
-    gap:0.7rem;
-    margin:1.1rem 0;
-    color:var(--ink-faint);
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.62rem;
-    letter-spacing:0.04em;
-    text-transform:uppercase;
+    display:flex; align-items:center; gap:0.6rem;
+    margin:1rem 0; color:#aaa; font-size:11px;
   }
-  .divider::before, .divider::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background:var(--panel-border);
-  }
+  .divider::before, .divider::after{ content:""; flex:1; height:1px; background:#ebebeb; }
 
   .btn-google{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:0.6rem;
-    padding:0.7rem;
-    border-radius:8px;
-    border:1px solid var(--panel-border);
-    background:rgba(255,255,255,0.02);
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    font-size:0.85rem;
-    cursor:pointer;
-    transition:border-color .2s ease, background .2s ease;
+    width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:8px 0; border:1px solid #d9d9d9; border-radius:2px;
+    background:#fff; color:#444; font-family:Arial, sans-serif; font-size:13px; cursor:pointer;
   }
-  .btn-google:hover{
-    border-color:var(--violet);
-    background:rgba(139,92,246,0.06);
-  }
+  .btn-google:hover{ box-shadow:0 1px 1px rgba(0,0,0,0.1); border-color:#c6c6c6; }
 
   .msg{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem;
-    letter-spacing:0.01em;
-    min-height:1.2em;
-    margin-top:0.9rem;
-    text-align:center;
+    font-size:12px; min-height:1.2em; margin-top:0.7rem; text-align:center;
   }
-  .msg.error{ color:var(--danger); }
-  .msg.success{ color:var(--violet-bright); }
+  .msg.error{ color:#d93025; }
+  .msg.success{ color:#188038; }
 
-  /* ---------- profile ---------- */
-
-  .profile-header{
-    display:flex;
-    align-items:center;
-    gap:0.9rem;
-    margin-bottom:1.4rem;
-  }
+  /* profile */
+  .profile-header{ display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem; }
   .profile-avatar{
-    width:52px;
-    height:52px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:1.2rem;
-    font-weight:700;
-    color:#050308;
-    flex-shrink:0;
+    width:44px; height:44px; border-radius:50%;
+    background:#4d90fe; color:#fff; font-weight:bold; font-size:16px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
-  .profile-email{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.72rem;
-    color:var(--ink-faint);
-    word-break:break-all;
-  }
-  .profile-since{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.62rem;
-    color:var(--ink-faint);
-    margin-top:0.2rem;
-    opacity:0.7;
-  }
+  .profile-email{ font-size:12px; color:#555; word-break:break-all; }
+  .profile-since{ font-size:11px; color:#999; margin-top:2px; }
 
-  /* ---------- chat ---------- */
-
-  .chat-panel{
-    width:min(420px, 92vw);
-    height:min(560px, 80vh);
-    display:flex;
-    flex-direction:column;
-    padding:1.6rem 1.6rem 1.2rem;
+  /* chat */
+  .card-chat{
+    width:min(400px, 92vw);
+    height:min(520px, 80vh);
+    display:flex; flex-direction:column;
+    padding:1.2rem 1.2rem 1rem;
   }
-
   .chat-body{
-    flex:1;
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column;
-    gap:0.7rem;
-    padding:0.4rem 0.2rem;
-    margin:0.6rem 0 1rem;
-    scrollbar-width:thin;
-    scrollbar-color:var(--violet-deep) transparent;
+    flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+    padding:6px 2px; margin:6px 0 10px;
+    background:#fafafa; border:1px solid #ebebeb; border-radius:2px;
   }
-  .chat-body::-webkit-scrollbar{ width:6px; }
-  .chat-body::-webkit-scrollbar-thumb{ background:var(--violet-deep); border-radius:6px; }
+  .chat-empty{ margin:auto; color:#999; font-size:12px; text-align:center; }
 
-  .chat-empty{
-    margin:auto;
-    color:var(--ink-faint);
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.75rem;
-    text-align:center;
-  }
-
-  .chat-msg{
-    display:flex;
-    gap:0.6rem;
-    align-items:flex-start;
-  }
+  .chat-msg{ display:flex; gap:8px; align-items:flex-start; padding:0 8px; }
   .chat-msg .bubble-avatar{
-    width:28px;
-    height:28px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
-    color:#050308;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:0.62rem;
-    font-weight:700;
-    flex-shrink:0;
+    width:24px; height:24px; border-radius:50%; background:#4d90fe; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; flex-shrink:0;
   }
   .chat-msg .bubble-content{
-    background:rgba(255,255,255,0.03);
-    border:1px solid var(--panel-border);
-    border-radius:10px;
-    padding:0.5rem 0.7rem;
-    max-width:78%;
+    background:#fff; border:1px solid #e3e3e3; border-radius:4px; padding:6px 9px; max-width:78%;
   }
   .chat-msg.own{ flex-direction:row-reverse; }
-  .chat-msg.own .bubble-content{
-    background:rgba(139,92,246,0.14);
-    border-color:rgba(139,92,246,0.4);
-  }
-  .bubble-name{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.62rem;
-    color:var(--violet-bright);
-    margin-bottom:0.2rem;
-  }
-  .bubble-text{
-    font-size:0.85rem;
-    line-height:1.35;
-    word-break:break-word;
-  }
-  .bubble-time{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.58rem;
-    color:var(--ink-faint);
-    margin-top:0.25rem;
-  }
+  .chat-msg.own .bubble-content{ background:#e8f0fe; border-color:#c6dafc; }
+  .bubble-name{ font-size:10px; color:#1a73e8; margin-bottom:2px; }
+  .bubble-text{ font-size:13px; line-height:1.35; word-break:break-word; }
+  .bubble-time{ font-size:10px; color:#999; margin-top:3px; }
 
-  .chat-input-row{
-    display:flex;
-    gap:0.6rem;
-  }
+  .chat-input-row{ display:flex; gap:8px; }
   .chat-input-row input{
-    flex:1;
-    background:rgba(255,255,255,0.03);
-    border:1px solid var(--panel-border);
-    border-radius:8px;
-    padding:0.65rem 0.8rem;
-    color:var(--ink);
-    font-family:'Space Grotesk', sans-serif;
-    font-size:0.85rem;
-    outline:none;
-    transition:border-color .2s ease, background .2s ease;
+    flex:1; border:1px solid #d9d9d9; border-radius:2px; padding:7px 8px;
+    font-family:Arial, sans-serif; font-size:13px; outline:none;
   }
-  .chat-input-row input:focus{
-    border-color:var(--violet);
-    background:rgba(139,92,246,0.06);
-  }
-  .chat-send{
-    padding:0.65rem 1.2rem;
-    border:none;
-    border-radius:8px;
-    background:linear-gradient(100deg, var(--violet-deep), var(--violet), var(--violet-bright));
-    background-size:200% 100%;
-    color:#050308;
-    font-weight:600;
-    font-size:0.85rem;
-    cursor:pointer;
-    transition:background-position .3s ease;
-  }
-  .chat-send:hover{ background-position:100% 0; }
-  .chat-send:disabled{ opacity:0.5; cursor:not-allowed; }
+  .chat-input-row input:focus{ border-color:#4d90fe; box-shadow:0 0 0 1px #4d90fe inset; }
 
   .chat-locked{
-    margin:auto;
-    text-align:center;
+    margin:auto; text-align:center; display:flex; flex-direction:column; gap:0.8rem;
+    color:#555; font-size:13px;
+  }
+
+  /* ---------- top-right controls ---------- */
+
+  .top-controls{
+    position:fixed; top:1rem; right:1.2rem; z-index:20;
+    display:flex; gap:0.8rem; font-size:13px;
+  }
+  .pill-btn{
+    display:flex; align-items:center; gap:6px;
+    color:#1a0dab; background:none; border:none; cursor:pointer; font:inherit; padding:2px;
+  }
+  .pill-btn:hover{ text-decoration:underline; }
+  .pill-btn .avatar{
+    width:20px; height:20px; border-radius:50%; background:#4d90fe; color:#fff;
+    display:none; align-items:center; justify-content:center; font-size:9px; font-weight:bold; flex-shrink:0;
+  }
+  .pill-btn.logged-in .avatar{ display:flex; }
+
+  /* ---------- toast notifications ---------- */
+
+  .toast-stack{
+    position:fixed;
+    bottom:1.2rem;
+    right:1.2rem;
+    z-index:80;
     display:flex;
     flex-direction:column;
-    gap:0.9rem;
-    color:var(--ink-faint);
-    font-size:0.85rem;
+    gap:8px;
+    align-items:flex-end;
   }
+  .toast{
+    background:#fffbe5;
+    border:1px solid #f0e2a0;
+    border-radius:3px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    padding:9px 14px;
+    font-size:12px;
+    color:#333;
+    max-width:280px;
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.show{ opacity:1; transform:translateY(0); }
+  .toast .toast-icon{
+    width:16px; height:16px; border-radius:50%; background:#f4b400;
+    flex-shrink:0; margin-top:1px;
+  }
+  .toast .toast-text b{ display:block; margin-bottom:2px; color:#111; }
 
   .hidden{ display:none !important; }
-
-  @media (prefers-reduced-motion: reduce){
-    .mark, .mark .halo, .mark .core, .contact, .top-controls{
-      animation:none !important;
-      opacity:1 !important;
-      filter:none !important;
-    }
-  }
 </style>
 </head>
 <body>
 
-<div id="pillarContainer"></div>
-<div class="spotlight" id="spotlight"></div>
-
 <div class="top-controls">
-  <button class="pill-btn no-avatar" id="chatTrigger">чат</button>
+  <button class="pill-btn" id="chatTrigger">Чат</button>
+  <span style="color:#c0c0c0;">|</span>
   <button class="pill-btn" id="authTrigger">
     <span class="avatar" id="triggerAvatar"></span>
-    <span id="triggerLabel">войти</span>
+    <span id="triggerLabel">Войти</span>
   </button>
 </div>
 
 <div class="stage">
-  <div class="mark" id="mark">
-    <span class="halo" aria-hidden="true">iqua</span>
-    <span class="core">iqua</span>
+  <div class="logo">
+    <span class="c1">i</span><span class="c2">q</span><span class="c3">u</span><span class="c4">a</span>
+  </div>
+  <div class="tagline">сайт-заготовка будущего майнкрафт-клиента</div>
+
+  <div class="nav-links">
+    <button class="linklike" id="navChat">Чат</button>
+    <span class="sep">|</span>
+    <button class="linklike" id="navAuth">Войти / Профиль</button>
   </div>
 </div>
 
-<div class="contact"><a href="mailto:hello@iqua.dev">hello@iqua.dev</a></div>
+<div class="footer-contact"><a href="mailto:hello@iqua.dev">hello@iqua.dev</a></div>
 
 <!-- ================= AUTH / PROFILE OVERLAY ================= -->
 <div class="overlay" id="authOverlay">
-  <div class="panel auth-panel">
+  <div class="card card-auth">
 
-    <div class="panel-header">
-      <div class="panel-title" id="authTitle">Вход</div>
-      <button class="panel-close" id="authClose">&times;</button>
+    <div class="card-header">
+      <div class="card-title" id="authTitle">Вход</div>
+      <button class="card-close" id="authClose">&times;</button>
     </div>
 
     <div id="authForms">
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-mode="login">Вход</button>
-        <button class="auth-tab" data-mode="register">Регистрация</button>
+      <div class="tabs">
+        <button class="tab active" data-mode="login">Вход</button>
+        <button class="tab" data-mode="register">Регистрация</button>
       </div>
 
       <div class="field">
@@ -628,7 +384,7 @@
         <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
       </div>
 
-      <button class="btn-primary" id="authSubmit">Войти</button>
+      <button class="btn btn-blue btn-block" id="authSubmit">Войти</button>
 
       <div class="divider">или</div>
 
@@ -645,9 +401,7 @@
       <div class="msg" id="authMessage"></div>
     </div>
 
-    <!-- ---------- ПРОФИЛЬ (Firestore: users/{uid}) ---------- -->
     <div id="profilePanel" class="hidden">
-
       <div class="profile-header">
         <div class="profile-avatar" id="profileAvatar">?</div>
         <div>
@@ -666,11 +420,11 @@
         <textarea id="profileBio" rows="3" maxlength="200" placeholder="Пара слов о себе (необязательно)"></textarea>
       </div>
 
-      <button class="btn-primary" id="profileSave">Сохранить</button>
+      <button class="btn btn-blue btn-block" id="profileSave">Сохранить</button>
 
       <div class="msg" id="profileMessage"></div>
 
-      <button class="btn-ghost" id="authLogout" style="margin-top:0.7rem;">Выйти</button>
+      <button class="btn btn-block" id="authLogout" style="margin-top:0.6rem;">Выйти</button>
     </div>
 
   </div>
@@ -678,231 +432,114 @@
 
 <!-- ================= CHAT OVERLAY ================= -->
 <div class="overlay" id="chatOverlay">
-  <div class="panel chat-panel">
+  <div class="card card-chat">
 
-    <div class="panel-header">
-      <div class="panel-title">Чат</div>
-      <button class="panel-close" id="chatClose">&times;</button>
+    <div class="card-header">
+      <div class="card-title">Чат</div>
+      <button class="card-close" id="chatClose">&times;</button>
     </div>
 
     <div class="chat-body" id="chatBody">
       <div class="chat-empty" id="chatEmpty">Пока нет сообщений</div>
     </div>
 
-    <!-- показывается, если пользователь не авторизован -->
     <div class="chat-locked hidden" id="chatLocked">
       <div>Чтобы читать и писать сообщения, нужно войти в аккаунт</div>
-      <button class="btn-primary" id="chatLoginBtn">Войти</button>
+      <button class="btn btn-blue" id="chatLoginBtn">Войти</button>
     </div>
 
-    <!-- показывается, если пользователь авторизован -->
     <div class="chat-input-row" id="chatInputRow">
       <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="500">
-      <button class="chat-send" id="chatSend">→</button>
+      <button class="btn btn-blue" id="chatSend">Отправить</button>
     </div>
 
   </div>
 </div>
 
+<!-- ================= TOAST NOTIFICATIONS ================= -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ================= SOUND (простой примитивный beep через Web Audio API) ================= -->
 <script>
-  const spot = document.getElementById('spotlight');
-  window.addEventListener('pointermove', (e) => {
-    spot.style.setProperty('--mx', e.clientX + 'px');
-    spot.style.setProperty('--my', e.clientY + 'px');
-  });
-  if (window.matchMedia('(hover: none)').matches){
-    spot.style.setProperty('--mx', '50%');
-    spot.style.setProperty('--my', '42%');
+  let audioCtx = null;
+  function getAudioCtx(){
+    if (!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
   }
-</script>
 
-<!-- ================= WEBGL LIGHT PILLAR ================= -->
-<script type="module">
-  import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-
-  function createLightPillar(container, opts){
-    const {
-      topColor = '#c3b2ff', bottomColor = '#4c2f8c', intensity = 1.3,
-      rotationSpeed = 0.25, interactive = false, glowAmount = 0.0013,
-      pillarWidth = 2.6, pillarHeight = 0.32, noiseIntensity = 0.4,
-      pillarRotation = 57, mixBlendMode = 'screen'
-    } = opts || {};
-
-    const canvasEl = document.createElement('canvas');
-    const gl = canvasEl.getContext('webgl') || canvasEl.getContext('experimental-webgl');
-    if (!gl){ container.classList.add('pillar-fallback'); return () => {}; }
-
-    let width = container.clientWidth;
-    let height = container.clientHeight;
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isLowEnd = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-    let quality = isMobile ? 'low' : (isLowEnd ? 'medium' : 'high');
-
-    const qualitySettings = {
-      low:    { iterations:24, waveIterations:1, pixelRatio:0.5,  precision:'mediump', stepMultiplier:1.5 },
-      medium: { iterations:40, waveIterations:2, pixelRatio:0.65, precision:'mediump', stepMultiplier:1.2 },
-      high:   { iterations:80, waveIterations:4, pixelRatio:Math.min(window.devicePixelRatio,2), precision:'highp', stepMultiplier:1.0 }
-    };
-    const settings = qualitySettings[quality];
-
-    let renderer;
+  // короткий двойной "динь" на уведомление
+  function playNotifySound(){
     try{
-      renderer = new THREE.WebGLRenderer({
-        antialias:false, alpha:true,
-        powerPreference: quality === 'high' ? 'high-performance' : 'low-power',
-        precision: settings.precision, stencil:false, depth:false
-      });
-    } catch(e){ container.classList.add('pillar-fallback'); return () => {}; }
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
 
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(settings.pixelRatio);
-    container.appendChild(renderer.domElement);
-    container.style.mixBlendMode = mixBlendMode;
-
-    const parseColor = hex => { const c = new THREE.Color(hex); return new THREE.Vector3(c.r, c.g, c.b); };
-
-    const vertexShader = `
-      varying vec2 vUv;
-      void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }
-    `;
-    const fragmentShader = `
-      precision ${settings.precision} float;
-      uniform float uTime;
-      uniform vec2 uResolution;
-      uniform vec2 uMouse;
-      uniform vec3 uTopColor;
-      uniform vec3 uBottomColor;
-      uniform float uIntensity;
-      uniform bool uInteractive;
-      uniform float uGlowAmount;
-      uniform float uPillarWidth;
-      uniform float uPillarHeight;
-      uniform float uNoiseIntensity;
-      uniform float uRotCos;
-      uniform float uRotSin;
-      uniform float uPillarRotCos;
-      uniform float uPillarRotSin;
-      uniform float uWaveSin;
-      uniform float uWaveCos;
-      varying vec2 vUv;
-      const float STEP_MULT = ${settings.stepMultiplier.toFixed(1)};
-      const int MAX_ITER = ${settings.iterations};
-      const int WAVE_ITER = ${settings.waveIterations};
-      void main(){
-        vec2 uv = (vUv * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
-        uv = vec2(uPillarRotCos * uv.x - uPillarRotSin * uv.y, uPillarRotSin * uv.x + uPillarRotCos * uv.y);
-        vec3 ro = vec3(0.0, 0.0, -10.0);
-        vec3 rd = normalize(vec3(uv, 1.0));
-        float rotC = uRotCos;
-        float rotS = uRotSin;
-        if(uInteractive && (uMouse.x != 0.0 || uMouse.y != 0.0)){
-          float a = uMouse.x * 6.283185;
-          rotC = cos(a); rotS = sin(a);
-        }
-        vec3 col = vec3(0.0);
-        float t = 0.1;
-        for(int i = 0; i < MAX_ITER; i++){
-          vec3 p = ro + rd * t;
-          p.xz = vec2(rotC * p.x - rotS * p.z, rotS * p.x + rotC * p.z);
-          vec3 q = p;
-          q.y = p.y * uPillarHeight + uTime;
-          float freq = 1.0;
-          float amp = 1.0;
-          for(int j = 0; j < WAVE_ITER; j++){
-            q.xz = vec2(uWaveCos * q.x - uWaveSin * q.z, uWaveSin * q.x + uWaveCos * q.z);
-            q += cos(q.zxy * freq - uTime * float(j) * 2.0) * amp;
-            freq *= 2.0; amp *= 0.5;
-          }
-          float d = length(cos(q.xz)) - 0.2;
-          float bound = length(p.xz) - uPillarWidth;
-          float k = 4.0;
-          float h = max(k - abs(d - bound), 0.0);
-          d = max(d, bound) + h * h * 0.0625 / k;
-          d = abs(d) * 0.15 + 0.01;
-          float grad = clamp((15.0 - p.y) / 30.0, 0.0, 1.0);
-          col += mix(uBottomColor, uTopColor, grad) / d;
-          t += d * STEP_MULT;
-          if(t > 50.0) break;
-        }
-        float widthNorm = uPillarWidth / 3.0;
-        col = tanh(col * uGlowAmount / widthNorm);
-        col -= fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) / 15.0 * uNoiseIntensity;
-        gl_FragColor = vec4(col * uIntensity, 1.0);
+      function beep(startOffset, freq, duration){
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, now + startOffset);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + startOffset + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + startOffset);
+        osc.stop(now + startOffset + duration + 0.02);
       }
-    `;
 
-    const pillarRotRad = (pillarRotation * Math.PI) / 180;
-    const waveSin = Math.sin(0.4);
-    const waveCos = Math.cos(0.4);
-    const mouse = new THREE.Vector2(0, 0);
-
-    const material = new THREE.ShaderMaterial({
-      vertexShader, fragmentShader,
-      uniforms: {
-        uTime: { value: 0 }, uResolution: { value: new THREE.Vector2(width, height) },
-        uMouse: { value: mouse }, uTopColor: { value: parseColor(topColor) },
-        uBottomColor: { value: parseColor(bottomColor) }, uIntensity: { value: intensity },
-        uInteractive: { value: interactive }, uGlowAmount: { value: glowAmount },
-        uPillarWidth: { value: pillarWidth }, uPillarHeight: { value: pillarHeight },
-        uNoiseIntensity: { value: noiseIntensity }, uRotCos: { value: 1.0 }, uRotSin: { value: 0.0 },
-        uPillarRotCos: { value: Math.cos(pillarRotRad) }, uPillarRotSin: { value: Math.sin(pillarRotRad) },
-        uWaveSin: { value: waveSin }, uWaveCos: { value: waveCos }
-      },
-      transparent: true, depthWrite: false, depthTest: false
-    });
-
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-
-    let time = 0;
-    let rafId = null;
-    let lastTime = performance.now();
-    const targetFPS = quality === 'low' ? 30 : 60;
-    const frameTime = 1000 / targetFPS;
-
-    function animate(currentTime){
-      const deltaTime = currentTime - lastTime;
-      if (deltaTime >= frameTime){
-        time += 0.016 * rotationSpeed;
-        material.uniforms.uTime.value = time;
-        material.uniforms.uRotCos.value = Math.cos(time * 0.3);
-        material.uniforms.uRotSin.value = Math.sin(time * 0.3);
-        renderer.render(scene, camera);
-        lastTime = currentTime - (deltaTime % frameTime);
-      }
-      rafId = requestAnimationFrame(animate);
-    }
-    rafId = requestAnimationFrame(animate);
-
-    let resizeTimeout = null;
-    function handleResize(){
-      if (resizeTimeout) clearTimeout(resizeTimeout);
-      resizeTimeout = window.setTimeout(() => {
-        width = container.clientWidth; height = container.clientHeight;
-        renderer.setSize(width, height);
-        material.uniforms.uResolution.value.set(width, height);
-      }, 150);
-    }
-    window.addEventListener('resize', handleResize, { passive:true });
-
-    return function cleanup(){
-      window.removeEventListener('resize', handleResize);
-      if (rafId) cancelAnimationFrame(rafId);
-      renderer.dispose(); renderer.forceContextLoss();
-      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
-      material.dispose(); geometry.dispose();
-    };
+      beep(0, 880, 0.12);
+      beep(0.13, 1175, 0.14);
+    } catch(e){ /* аудио недоступно — просто молчим */ }
   }
 
-  createLightPillar(document.getElementById('pillarContainer'), {
-    topColor: '#c3b2ff', bottomColor: '#4c2f8c', intensity: 1.3, rotationSpeed: 0.25,
-    glowAmount: 0.0013, pillarWidth: 2.6, pillarHeight: 0.32, noiseIntensity: 0.4,
-    pillarRotation: 57, interactive: false, mixBlendMode: 'screen'
-  });
+  // короткий одиночный "клик" для отправки сообщения
+  function playSendSound(){
+    try{
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 520;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } catch(e){}
+  }
+
+  // ---------- всплывающие уведомления ----------
+  const toastStack = document.getElementById('toastStack');
+
+  function showToast(title, body, opts){
+    opts = opts || {};
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML =
+      '<div class="toast-icon"></div>' +
+      '<div class="toast-text"><b></b><span></span></div>';
+    toast.querySelector('b').textContent = title;
+    toast.querySelector('span').textContent = body || '';
+    toastStack.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    if (opts.sound !== false) playNotifySound();
+
+    const life = opts.duration || 4200;
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 250);
+    }, life);
+  }
+
+  // разрешаем звук по первому клику (браузеры блокируют автозапуск звука без взаимодействия)
+  window.addEventListener('click', () => { getAudioCtx(); }, { once:true });
 </script>
 
 <!-- ================= FIREBASE: AUTH + FIRESTORE (профиль + чат) ================= -->
@@ -936,11 +573,12 @@
 
   // ---------- DOM: auth / profile ----------
   const trigger        = document.getElementById('authTrigger');
+  const navAuth        = document.getElementById('navAuth');
   const triggerAvatar  = document.getElementById('triggerAvatar');
   const triggerLabel   = document.getElementById('triggerLabel');
   const authOverlay    = document.getElementById('authOverlay');
   const authClose      = document.getElementById('authClose');
-  const tabs           = document.querySelectorAll('.auth-tab');
+  const tabs           = document.querySelectorAll('.tab');
   const emailInput     = document.getElementById('authEmail');
   const passwordInput  = document.getElementById('authPassword');
   const submitBtn      = document.getElementById('authSubmit');
@@ -961,6 +599,7 @@
 
   // ---------- DOM: chat ----------
   const chatTrigger   = document.getElementById('chatTrigger');
+  const navChat       = document.getElementById('navChat');
   const chatOverlay   = document.getElementById('chatOverlay');
   const chatClose     = document.getElementById('chatClose');
   const chatBody      = document.getElementById('chatBody');
@@ -974,9 +613,9 @@
   let mode = 'login';
   let currentUser = null;
   let unsubscribeChat = null;
-  let profileDataLoaded = false;
+  let isFirstChatSnapshot = true;
+  let chatIsOpen = false;
 
-  // ---------- helpers ----------
   function initials(text){ return text ? text.trim().slice(0, 2).toUpperCase() : '?'; }
 
   function friendlyError(code){
@@ -998,7 +637,6 @@
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
   }
-
   function formatTime(ts){
     if (!ts) return '...';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -1027,6 +665,7 @@
   }
 
   trigger.addEventListener('click', openAuth);
+  navAuth.addEventListener('click', openAuth);
   authClose.addEventListener('click', closeAuth);
   authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuth(); });
   tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
@@ -1088,7 +727,6 @@
       profileName.value = data.displayName || user.displayName || '';
       profileBio.value = data.bio || '';
       updateIdentityUI(data.displayName || user.displayName, user.email);
-      profileDataLoaded = true;
     } catch (error) {
       setProfileMessage(friendlyError(error.code), 'error');
     }
@@ -1111,6 +749,7 @@
       }
       updateIdentityUI(name, user.email);
       setProfileMessage('Сохранено', 'success');
+      showToast('Профиль обновлён', 'Изменения сохранены', { sound:true, duration:2600 });
     } catch (error) {
       setProfileMessage(friendlyError(error.code), 'error');
     } finally {
@@ -1119,7 +758,7 @@
   });
 
   function updateIdentityUI(name, email){
-    const label = name || 'аккаунт';
+    const label = name || 'Аккаунт';
     const short = initials(name || email);
     triggerLabel.textContent = label;
     triggerAvatar.textContent = short;
@@ -1129,6 +768,7 @@
   // ---------- Firestore: чат ----------
   function openChat(){
     chatOverlay.classList.add('open');
+    chatIsOpen = true;
     if (!currentUser){
       chatLocked.classList.remove('hidden');
       chatInputRow.classList.add('hidden');
@@ -1137,9 +777,10 @@
       chatInputRow.classList.remove('hidden');
     }
   }
-  function closeChat(){ chatOverlay.classList.remove('open'); }
+  function closeChat(){ chatOverlay.classList.remove('open'); chatIsOpen = false; }
 
   chatTrigger.addEventListener('click', openChat);
+  navChat.addEventListener('click', openChat);
   chatClose.addEventListener('click', closeChat);
   chatOverlay.addEventListener('click', (e) => { if (e.target === chatOverlay) closeChat(); });
   chatLoginBtn.addEventListener('click', () => { closeChat(); openAuth(); });
@@ -1188,9 +829,24 @@
 
   function subscribeChat(){
     if (unsubscribeChat) unsubscribeChat();
+    isFirstChatSnapshot = true;
     const q = query(collection(db, 'messages'), orderBy('createdAt', 'asc'), limit(100));
     unsubscribeChat = onSnapshot(q, (snapshot) => {
       renderMessages(snapshot.docs);
+
+      // уведомление о новых входящих сообщениях (пропускаем самую первую загрузку истории)
+      if (!isFirstChatSnapshot){
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'added'){
+            const m = change.doc.data();
+            const isOwn = currentUser && m.uid === currentUser.uid;
+            if (!isOwn){
+              showToast('Новое сообщение', (m.name || 'Кто-то') + ': ' + (m.text || ''), { sound:true });
+            }
+          }
+        });
+      }
+      isFirstChatSnapshot = false;
     }, (error) => {
       chatBody.innerHTML = '';
       const err = document.createElement('div');
@@ -1208,15 +864,16 @@
     try {
       await addDoc(collection(db, 'messages'), {
         uid: currentUser.uid,
-        name: triggerLabel.textContent && triggerLabel.textContent !== 'войти'
+        name: triggerLabel.textContent && triggerLabel.textContent !== 'Войти'
           ? triggerLabel.textContent
           : (currentUser.displayName || currentUser.email || 'Без имени'),
         text: text.slice(0, 500),
         createdAt: serverTimestamp()
       });
       chatInput.value = '';
+      playSendSound();
     } catch (error) {
-      alert(friendlyError(error.code));
+      showToast('Ошибка', friendlyError(error.code), { sound:false });
     } finally {
       chatSend.disabled = false;
     }
@@ -1240,7 +897,7 @@
       chatInputRow.classList.remove('hidden');
     } else {
       trigger.classList.remove('logged-in');
-      triggerLabel.textContent = 'войти';
+      triggerLabel.textContent = 'Войти';
       authForms.classList.remove('hidden');
       profilePanel.classList.add('hidden');
       authTitle.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
