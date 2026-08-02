@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://www.google-analytics.com https://analytics.google.com;">
 <title>quasarNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -211,7 +211,6 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   <div class="stage" id="viewHome">
     <div class="logo"><span style="color:#2563eb">q</span><span style="color:#6b7280">u</span><span style="color:#9ca3af">a</span><span style="color:#d1d5db">s</span><span style="color:#9ca3af">a</span><span style="color:#6b7280">r</span><span style="color:var(--text)">Net</span></div>
     <div class="tagline">общение без лишнего</div>
-    <h1>authorized-security-test-2026-08-02-ryan</h1>
     <div class="stage-actions" id="stageActions">
       <button class="stage-btn primary" id="stageLoginBtn"><span class="material-symbols-outlined" style="font-size:18px">login</span>Войти</button>
       <button class="stage-btn" id="stageRegBtn"><span class="material-symbols-outlined" style="font-size:18px">person_add</span>Регистрация</button>
@@ -344,7 +343,7 @@ function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith(
 function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
 
 function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто'};return m[c]||'Что-то пошло не так'}
-function formatTime(ts){if(!ts)return'...';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
+function formatTime(ts){if(!ts)return'...';try{const d=ts.toDate?ts.toDate():new Date(ts);return isNaN(d.getTime())?'...':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}catch(e){return'сейчас'}}
 
 let mode='login',currentUser=null,usersCache={},currentAvatarData=null;
 
@@ -532,7 +531,7 @@ function subscribeChat(){
 }
 
 let renderedMsgIds=new Set();
-const isAdmin=()=>{const r=!!usersCache[currentUser?.uid]?.admin;console.log('isAdmin check:',currentUser?.uid,'->',r);return r};
+const isAdmin=()=>!!usersCache[currentUser?.uid]?.admin;
 function renderMessages(docs){
   if(docs.length===0){chatBodyEl.innerHTML='';renderedMsgIds.clear();return}
   docs.forEach(d=>{if(renderedMsgIds.has(d.id))return;
@@ -587,19 +586,11 @@ async function sendMessage(){
   const cached=usersCache[currentUser.uid]||{};
   const name=(cached.name||profileNameEl.value.trim()||currentUser.displayName||currentUser.email||'Без имени').slice(0,40);
   const avatar=sanitizeAvatar(cached.avatar)||'';
-  const msgData={uid:currentUser.uid,name,avatar,text:text.replace(/[<>]/g,'').slice(0,500),createdAt:serverTimestamp()};
-  console.log('sendMessage: chatId=',activeChatId,'uid=',currentUser.uid,'isGlobal=',activeChatId===GLOBAL_CHAT_ID);
   try{
-    console.log('sendMessage: writing message...',msgData);
-    await addDoc(collection(db,'chats',activeChatId,'messages'),msgData);
-    console.log('sendMessage: message written OK');
-    if(activeChatId!==GLOBAL_CHAT_ID){
-      console.log('sendMessage: updating lastMessage...');
-      await updateDoc(doc(db,'chats',activeChatId),{lastMessage:text.slice(0,80),lastMessageAt:serverTimestamp()});
-      console.log('sendMessage: lastMessage updated OK');
-    }
+    await addDoc(collection(db,'chats',activeChatId,'messages'),{uid:currentUser.uid,name,avatar,text:text.replace(/[<>]/g,'').slice(0,500),createdAt:serverTimestamp()});
+    if(activeChatId!==GLOBAL_CHAT_ID)await updateDoc(doc(db,'chats',activeChatId),{lastMessage:text.slice(0,80),lastMessageAt:serverTimestamp()});
     chatInputEl.value='';
-  }catch(e){console.error('sendMessage FAILED:',e.code,e.message,e);showToast('Ошибка',e.message||friendlyError(e.code)||'Не удалось отправить')}
+  }catch(e){console.error('sendMessage:',e);showToast('Ошибка',e.message||'Не удалось отправить')}
   finally{chatSendBtn.disabled=false}
 }
 chatSendBtn.addEventListener('click',sendMessage);
