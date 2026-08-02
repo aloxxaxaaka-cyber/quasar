@@ -371,9 +371,6 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
             <button class="sub-nav-btn" onclick="subShowView('subscription')"><span class="material-symbols-outlined">card_membership</span>Подписка</button>
             <button class="sub-nav-btn" onclick="subShowView('security')"><span class="material-symbols-outlined">shield</span>Безопасность</button>
           </nav>
-          <div class="sub-sidebar-footer">
-            <button class="btn" onclick="subLogout()"><span class="material-symbols-outlined" style="font-size:16px">logout</span>Выйти</button>
-          </div>
         </aside>
         <main class="sub-main">
           <div id="subViewOverview" class="sub-view-panel active">
@@ -530,7 +527,7 @@ function esc(s){if(!s)return'';const d=document.createElement('div');d.textConte
 function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith('data:image/'))return'';if(u.length>300000)return'';return u}
 function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
 
-function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто'};return m[c]||'Что-то пошло не так'}
+function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто','auth/popup-blocked':'Всплывающее окно заблокировано браузером','auth/cancelled-popup-request':'Вход отменён','auth/operation-not-allowed':'Вход через Google не включён в настройках Firebase','auth/unauthorized-domain':'Домен не авторизован'};return m[c]||'Что-то пошло не так ('+c+')'}
 function formatTime(ts){
   if(!ts)return'...';
   if(typeof ts==='object'&&ts!==null&&typeof ts.toDate!=='function'&&!ts.seconds)return'сейчас';
@@ -812,7 +809,7 @@ onAuthStateChanged(auth,async user=>{
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
     if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;
     await loadAllUsers();ensureGlobalChat();
-    try{const subSnap=await getDoc(doc(db,'sub_users',user.uid));if(subSnap.exists()&&subSnap.data().role==='ADMIN')document.getElementById('topbarAdminTab').style.display='';else document.getElementById('topbarAdminTab').style.display='none'}catch(e){document.getElementById('topbarAdminTab').style.display='none'}
+    try{const subSnap=await getDoc(doc(db,'sub_users',user.uid));const isAdmin=data.admin||subSnap.exists()&&subSnap.data().role==='ADMIN';document.getElementById('topbarAdminTab').style.display=isAdmin?'':'none'}catch(e){document.getElementById('topbarAdminTab').style.display=data.admin?'':'none'}
     renderChatList(chatSearchInput.value);
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
     }catch(e){}
@@ -833,7 +830,7 @@ onAuthStateChanged(auth,async user=>{
 let currentView='home';
 const viewHome=document.getElementById('viewHome'),viewChats=document.getElementById('viewChats'),viewSubEl=document.getElementById('viewSub'),viewAdminEl=document.getElementById('viewAdmin');
 const viewMap={home:viewHome,chats:viewChats,sub:viewSubEl,admin:viewAdminEl};
-function switchMainView(v){currentView=v;Object.values(viewMap).forEach(el=>el.style.display='none');if(viewMap[v])viewMap[v].style.display='';document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='sub'){if(currentUser){subUser=currentUser;subLoadProfile()}else{subShowAuth()}}if(v==='admin')adminLoadDashboard()}
+function switchMainView(v){currentView=v;Object.values(viewMap).forEach(el=>el.style.display='none');if(v==='home')viewHome.style.display='flex';else if(v==='chats')viewChats.style.display='flex';else if(viewMap[v])viewMap[v].style.display='';document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='sub'){if(currentUser){subUser=currentUser;subLoadProfile()}else{subShowAuth()}}if(v==='admin')adminLoadDashboard()}
 document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',()=>switchMainView(t.dataset.view)));
 document.getElementById('topbarLogo').addEventListener('click',()=>switchMainView('home'));
 
@@ -846,9 +843,9 @@ function subShowView(n){document.querySelectorAll('.sub-view-panel').forEach(p=>
 function subShowAuth(){document.getElementById('subAuthScreen').classList.remove('hidden');document.getElementById('subAccountScreen').classList.add('hidden')}
 function subShowAccount(){
   document.getElementById('subAuthScreen').classList.add('hidden');document.getElementById('subAccountScreen').classList.remove('hidden');
-  const p=subProfile||{};const u=subUser||{};
+  const p=subProfile||{};const u=subUser||{};const chatUser=usersCache[u.uid]||{};
   const days=p.subscription_days||0,start=p.subscription_start?new Date(p.subscription_start):null,end=start&&days?new Date(start.getTime()+days*86400000):null,active=end&&Date.now()<end.getTime();
-  const uname=p.username||u.email?.split('@')[0]||'-';
+  const uname=chatUser.nick||chatUser.name||p.username||u.email?.split('@')[0]||'-';
   document.getElementById('subSideName').textContent=uname;document.getElementById('subSideUid').textContent='UID '+(u.uid||'-');
   document.getElementById('subStatus').textContent=active?'Активна':'Неактивна';document.getElementById('subStatus').style.color=active?'#16a34a':'#dc2626';
   document.getElementById('subExpires').textContent=end?'До '+end.toLocaleDateString('ru-RU'):'Ключ не активирован';
@@ -874,7 +871,7 @@ async function subRegister(){
 }
 async function subLoadProfile(){
   if(!subUser)return;
-  try{const snap=await getDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid));if(snap.exists()){subProfile=snap.data()}else{subProfile={uid:subUser.uid,username:subUser.email?.split('@')[0]||'User',role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''};await setDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),subProfile)}document.getElementById('topbarAdminTab').style.display=subProfile?.role==='ADMIN'?'':'none';subShowAccount()}catch(e){console.error('subLoadProfile:',e)}
+  try{const snap=await getDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid));if(snap.exists()){subProfile=snap.data()}else{subProfile={uid:subUser.uid,username:subUser.email?.split('@')[0]||'User',role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''};await setDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),subProfile)}const chatAdmin=usersCache[subUser.uid]?.admin;document.getElementById('topbarAdminTab').style.display=chatAdmin||subProfile?.role==='ADMIN'?'':'none';subShowAccount()}catch(e){console.error('subLoadProfile:',e)}
 }
 async function subActivateKey(){
   const inp=document.getElementById('subKeyInput'),key=inp.value.trim().toUpperCase();if(!key){subToast('Введите ключ','error');return}
@@ -923,6 +920,7 @@ async function adminLoadAudit(){try{const q=query(collection(db,SUB_COLLECTIONS.
 
 async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);const snap=await getDoc(ref);if(!snap.exists())await setRef(ref,{type:'global',name:'Общий чат',lastMessageAt:serverTimestamp()})}catch(e){}}
 function setRef(ref,data){return setDoc(ref,data).catch(()=>{})}
+window.subShowView=subShowView;window.subSwitchTab=subSwitchTab;window.subLogin=subLogin;window.subRegister=subRegister;window.subActivateKey=subActivateKey;window.subChangePassword=subChangePassword;window.subLoadHistory=subLoadHistory;window.adminShowTab=adminShowTab;window.adminGenKeys=adminGenKeys;window.adminSubDays=adminSubDays;window.adminBan=adminBan;window.adminFilterUsers=adminFilterUsers;
 subInitAuth();
 }
 </script>
