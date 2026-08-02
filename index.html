@@ -323,6 +323,8 @@ function setMessage(t,c){messageEl.textContent=t||'';messageEl.className='msg'+(
 function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===m));submitBtn.innerHTML=m==='login'?'<span class="material-symbols-outlined" style="font-size:16px">login</span>Войти':'<span class="material-symbols-outlined" style="font-size:16px">person_add</span>Создать аккаунт';authTitle.textContent=m==='login'?'Вход':'Регистрация';setMessage('')}
 
 authTrigger.addEventListener('click',openAuth);
+document.getElementById('stageLoginBtn').addEventListener('click',()=>{setMode('login');openAuth()});
+document.getElementById('stageRegBtn').addEventListener('click',()=>{setMode('register');openAuth()});
 authClose.addEventListener('click',closeAuth);
 authOverlay.addEventListener('click',e=>{if(e.target===authOverlay)closeAuth()});
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setMode(t.dataset.mode)));
@@ -355,7 +357,7 @@ const GLOBAL_CHAT_ID='global';
 
 const chatListEl=document.getElementById('chatList'),chatBodyEl=document.getElementById('chatBody'),chatLockedEl=document.getElementById('chatLocked'),chatInputRowEl=document.getElementById('chatInputRow'),chatInputEl=document.getElementById('chatInput'),chatSendBtn=document.getElementById('chatSend'),chatLoginBtn=document.getElementById('chatLoginBtn'),chatSearchInput=document.getElementById('chatSearchInput'),chatMainHeaderEl=document.getElementById('chatMainHeader'),chatMainAvatarEl=document.getElementById('chatMainAvatar'),chatMainNameEl=document.getElementById('chatMainName'),chatMainStatusEl=document.getElementById('chatMainStatus'),chatsSidebar=document.getElementById('chatsSidebar'),chatBackBtn=document.getElementById('chatBack');
 
-let activeChatId=null,activeChatTargetUid=null,unsubscribeChat=null,isFirstChatSnapshot=true;
+let activeChatId=null,activeChatTargetUid=null,unsubscribeChat=null,isFirstChatSnapshot=true,chatOpening=false;
 
 chatLoginBtn.addEventListener('click',()=>{closeAuth();openAuth();setMode('login')});
 chatBackBtn.addEventListener('click',()=>{
@@ -413,7 +415,11 @@ async function loadActiveChats(){
   myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
   for(const chat of myChats){
     const otherUid=chat.participants.find(p=>p!==currentUser.uid);
-    const other=usersCache[otherUid]||{name:'Пользователь',avatar:'',nick:''};
+    let other=usersCache[otherUid];
+    if(!other){
+      try{const userSnap=await getDoc(doc(db,'users',otherUid));if(userSnap.exists()){const ud=userSnap.data();const ep=ud.email?.split('@')[0]||'';other={name:ud.displayName||ep||'Пользователь',avatar:ud.avatar||'',nick:ud.nick||ep,email:ud.email||''};usersCache[otherUid]=other}}catch(e){}
+    }
+    if(!other)other={name:'Пользователь',avatar:'',nick:''};
     const item=document.createElement('div');
     item.className='chat-item-wrap'+(activeChatId===chat.id?' active':'');
     let unreadCount=0;
@@ -433,14 +439,17 @@ async function loadActiveChats(){
 }
 
 async function startChatWith(uid){
-  if(!currentUser||!usersCache[uid])return;
-  const chatId=makeChatId(currentUser.uid,uid);
-  const ref=doc(db,'chats',chatId);
-  const snap=await getDoc(ref);
-  if(!snap.exists()){await setDoc(ref,{participants:[currentUser.uid,uid],lastMessage:'',lastMessageAt:serverTimestamp()})}
-  chatSearchInput.value='';
-  renderChatList('');
-  openChatWith(uid);
+  if(!currentUser||!usersCache[uid]||chatOpening)return;
+  chatOpening=true;
+  try{
+    const chatId=makeChatId(currentUser.uid,uid);
+    const ref=doc(db,'chats',chatId);
+    const snap=await getDoc(ref);
+    if(!snap.exists()){await setDoc(ref,{participants:[currentUser.uid,uid],lastMessage:'',lastMessageAt:serverTimestamp()})}
+    chatSearchInput.value='';
+    renderChatList('');
+    openChatWith(uid);
+  }finally{chatOpening=false}
 }
 
 async function markChatRead(chatId){
