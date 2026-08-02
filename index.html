@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com;">
 <title>quasarNet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,14 +159,14 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 #avatarFileInput{display:none}
 .profile-email{font-size:12px;color:var(--text2);word-break:break-all}
 .profile-since{font-size:11px;color:var(--text2);margin-top:2px}
-.toast-stack{position:fixed;top:60px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px var(--shadow);padding:10px 14px;font-size:13px;color:var(--text);max-width:280px;display:flex;align-items:flex-start;gap:8px;opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s cubic-bezier(.34,1.56,.64,1)}
+.toast-stack{position:fixed;top:60px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px var(--shadow);padding:10px 14px;font-size:13px;color:var(--text);width:300px;max-width:90vw;display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:auto}
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
-.toast .toast-icon{width:20px;height:20px;border-radius:50%;background:var(--accent);flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.toast .toast-icon .material-symbols-outlined{font-size:13px;color:#fff}
-.toast .toast-text{min-width:0;flex:1}
-.toast .toast-text b{display:block;margin-bottom:2px;color:var(--text);font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.toast .toast-text span{font-size:12px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.toast .toast-icon{width:22px;height:22px;border-radius:50%;background:var(--accent);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.toast .toast-icon .material-symbols-outlined{font-size:14px;color:#fff}
+.toast .toast-text{min-width:0;flex:1;word-break:break-word}
+.toast .toast-text b{display:block;margin-bottom:3px;color:var(--text);font-size:13px;font-weight:600}
+.toast .toast-text span{font-size:12px;color:var(--text2);line-height:1.5;display:block}
 .hidden{display:none !important}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20;vertical-align:middle;line-height:1}
 .material-symbols-outlined.filled{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
@@ -210,7 +211,6 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   <div class="stage" id="viewHome">
     <div class="logo"><span style="color:#2563eb">q</span><span style="color:#6b7280">u</span><span style="color:#9ca3af">a</span><span style="color:#d1d5db">s</span><span style="color:#9ca3af">a</span><span style="color:#6b7280">r</span><span style="color:var(--text)">Net</span></div>
     <div class="tagline">общение без лишнего</div>
-    <h1>authorized-security-test-2026-08-02-ryan</h1>
     <div class="stage-actions" id="stageActions">
       <button class="stage-btn primary" id="stageLoginBtn"><span class="material-symbols-outlined" style="font-size:18px">login</span>Войти</button>
       <button class="stage-btn" id="stageRegBtn"><span class="material-symbols-outlined" style="font-size:18px">person_add</span>Регистрация</button>
@@ -338,6 +338,9 @@ const toastStack=document.getElementById('toastStack');
 function showToast(title,body,opts){opts=opts||{};const t=document.createElement('div');t.className='toast';t.innerHTML='<div class="toast-icon"><span class="material-symbols-outlined filled">info</span></div><div class="toast-text"><b></b><span></span></div>';t.querySelector('b').textContent=title;t.querySelector('span').textContent=body||'';toastStack.appendChild(t);requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400)},opts.duration||3500)}
 
 function initials(t){return t?t.trim().slice(0,2).toUpperCase():'?'}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith('data:image/'))return'';if(u.length>300000)return'';return u}
+function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
 
 function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто'};return m[c]||'Что-то пошло не так'}
 function formatTime(ts){if(!ts)return'...';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
@@ -362,7 +365,8 @@ authOverlay.addEventListener('click',e=>{if(e.target===authOverlay)closeAuth()})
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setMode(t.dataset.mode)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAuth();closeProfile()}});
 
-submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){ setMessage('Заполни email и пароль','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else await createUserWithEmailAndPassword(auth,email,password)}catch(e){setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
+let authAttempts=0,authCooldownUntil=0;
+submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){ setMessage('Заполни email и пароль','error');return}if(Date.now()<authCooldownUntil){ setMessage('Слишком много попыток, подождите','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else{if(password.length<6){setMessage('Пароль минимум 6 символов','error');submitBtn.disabled=false;return}await createUserWithEmailAndPassword(auth,email,password)}authAttempts=0}catch(e){authAttempts++;if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток. Подождите минуту','error')}else setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
 googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider)}catch(e){setMessage(friendlyError(e.code),'error')}});
 
 const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap');
@@ -375,14 +379,14 @@ profileClose.addEventListener('click',closeProfile);
 profileOverlay.addEventListener('click',e=>{if(e.target===profileOverlay)closeProfile()});
 
 avatarWrap.addEventListener('click',()=>avatarFileInput.click());
-avatarFileInput.addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;if(file.size>200000){showToast('Ошибка','Файл слишком большой (макс 200КБ)');return}const reader=new FileReader();reader.onload=()=>{currentAvatarData=reader.result;profileAvatarEl.innerHTML='<img src="'+currentAvatarData+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">'};reader.readAsDataURL(file)});
+avatarFileInput.addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;if(file.size>200000){showToast('Ошибка','Файл слишком большой (макс 200КБ)');return}if(!file.type.startsWith('image/')){showToast('Ошибка','Только изображения');return}const reader=new FileReader();reader.onload=()=>{const d=reader.result;if(!d.startsWith('data:image/')){showToast('Ошибка','Неверный формат');return}currentAvatarData=d;profileAvatarEl.innerHTML='<img src="'+esc(d)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">'};reader.readAsDataURL(file)});
 
-profileSaveBtn.addEventListener('click',async()=>{const user=auth.currentUser;if(!user)return;profileSaveBtn.disabled=true;setProfileMessage('');try{const d={displayName:profileNameEl.value.trim(),bio:profileBioEl.value.trim(),nick:profileNameEl.value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')||user.email?.split('@')[0]||''};if(currentAvatarData)d.avatar=currentAvatarData;await setDoc(doc(db,'users',user.uid),d,{merge:true});if((user.displayName||'')!==profileNameEl.value.trim())await updateProfile(user,{displayName:profileNameEl.value.trim()||null});updateIdentityUI(profileNameEl.value.trim(),user.email,currentAvatarData||usersCache[user.uid]?.avatar||'');currentAvatarData=null;avatarFileInput.value='';await loadAllUsers();setProfileMessage('Сохранено','success');showToast('Профиль','Изменения сохранены')}catch(e){setProfileMessage(friendlyError(e.code),'error')}finally{profileSaveBtn.disabled=false}});
+profileSaveBtn.addEventListener('click',async()=>{const user=auth.currentUser;if(!user)return;profileSaveBtn.disabled=true;setProfileMessage('');try{const d={displayName:profileNameEl.value.trim().slice(0,40),bio:profileBioEl.value.trim().slice(0,200),nick:sanitizeNick(profileNameEl.value.trim())||user.email?.split('@')[0]||''};if(currentAvatarData)d.avatar=sanitizeAvatar(currentAvatarData)||'';await setDoc(doc(db,'users',user.uid),d,{merge:true});if((user.displayName||'')!==profileNameEl.value.trim())await updateProfile(user,{displayName:profileNameEl.value.trim().slice(0,40)||null});updateIdentityUI(profileNameEl.value.trim(),user.email,currentAvatarData||usersCache[user.uid]?.avatar||'');currentAvatarData=null;avatarFileInput.value='';await loadAllUsers();setProfileMessage('Сохранено','success');showToast('Профиль','Изменения сохранены')}catch(e){setProfileMessage(friendlyError(e.code),'error')}finally{profileSaveBtn.disabled=false}});
 authLogoutBtn.addEventListener('click',async()=>{await signOut(auth);closeProfile()});
 
-function updateIdentityUI(name,email,avatar){const short=initials(name||email);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=avatar?'<img src="'+avatar+'">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
+function updateIdentityUI(name,email,avatar){const short=initials(name||email);const av=sanitizeAvatar(avatar);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=av?'<img src="'+esc(av)+'">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=av?'<img src="'+esc(av)+'" style="width:100%;height:100%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=av?'<img src="'+esc(av)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
 
-async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const emailPrefix=data.email?.split('@')[0]||'';const nick=data.nick||emailPrefix;const name=data.displayName||emailPrefix||d.id.slice(0,8);usersCache[d.id]={name:name,avatar:data.avatar||'',nick:nick,email:data.email||'',admin:!!data.admin,banned:!!data.banned}})}catch(e){}}
+async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const emailPrefix=data.email?.split('@')[0]||'';const nick=data.nick||emailPrefix;const name=(data.displayName||emailPrefix||d.id.slice(0,8)).slice(0,40);usersCache[d.id]={name:name,avatar:sanitizeAvatar(data.avatar)||'',nick:nick.slice(0,30),email:data.email||'',admin:!!data.admin,banned:!!data.banned}})}catch(e){}}
 
 function makeChatId(a,b){return[a,b].sort().join('_')}
 const GLOBAL_CHAT_ID='global';
@@ -441,7 +445,7 @@ async function renderChatList(q){
     const s=q.toLowerCase(),results=[];
     for(const [uid,d] of Object.entries(usersCache)){if(uid===currentUser.uid)continue;if(d.name.toLowerCase().includes(s)||d.nick.toLowerCase().includes(s))results.push({uid,...d})}
     if(results.length===0){chatListEl.innerHTML+='<div class="chat-empty" style="padding:20px">Никого не нашли</div>';return}
-    results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item-wrap';item.style.animationDelay=((i+1)*.05)+'s';item.innerHTML='<div class="chat-item-avatar">'+(p.avatar?'<img src="'+p.avatar+'">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+p.name+'</div><div class="chat-item-last">@'+p.nick+'</div></div>';item.addEventListener('click',()=>startChatWith(p.uid));chatListEl.appendChild(item)});
+    results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item-wrap';item.style.animationDelay=((i+1)*.05)+'s';const av=sanitizeAvatar(p.avatar);item.innerHTML='<div class="chat-item-avatar">'+(av?'<img src="'+esc(av)+'">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+esc(p.name)+'</div><div class="chat-item-last">@'+esc(p.nick)+'</div></div>';item.addEventListener('click',()=>startChatWith(p.uid));chatListEl.appendChild(item)});
     return;
   }
   loadActiveChats();
@@ -455,7 +459,7 @@ async function loadActiveChats(){
     const otherUid=chat.participants.find(p=>p!==currentUser.uid);
     let other=usersCache[otherUid];
     if(!other){
-      try{const userSnap=await getDoc(doc(db,'users',otherUid));if(userSnap.exists()){const ud=userSnap.data();const ep=ud.email?.split('@')[0]||'';other={name:ud.displayName||ep||'Пользователь',avatar:ud.avatar||'',nick:ud.nick||ep,email:ud.email||'',admin:!!ud.admin,banned:!!ud.banned};usersCache[otherUid]=other}}catch(e){}
+      try{const userSnap=await getDoc(doc(db,'users',otherUid));if(userSnap.exists()){const ud=userSnap.data();const ep=ud.email?.split('@')[0]||'';other={name:(ud.displayName||ep||'Пользователь').slice(0,40),avatar:sanitizeAvatar(ud.avatar)||'',nick:(ud.nick||ep).slice(0,30),email:ud.email||'',admin:!!ud.admin,banned:!!ud.banned};usersCache[otherUid]=other}}catch(e){}
     }
     if(!other)other={name:'Пользователь',avatar:'',nick:''};
     const item=document.createElement('div');
@@ -471,7 +475,8 @@ async function loadActiveChats(){
     }
     const badgeHTML=unreadCount>0?'<div class="chat-unread-badge">'+unreadCount+'</div>':'';
     const adminBadge=other.admin?'<span class="admin-badge"><span class="material-symbols-outlined">shield</span>ADMIN</span>':'';
-    item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+adminBadge+'</div><div class="chat-item-last">@'+other.nick+(chat.lastMessage?' &middot; '+chat.lastMessage:'')+'</div></div>'+badgeHTML;
+    const av=sanitizeAvatar(other.avatar);
+    item.innerHTML='<div class="chat-item-avatar">'+(av?'<img src="'+esc(av)+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+esc(other.name)+adminBadge+'</div><div class="chat-item-last">@'+esc(other.nick)+(chat.lastMessage?' &middot; '+esc(chat.lastMessage):'')+'</div></div>'+badgeHTML;
     item.addEventListener('click',()=>openChatWith(otherUid));
     chatListEl.appendChild(item)}
   }catch(e){}
@@ -502,7 +507,8 @@ function openChatWith(uid){
   activeChatId=makeChatId(currentUser.uid,uid);activeChatTargetUid=uid;
   renderedMsgIds=new Set();
   chatMainHeaderEl.classList.remove('hidden');
-  chatMainAvatarEl.innerHTML=other.avatar?'<img src="'+other.avatar+'">':initials(other.name);
+  const av=sanitizeAvatar(other.avatar);
+  chatMainAvatarEl.innerHTML=av?'<img src="'+esc(av)+'">':initials(other.name);
   chatMainAvatarEl.style.background='';
   chatMainNameEl.textContent=other.name;
   chatMainStatusEl.textContent='@'+other.nick;
@@ -525,16 +531,16 @@ function subscribeChat(){
 }
 
 let renderedMsgIds=new Set();
-const isAdmin=()=>usersCache[currentUser?.uid]?.admin;
+const isAdmin=()=>!!usersCache[currentUser?.uid]?.admin;
 function renderMessages(docs){
   if(docs.length===0){chatBodyEl.innerHTML='';renderedMsgIds.clear();return}
   docs.forEach(d=>{if(renderedMsgIds.has(d.id))return;
-  const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=usersCache[m.uid]?.avatar||'';const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');
-  const avatarHTML=uA?'<img src="'+uA+'">':initials(m.name);
-  const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick">@'+mNick+'</div>':'';
+  const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');
+  const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);
+  const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick">@'+esc(mNick)+'</div>':'';
   const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';
-  const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+d.id+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';
-  row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';
+  const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+esc(d.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';
+  row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+esc(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';
   chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});
   chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});
   chatBodyEl.scrollTop=chatBodyEl.scrollHeight;
@@ -542,17 +548,17 @@ function renderMessages(docs){
 
 async function deleteMessage(msgId){
   if(!isAdmin()||!activeChatId)return;
-  try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','Сообщение удалено')}catch(e){showToast('Ошибка','Не удалось удалить')}
+  try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','Сообщение удалено')}catch(e){console.error('deleteMessage error:',e);showToast('Ошибка',e.message||'Не удалось удалить')}
 }
 
 async function banUser(uid){
   if(!isAdmin()||uid===currentUser.uid)return;
-  try{await updateDoc(doc(db,'users',uid),{banned:true});await loadAllUsers();showToast('Забанен','Пользователь заблокирован')}catch(e){showToast('Ошибка','Не удалось забанить')}
+  try{await setDoc(doc(db,'users',uid),{banned:true},{merge:true});await loadAllUsers();showToast('Забанен','Пользователь заблокирован')}catch(e){console.error('banUser error:',e);showToast('Ошибка',e.message||'Не удалось забанить')}
 }
 
 async function unbanUser(uid){
   if(!isAdmin())return;
-  try{await updateDoc(doc(db,'users',uid),{banned:false});await loadAllUsers();showToast('Разбанен','Пользователь разблокирован')}catch(e){showToast('Ошибка','Не удалось разбанить')}
+  try{await setDoc(doc(db,'users',uid),{banned:false},{merge:true});await loadAllUsers();showToast('Разбанен','Пользователь разблокирован')}catch(e){console.error('unbanUser error:',e);showToast('Ошибка',e.message||'Не удалось разбанить')}
 }
 
 const adminEditOverlay=document.getElementById('adminEditOverlay'),adminEditClose=document.getElementById('adminEditClose'),adminEditName=document.getElementById('adminEditName'),adminEditBio=document.getElementById('adminEditBio'),adminEditNick=document.getElementById('adminEditNick'),adminEditSaveBtn=document.getElementById('adminEditSave'),adminBanBtnFull=document.getElementById('adminBanBtnFull'),adminUnbanBtnFull=document.getElementById('adminUnbanBtnFull');
@@ -570,17 +576,20 @@ async function openAdminEdit(uid){
 adminEditClose.addEventListener('click',()=>adminEditOverlay.classList.remove('open'));
 adminEditOverlay.addEventListener('click',e=>{if(e.target===adminEditOverlay)adminEditOverlay.classList.remove('open')});
 adminEditSaveBtn.addEventListener('click',async()=>{if(!adminEditUid)return;
-  try{await setDoc(doc(db,'users',adminEditUid),{displayName:adminEditName.value.trim(),bio:adminEditBio.value.trim(),nick:adminEditNick.value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')},{merge:true});await loadAllUsers();showToast('Сохранено','Профиль обновлён');adminEditOverlay.classList.remove('open')}catch(e){showToast('Ошибка','Не удалось сохранить')}});
+  try{await setDoc(doc(db,'users',adminEditUid),{displayName:adminEditName.value.trim().slice(0,40),bio:adminEditBio.value.trim().slice(0,200),nick:sanitizeNick(adminEditName.value.trim())},{merge:true});await loadAllUsers();showToast('Сохранено','Профиль обновлён');adminEditOverlay.classList.remove('open')}catch(e){console.error('adminEditSave error:',e);showToast('Ошибка',e.message||'Не удалось сохранить')}});
 adminBanBtnFull.addEventListener('click',()=>{if(adminEditUid){banUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
 adminUnbanBtnFull.addEventListener('click',()=>{if(adminEditUid){unbanUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
 
 async function sendMessage(){
-  const text=chatInputEl.value.trim();if(!text||!currentUser||!activeChatId)return;
+  const raw=chatInputEl.value.trim();if(!raw||!currentUser||!activeChatId)return;
+  const text=raw.replace(/[<>]/g,'').slice(0,500);
+  if(!text){chatInputEl.value='';return}
   chatSendBtn.disabled=true;
-  const name=profileNameEl.value.trim()||currentUser.displayName||currentUser.email||'Без имени';
-  const avatar=usersCache[currentUser.uid]?.avatar||'';
+  const cached=usersCache[currentUser.uid]||{};
+  const name=(cached.name||profileNameEl.value.trim()||currentUser.displayName||currentUser.email||'Без имени').slice(0,40);
+  const avatar=sanitizeAvatar(cached.avatar)||'';
   try{
-    await addDoc(collection(db,'chats',activeChatId,'messages'),{uid:currentUser.uid,name,avatar,text:text.slice(0,500),createdAt:serverTimestamp()});
+    await addDoc(collection(db,'chats',activeChatId,'messages'),{uid:currentUser.uid,name,avatar,text,createdAt:serverTimestamp()});
     if(activeChatId!==GLOBAL_CHAT_ID)await updateDoc(doc(db,'chats',activeChatId),{lastMessage:text.slice(0,80),lastMessageAt:serverTimestamp()});
     chatInputEl.value='';
   }catch(e){showToast('Ошибка',friendlyError(e.code))}
@@ -594,7 +603,7 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     authForms.classList.add('hidden');authTitle.textContent='Профиль';
     try{const ref=doc(db,'users',user.uid),snap=await getDoc(ref);let data;
-    if(!snap.exists()){await setDoc(ref,{email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:serverTimestamp()});data={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:null}}else data=snap.data();
+    if(!snap.exists()){const newUserDoc={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',admin:false,banned:false,createdAt:serverTimestamp()};await setDoc(ref,newUserDoc);data={...newUserDoc,createdAt:null}}else data=snap.data();
     if(data.banned){await signOut(auth);showToast('Заблокирован','Ваш аккаунт заблокирован');return}
     profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
