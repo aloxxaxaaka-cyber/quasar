@@ -342,7 +342,7 @@ function esc(s){if(!s)return'';const d=document.createElement('div');d.textConte
 function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith('data:image/'))return'';if(u.length>300000)return'';return u}
 function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
 
-function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто'};return m[c]||'Что-то пошло не так'}
+function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто','permission-denied':'Недостаточно прав для этого действия','unauthenticated':'Нужно войти в аккаунт','unavailable':'Сервер временно недоступен, попробуйте ещё раз','not-found':'Не найдено','resource-exhausted':'Слишком много запросов, подождите','deadline-exceeded':'Превышено время ожидания','cancelled':'Действие отменено','already-exists':'Уже существует'};return m[c]||'Что-то пошло не так'}
 function formatTime(ts){if(!ts)return'...';const d=ts.toDate?ts.toDate():new Date(ts);return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
 
 let mode='login',currentUser=null,usersCache={},currentAvatarData=null;
@@ -548,17 +548,17 @@ function renderMessages(docs){
 
 async function deleteMessage(msgId){
   if(!isAdmin()||!activeChatId)return;
-  try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','Сообщение удалено')}catch(e){console.error('deleteMessage error:',e);showToast('Ошибка',e.message||'Не удалось удалить')}
+  try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','Сообщение удалено')}catch(e){console.error('deleteMessage error:',e);showToast('Ошибка',friendlyError(e.code))}
 }
 
 async function banUser(uid){
   if(!isAdmin()||uid===currentUser.uid)return;
-  try{await setDoc(doc(db,'users',uid),{banned:true},{merge:true});await loadAllUsers();showToast('Забанен','Пользователь заблокирован')}catch(e){console.error('banUser error:',e);showToast('Ошибка',e.message||'Не удалось забанить')}
+  try{await setDoc(doc(db,'users',uid),{banned:true},{merge:true});await loadAllUsers();showToast('Забанен','Пользователь заблокирован')}catch(e){console.error('banUser error:',e);showToast('Ошибка',friendlyError(e.code))}
 }
 
 async function unbanUser(uid){
   if(!isAdmin())return;
-  try{await setDoc(doc(db,'users',uid),{banned:false},{merge:true});await loadAllUsers();showToast('Разбанен','Пользователь разблокирован')}catch(e){console.error('unbanUser error:',e);showToast('Ошибка',e.message||'Не удалось разбанить')}
+  try{await setDoc(doc(db,'users',uid),{banned:false},{merge:true});await loadAllUsers();showToast('Разбанен','Пользователь разблокирован')}catch(e){console.error('unbanUser error:',e);showToast('Ошибка',friendlyError(e.code))}
 }
 
 const adminEditOverlay=document.getElementById('adminEditOverlay'),adminEditClose=document.getElementById('adminEditClose'),adminEditName=document.getElementById('adminEditName'),adminEditBio=document.getElementById('adminEditBio'),adminEditNick=document.getElementById('adminEditNick'),adminEditSaveBtn=document.getElementById('adminEditSave'),adminBanBtnFull=document.getElementById('adminBanBtnFull'),adminUnbanBtnFull=document.getElementById('adminUnbanBtnFull');
@@ -576,7 +576,7 @@ async function openAdminEdit(uid){
 adminEditClose.addEventListener('click',()=>adminEditOverlay.classList.remove('open'));
 adminEditOverlay.addEventListener('click',e=>{if(e.target===adminEditOverlay)adminEditOverlay.classList.remove('open')});
 adminEditSaveBtn.addEventListener('click',async()=>{if(!adminEditUid)return;
-  try{await setDoc(doc(db,'users',adminEditUid),{displayName:adminEditName.value.trim().slice(0,40),bio:adminEditBio.value.trim().slice(0,200),nick:sanitizeNick(adminEditName.value.trim())},{merge:true});await loadAllUsers();showToast('Сохранено','Профиль обновлён');adminEditOverlay.classList.remove('open')}catch(e){console.error('adminEditSave error:',e);showToast('Ошибка',e.message||'Не удалось сохранить')}});
+  try{await setDoc(doc(db,'users',adminEditUid),{displayName:adminEditName.value.trim().slice(0,40),bio:adminEditBio.value.trim().slice(0,200),nick:sanitizeNick(adminEditName.value.trim())},{merge:true});await loadAllUsers();showToast('Сохранено','Профиль обновлён');adminEditOverlay.classList.remove('open')}catch(e){console.error('adminEditSave error:',e);showToast('Ошибка',friendlyError(e.code))}});
 adminBanBtnFull.addEventListener('click',()=>{if(adminEditUid){banUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
 adminUnbanBtnFull.addEventListener('click',()=>{if(adminEditUid){unbanUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
 
