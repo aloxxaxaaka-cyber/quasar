@@ -15,6 +15,9 @@
     --violet:#8b5cf6;
     --violet-bright:#c3b2ff;
     --violet-deep:#4c2f8c;
+    --panel:#0c0912;
+    --panel-border:rgba(139,92,246,0.25);
+    --danger:#ff6b81;
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
@@ -45,7 +48,6 @@
     pointer-events:none;
   }
 
-  /* soft radial spotlight that follows the cursor */
   .spotlight{
     position:fixed;
     inset:0;
@@ -145,8 +147,244 @@
     to{ opacity:1; }
   }
 
+  /* ---------- auth trigger ---------- */
+
+  .auth-trigger{
+    position:fixed;
+    top:2.2rem;
+    right:2.4rem;
+    z-index:20;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.04em;
+    color:var(--ink-faint);
+    background:transparent;
+    border:1px solid var(--panel-border);
+    padding:0.55rem 1.1rem;
+    border-radius:999px;
+    cursor:pointer;
+    opacity:0;
+    animation:fadeIn 1s ease-out .9s forwards;
+    transition:color .25s ease, border-color .25s ease, background .25s ease;
+  }
+  .auth-trigger:hover{
+    color:var(--violet-bright);
+    border-color:var(--violet);
+    background:rgba(139,92,246,0.08);
+  }
+
+  /* ---------- auth overlay ---------- */
+
+  .auth-overlay{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(5,3,8,0.72);
+    backdrop-filter:blur(6px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .auth-overlay.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .auth-panel{
+    width:min(360px, 90vw);
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:18px;
+    padding:2rem 1.8rem 1.8rem;
+    box-shadow:0 30px 80px rgba(0,0,0,0.55), 0 0 60px rgba(139,92,246,0.08);
+    transform:translateY(10px);
+    transition:transform .3s cubic-bezier(.2,.7,.2,1);
+  }
+  .auth-overlay.open .auth-panel{
+    transform:translateY(0);
+  }
+
+  .auth-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.4rem;
+  }
+  .auth-title{
+    font-weight:600;
+    font-size:1.05rem;
+    letter-spacing:-0.01em;
+  }
+  .auth-close{
+    background:none;
+    border:none;
+    color:var(--ink-faint);
+    font-size:1.1rem;
+    cursor:pointer;
+    line-height:1;
+    padding:0.2rem 0.4rem;
+    transition:color .2s ease;
+  }
+  .auth-close:hover{ color:var(--violet-bright); }
+
+  .auth-tabs{
+    display:flex;
+    gap:0.4rem;
+    margin-bottom:1.3rem;
+    background:rgba(255,255,255,0.03);
+    border-radius:10px;
+    padding:0.25rem;
+  }
+  .auth-tab{
+    flex:1;
+    text-align:center;
+    padding:0.5rem 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.03em;
+    color:var(--ink-faint);
+    background:none;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:color .2s ease, background .2s ease;
+  }
+  .auth-tab.active{
+    color:var(--ink);
+    background:rgba(139,92,246,0.16);
+  }
+
+  .auth-field{
+    display:flex;
+    flex-direction:column;
+    gap:0.4rem;
+    margin-bottom:0.9rem;
+  }
+  .auth-field label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.65rem;
+    letter-spacing:0.04em;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+  }
+  .auth-field input{
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--panel-border);
+    border-radius:8px;
+    padding:0.65rem 0.8rem;
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:0.88rem;
+    outline:none;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .auth-field input:focus{
+    border-color:var(--violet);
+    background:rgba(139,92,246,0.06);
+  }
+
+  .auth-submit{
+    width:100%;
+    padding:0.75rem;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(100deg, var(--violet-deep), var(--violet), var(--violet-bright));
+    background-size:200% 100%;
+    color:#050308;
+    font-weight:600;
+    font-size:0.88rem;
+    cursor:pointer;
+    margin-top:0.3rem;
+    transition:background-position .4s ease, transform .15s ease;
+  }
+  .auth-submit:hover{ background-position:100% 0; }
+  .auth-submit:active{ transform:scale(0.98); }
+
+  .auth-divider{
+    display:flex;
+    align-items:center;
+    gap:0.7rem;
+    margin:1.1rem 0;
+    color:var(--ink-faint);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+  }
+  .auth-divider::before, .auth-divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--panel-border);
+  }
+
+  .auth-google{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:0.6rem;
+    padding:0.7rem;
+    border-radius:8px;
+    border:1px solid var(--panel-border);
+    background:rgba(255,255,255,0.02);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .auth-google:hover{
+    border-color:var(--violet);
+    background:rgba(139,92,246,0.06);
+  }
+
+  .auth-message{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.01em;
+    min-height:1.2em;
+    margin-top:0.9rem;
+    text-align:center;
+  }
+  .auth-message.error{ color:var(--danger); }
+  .auth-message.success{ color:var(--violet-bright); }
+
+  .auth-userbar{
+    display:flex;
+    flex-direction:column;
+    gap:1rem;
+    text-align:center;
+  }
+  .auth-userbar .who{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color:var(--ink-faint);
+    word-break:break-all;
+  }
+  .auth-logout{
+    padding:0.65rem;
+    border-radius:8px;
+    border:1px solid var(--panel-border);
+    background:transparent;
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .auth-logout:hover{
+    border-color:var(--violet);
+    color:var(--violet-bright);
+  }
+
+  .hidden{ display:none !important; }
+
   @media (prefers-reduced-motion: reduce){
-    .mark, .mark .halo, .mark .core, .contact{
+    .mark, .mark .halo, .mark .core, .contact, .auth-trigger{
       animation:none !important;
       opacity:1 !important;
       filter:none !important;
@@ -199,6 +437,8 @@
 
 <div class="spotlight" id="spotlight"></div>
 
+<button class="auth-trigger" id="authTrigger">войти</button>
+
 <div class="stage">
   <div class="mark" id="mark">
     <span class="halo" aria-hidden="true">iqua</span>
@@ -207,6 +447,57 @@
 </div>
 
 <div class="contact"><a href="mailto:hello@iqua.dev">hello@iqua.dev</a></div>
+
+<!-- ================= AUTH OVERLAY ================= -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-panel">
+
+    <div class="auth-header">
+      <div class="auth-title" id="authTitle">Вход</div>
+      <button class="auth-close" id="authClose">&times;</button>
+    </div>
+
+    <!-- форма входа/регистрации (видна, когда пользователь не залогинен) -->
+    <div id="authForms">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-mode="login">Вход</button>
+        <button class="auth-tab" data-mode="register">Регистрация</button>
+      </div>
+
+      <div class="auth-field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label for="authPassword">Пароль</label>
+        <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="auth-submit" id="authSubmit">Войти</button>
+
+      <div class="auth-divider">или</div>
+
+      <button class="auth-google" id="authGoogle">
+        <svg width="16" height="16" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 35.5 24 35.5c-6.4 0-11.7-5.2-11.7-11.7S17.6 12.1 24 12.1c3 0 5.7 1.1 7.8 3l5.7-5.7C34.5 6 29.5 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.4 18.9 12.1 24 12.1c3 0 5.7 1.1 7.8 3l5.7-5.7C34.5 6 29.5 4 24 4c-7.4 0-13.8 4.2-17 10.3z"/>
+          <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.6l-6.5-5.3c-2 1.4-4.6 2.3-7.5 2.3-5.3 0-9.7-2.9-11.3-7.5l-6.6 5.1C10.1 39.7 16.6 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.5 5.3C41.4 36.1 44 30.6 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+        </svg>
+        Продолжить с Google
+      </button>
+
+      <div class="auth-message" id="authMessage"></div>
+    </div>
+
+    <!-- панель "уже вошёл" (видна, когда пользователь залогинен) -->
+    <div id="authUserbar" class="auth-userbar hidden">
+      <div class="who" id="authWho"></div>
+      <button class="auth-logout" id="authLogout">Выйти</button>
+    </div>
+
+  </div>
+</div>
 
 <script>
   // курсор двигает мягкое фиолетовое пятно света
@@ -221,6 +512,144 @@
     spot.style.setProperty('--mx', '50%');
     spot.style.setProperty('--my', '42%');
   }
+</script>
+
+<!-- ================= FIREBASE AUTH ================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    GoogleAuthProvider,
+    signInWithPopup
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",
+    authDomain: "quasar-63d58.firebaseapp.com",
+    projectId: "quasar-63d58",
+    storageBucket: "quasar-63d58.firebasestorage.app",
+    messagingSenderId: "719943993300",
+    appId: "1:719943993300:web:9e44c1247c10639397f841",
+    measurementId: "G-33NN2R9Z1S"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  // ---------- элементы DOM ----------
+  const trigger     = document.getElementById('authTrigger');
+  const overlay      = document.getElementById('authOverlay');
+  const closeBtn     = document.getElementById('authClose');
+  const tabs          = document.querySelectorAll('.auth-tab');
+  const emailInput    = document.getElementById('authEmail');
+  const passwordInput = document.getElementById('authPassword');
+  const submitBtn     = document.getElementById('authSubmit');
+  const googleBtn     = document.getElementById('authGoogle');
+  const messageEl     = document.getElementById('authMessage');
+  const authForms     = document.getElementById('authForms');
+  const authUserbar   = document.getElementById('authUserbar');
+  const authWho       = document.getElementById('authWho');
+  const authLogout    = document.getElementById('authLogout');
+  const authTitle     = document.getElementById('authTitle');
+
+  let mode = 'login'; // 'login' | 'register'
+
+  function openOverlay(){ overlay.classList.add('open'); }
+  function closeOverlay(){ overlay.classList.remove('open'); setMessage(''); }
+
+  function setMessage(text, type){
+    messageEl.textContent = text || '';
+    messageEl.className = 'auth-message' + (type ? ' ' + type : '');
+  }
+
+  function setMode(newMode){
+    mode = newMode;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    submitBtn.textContent = mode === 'login' ? 'Войти' : 'Создать аккаунт';
+    authTitle.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
+    setMessage('');
+  }
+
+  // человекочитаемые сообщения об ошибках Firebase
+  function friendlyError(code){
+    const map = {
+      'auth/invalid-email': 'Некорректный email',
+      'auth/user-not-found': 'Пользователь не найден',
+      'auth/wrong-password': 'Неверный пароль',
+      'auth/email-already-in-use': 'Этот email уже зарегистрирован',
+      'auth/weak-password': 'Пароль слишком короткий (минимум 6 символов)',
+      'auth/invalid-credential': 'Неверный email или пароль',
+      'auth/popup-closed-by-user': 'Окно входа закрыто'
+    };
+    return map[code] || 'Что-то пошло не так, попробуй ещё раз';
+  }
+
+  trigger.addEventListener('click', openOverlay);
+  closeBtn.addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
+
+  tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+
+  submitBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password){
+      setMessage('Заполни email и пароль', 'error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    setMessage('');
+
+    try {
+      if (mode === 'login'){
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+    } catch (error) {
+      setMessage(friendlyError(error.code), 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  googleBtn.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      setMessage(friendlyError(error.code), 'error');
+    }
+  });
+
+  authLogout.addEventListener('click', async () => {
+    await signOut(auth);
+  });
+
+  // ---------- обновление UI в зависимости от статуса входа ----------
+  onAuthStateChanged(auth, (user) => {
+    if (user){
+      trigger.textContent = 'аккаунт';
+      authForms.classList.add('hidden');
+      authUserbar.classList.remove('hidden');
+      authWho.textContent = user.email || user.displayName || 'Вход выполнен';
+    } else {
+      trigger.textContent = 'войти';
+      authForms.classList.remove('hidden');
+      authUserbar.classList.add('hidden');
+      emailInput.value = '';
+      passwordInput.value = '';
+    }
+  });
 </script>
 
 </body>
