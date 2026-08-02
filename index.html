@@ -21,6 +21,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 @keyframes popIn{from{opacity:0;transform:scale(.85)}70%{transform:scale(1.02)}to{opacity:1;transform:scale(1)}}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}50%{box-shadow:0 0 0 4px rgba(37,99,235,.1)}}
+  <h1>authorized-security-test-2026-08-02-ryan</h1>
 
 .topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;z-index:100;box-shadow:0 1px 4px var(--shadow);transition:background .35s,border .35s}
 .topbar-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:var(--accent);cursor:pointer;user-select:none;transition:opacity .2s}
@@ -74,6 +75,17 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .chat-item-wrap.active{background:var(--hover)}
 .chat-item-wrap.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:var(--accent);border-radius:0 4px 4px 0}
 .chat-unread-badge{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:20px;height:20px;border-radius:10px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;flex-shrink:0}
+.admin-badge{display:inline-flex;align-items:center;gap:3px;background:#dc2626;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;flex-shrink:0;vertical-align:middle}
+.admin-badge .material-symbols-outlined{font-size:12px}
+.bubble-admin{display:inline-flex;align-items:center;gap:3px;background:#dc2626;color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;margin-bottom:3px}
+.msg-delete{position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;border:none;background:#dc2626;color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:5;transition:transform .15s}
+.msg-delete .material-symbols-outlined{font-size:14px}
+.chat-msg:hover .msg-delete{display:flex}
+.msg-delete:hover{transform:scale(1.15)}
+.ban-btn{background:#dc2626;color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .25s}
+.ban-btn:hover{background:#b91c1c}
+.unban-btn{background:#16a34a;color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .25s}
+.unban-btn:hover{background:#15803d}
 
 .chats-main{flex:1;display:flex;flex-direction:column;background:var(--chatbg);transition:background .35s;position:relative}
 .chats-main-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--card);transition:background .35s,border .35s}
@@ -93,6 +105,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .chat-msg:not(.own) .bubble{background:var(--card);border:1px solid var(--border);color:var(--text);max-width:calc(100% - 34px)}
 .chat-msg.own .bubble{background:var(--accent);color:#fff;border-radius:18px;border-bottom-right-radius:6px;border:none;flex:1;min-width:0}
 .bubble-text{font-size:14px;line-height:1.4}
+.bubble-nick{font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px}
 .bubble-time{font-size:10px;opacity:.5;margin-top:3px;text-align:right}
 .chat-msg:not(.own) .bubble-time{color:var(--text2)}
 .chat-msg.own .bubble-time{color:rgba(255,255,255,.7)}
@@ -224,6 +237,8 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
         <button class="chat-back" id="chatBack" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:4px;margin-right:4px"><span class="material-symbols-outlined">arrow_back</span></button>
         <div class="chats-main-avatar" id="chatMainAvatar"></div>
         <div class="chats-main-info"><div class="chats-main-name" id="chatMainName"></div><div class="chats-main-status" id="chatMainStatus"></div></div>
+        <button class="hidden" id="adminBanBtn" style="background:none;border:none;cursor:pointer;color:#dc2626;padding:4px" title="Забанить"><span class="material-symbols-outlined">block</span></button>
+        <button class="hidden" id="adminEditBtn" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:4px" title="Редактировать профиль"><span class="material-symbols-outlined">edit</span></button>
       </div>
       <div class="chat-body" id="chatBody">
         <div class="chat-empty-main"><span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">forum</span>Найдите человека и начните общение</div>
@@ -286,9 +301,26 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 
 <div class="toast-stack" id="toastStack"></div>
 
+<div class="overlay" id="adminEditOverlay">
+  <div class="card card-profile">
+    <div class="card-header">
+      <div class="card-title">Редактирование профиля</div>
+      <button class="card-close" id="adminEditClose"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="field"><label>Имя</label><input type="text" id="adminEditName" maxlength="40"></div>
+    <div class="field"><label>О себе</label><textarea id="adminEditBio" rows="3" maxlength="200"></textarea></div>
+    <div class="field"><label>Nick</label><input type="text" id="adminEditNick" maxlength="40"></div>
+    <button class="btn btn-primary btn-block" id="adminEditSave"><span class="material-symbols-outlined" style="font-size:16px">save</span>Сохранить</button>
+    <div style="display:flex;gap:8px;margin-top:.5rem">
+      <button class="ban-btn" id="adminBanBtnFull" style="flex:1"><span class="material-symbols-outlined" style="font-size:16px">block</span>Забанить</button>
+      <button class="unban-btn hidden" id="adminUnbanBtnFull" style="flex:1"><span class="material-symbols-outlined" style="font-size:16px">check_circle</span>Разбанить</button>
+    </div>
+  </div>
+</div>
+
 <script>
 function initApp(){
-const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}=window.firebaseFns;
+const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}=window.firebaseFns;
 
 const html=document.documentElement;
 const themeBtn=document.getElementById('themeToggle');
@@ -350,7 +382,7 @@ authLogoutBtn.addEventListener('click',async()=>{await signOut(auth);closeProfil
 
 function updateIdentityUI(name,email,avatar){const short=initials(name||email);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=avatar?'<img src="'+avatar+'">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
 
-async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const emailPrefix=data.email?.split('@')[0]||'';const nick=data.nick||emailPrefix;const name=data.displayName||emailPrefix||d.id.slice(0,8);usersCache[d.id]={name:name,avatar:data.avatar||'',nick:nick,email:data.email||''}})}catch(e){}}
+async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const emailPrefix=data.email?.split('@')[0]||'';const nick=data.nick||emailPrefix;const name=data.displayName||emailPrefix||d.id.slice(0,8);usersCache[d.id]={name:name,avatar:data.avatar||'',nick:nick,email:data.email||'',admin:!!data.admin,banned:!!data.banned}})}catch(e){}}
 
 function makeChatId(a,b){return[a,b].sort().join('_')}
 const GLOBAL_CHAT_ID='global';
@@ -365,7 +397,10 @@ chatBackBtn.addEventListener('click',()=>{
   document.querySelector('.chats-main').classList.remove('chat-open');
   chatMainHeaderEl.classList.add('hidden');
   chatInputRowEl.classList.add('hidden');
-  chatBodyEl.innerHTML='<div class="chat-empty-main"><span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">forum</span>Найдите человека и начните общение</div>';
+  document.getElementById('adminBanBtn').classList.add('hidden');
+  document.getElementById('adminEditBtn').classList.add('hidden');
+  chatBodyEl.innerHTML='';
+  renderedMsgIds=new Set();
   activeChatId=null;activeChatTargetUid=null;
   if(unsubscribeChat){unsubscribeChat();unsubscribeChat=null}
   renderChatList(chatSearchInput.value);
@@ -382,11 +417,14 @@ function renderGlobalChatItem(){
 function openGlobalChat(){
   if(!currentUser)return;
   activeChatId=GLOBAL_CHAT_ID;activeChatTargetUid=null;
+  renderedMsgIds=new Set();
   chatMainHeaderEl.classList.remove('hidden');
   chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span>';
   chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';
   chatMainNameEl.textContent='Общий чат';
   chatMainStatusEl.textContent='Все участники';
+  document.getElementById('adminBanBtn').classList.add('hidden');
+  document.getElementById('adminEditBtn').classList.add('hidden');
   document.querySelectorAll('.chat-item-wrap').forEach(el=>el.classList.remove('active'));
   if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');
   chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
@@ -417,7 +455,7 @@ async function loadActiveChats(){
     const otherUid=chat.participants.find(p=>p!==currentUser.uid);
     let other=usersCache[otherUid];
     if(!other){
-      try{const userSnap=await getDoc(doc(db,'users',otherUid));if(userSnap.exists()){const ud=userSnap.data();const ep=ud.email?.split('@')[0]||'';other={name:ud.displayName||ep||'Пользователь',avatar:ud.avatar||'',nick:ud.nick||ep,email:ud.email||''};usersCache[otherUid]=other}}catch(e){}
+      try{const userSnap=await getDoc(doc(db,'users',otherUid));if(userSnap.exists()){const ud=userSnap.data();const ep=ud.email?.split('@')[0]||'';other={name:ud.displayName||ep||'Пользователь',avatar:ud.avatar||'',nick:ud.nick||ep,email:ud.email||'',admin:!!ud.admin,banned:!!ud.banned};usersCache[otherUid]=other}}catch(e){}
     }
     if(!other)other={name:'Пользователь',avatar:'',nick:''};
     const item=document.createElement('div');
@@ -432,7 +470,8 @@ async function loadActiveChats(){
       unreadSnap.forEach(md=>{const mdData=md.data();if(mdData.uid!==currentUser.uid)unreadCount++})}catch(e){}
     }
     const badgeHTML=unreadCount>0?'<div class="chat-unread-badge">'+unreadCount+'</div>':'';
-    item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+'</div><div class="chat-item-last">@'+other.nick+(chat.lastMessage?' &middot; '+chat.lastMessage:'')+'</div></div>'+badgeHTML;
+    const adminBadge=other.admin?'<span class="admin-badge"><span class="material-symbols-outlined">shield</span>ADMIN</span>':'';
+    item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+adminBadge+'</div><div class="chat-item-last">@'+other.nick+(chat.lastMessage?' &middot; '+chat.lastMessage:'')+'</div></div>'+badgeHTML;
     item.addEventListener('click',()=>openChatWith(otherUid));
     chatListEl.appendChild(item)}
   }catch(e){}
@@ -461,6 +500,7 @@ function openChatWith(uid){
   if(!usersCache[uid])return;
   const other=usersCache[uid];
   activeChatId=makeChatId(currentUser.uid,uid);activeChatTargetUid=uid;
+  renderedMsgIds=new Set();
   chatMainHeaderEl.classList.remove('hidden');
   chatMainAvatarEl.innerHTML=other.avatar?'<img src="'+other.avatar+'">':initials(other.name);
   chatMainAvatarEl.style.background='';
@@ -470,6 +510,8 @@ function openChatWith(uid){
   chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
   chatsSidebar.classList.add('hidden-mobile');
   document.querySelector('.chats-main').classList.add('chat-open');
+  const banBtn=document.getElementById('adminBanBtn'),editBtn=document.getElementById('adminEditBtn');
+  if(isAdmin()){banBtn.classList.remove('hidden');editBtn.classList.remove('hidden');banBtn.onclick=()=>{banUser(uid)};editBtn.onclick=()=>{openAdminEdit(uid)}}else{banBtn.classList.add('hidden');editBtn.classList.add('hidden')}
   markChatRead(activeChatId);
   subscribeChat();
 }
@@ -482,14 +524,55 @@ function subscribeChat(){
   unsubscribeChat=onSnapshot(q,snap=>{renderMessages(snap.docs);if(!isFirstChatSnapshot){snap.docChanges().forEach(ch=>{if(ch.type==='added'){const m=ch.doc.data();if(currentUser&&m.uid!==currentUser.uid){showToast(m.name,m.text);if(activeChatId!==GLOBAL_CHAT_ID)playNotifSound()}}})}isFirstChatSnapshot=false},()=>{});
 }
 
+let renderedMsgIds=new Set();
+const isAdmin=()=>usersCache[currentUser?.uid]?.admin;
 function renderMessages(docs){
-  if(docs.length===0){chatBodyEl.innerHTML='<div class="chat-empty-main">Начните переписку</div>';return}
-  chatBodyEl.innerHTML='';docs.forEach(d=>{const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=usersCache[m.uid]?.avatar||'';const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');
+  if(docs.length===0){chatBodyEl.innerHTML='';renderedMsgIds.clear();return}
+  docs.forEach(d=>{if(renderedMsgIds.has(d.id))return;
+  const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=usersCache[m.uid]?.avatar||'';const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');
   const avatarHTML=uA?'<img src="'+uA+'">':initials(m.name);
-  row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble"><div class="bubble-text">'+(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';
-  chatBodyEl.appendChild(row)});
+  const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick">@'+mNick+'</div>':'';
+  const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';
+  const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+d.id+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';
+  row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';
+  chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});
+  chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});
   chatBodyEl.scrollTop=chatBodyEl.scrollHeight;
 }
+
+async function deleteMessage(msgId){
+  if(!isAdmin()||!activeChatId)return;
+  try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','Сообщение удалено')}catch(e){showToast('Ошибка','Не удалось удалить')}
+}
+
+async function banUser(uid){
+  if(!isAdmin()||uid===currentUser.uid)return;
+  try{await updateDoc(doc(db,'users',uid),{banned:true});await loadAllUsers();showToast('Забанен','Пользователь заблокирован')}catch(e){showToast('Ошибка','Не удалось забанить')}
+}
+
+async function unbanUser(uid){
+  if(!isAdmin())return;
+  try{await updateDoc(doc(db,'users',uid),{banned:false});await loadAllUsers();showToast('Разбанен','Пользователь разблокирован')}catch(e){showToast('Ошибка','Не удалось разбанить')}
+}
+
+const adminEditOverlay=document.getElementById('adminEditOverlay'),adminEditClose=document.getElementById('adminEditClose'),adminEditName=document.getElementById('adminEditName'),adminEditBio=document.getElementById('adminEditBio'),adminEditNick=document.getElementById('adminEditNick'),adminEditSaveBtn=document.getElementById('adminEditSave'),adminBanBtnFull=document.getElementById('adminBanBtnFull'),adminUnbanBtnFull=document.getElementById('adminUnbanBtnFull');
+let adminEditUid=null;
+async function openAdminEdit(uid){
+  if(!isAdmin()||!usersCache[uid])return;
+  adminEditUid=uid;const u=usersCache[uid];
+  adminEditName.value=u.name||'';adminEditNick.value=u.nick||'';
+  try{const snap=await getDoc(doc(db,'users',uid));if(snap.exists()){adminEditBio.value=snap.data().bio||''}}catch(e){adminEditBio.value=''}
+  const isBanned=!!u.banned;
+  adminBanBtnFull.classList.toggle('hidden',isBanned);
+  adminUnbanBtnFull.classList.toggle('hidden',!isBanned);
+  adminEditOverlay.classList.add('open');
+}
+adminEditClose.addEventListener('click',()=>adminEditOverlay.classList.remove('open'));
+adminEditOverlay.addEventListener('click',e=>{if(e.target===adminEditOverlay)adminEditOverlay.classList.remove('open')});
+adminEditSaveBtn.addEventListener('click',async()=>{if(!adminEditUid)return;
+  try{await updateDoc(doc(db,'users',adminEditUid),{displayName:adminEditName.value.trim(),bio:adminEditBio.value.trim(),nick:adminEditNick.value.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')});await loadAllUsers();showToast('Сохранено','Профиль обновлён');adminEditOverlay.classList.remove('open')}catch(e){showToast('Ошибка','Не удалось сохранить')}});
+adminBanBtnFull.addEventListener('click',()=>{if(adminEditUid){banUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
+adminUnbanBtnFull.addEventListener('click',()=>{if(adminEditUid){unbanUser(adminEditUid);adminEditOverlay.classList.remove('open')}});
 
 async function sendMessage(){
   const text=chatInputEl.value.trim();if(!text||!currentUser||!activeChatId)return;
@@ -512,8 +595,10 @@ onAuthStateChanged(auth,async user=>{
     authForms.classList.add('hidden');authTitle.textContent='Профиль';
     try{const ref=doc(db,'users',user.uid),snap=await getDoc(ref);let data;
     if(!snap.exists()){await setDoc(ref,{email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:serverTimestamp()});data={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:null}}else data=snap.data();
+    if(data.banned){await signOut(auth);showToast('Заблокирован','Ваш аккаунт заблокирован');return}
     profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
+    if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;
     await loadAllUsers();renderChatList('');ensureGlobalChat();
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
     }catch(e){}
@@ -540,11 +625,11 @@ renderChatList('');
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where};
 initApp();
 </script>
 </body>
