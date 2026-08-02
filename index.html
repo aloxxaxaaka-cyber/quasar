@@ -89,9 +89,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .chat-msg.own{margin-left:auto;flex-direction:row-reverse}
 .chat-msg .bubble-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;overflow:hidden}
 .chat-msg .bubble-avatar img{width:100%;height:100%;object-fit:cover}
-.chat-msg .bubble{padding:8px 12px;border-radius:18px;border-bottom-left-radius:6px;max-width:calc(100% - 40px);word-break:break-word;position:relative}
-.chat-msg:not(.own) .bubble{background:var(--card);border:1px solid var(--border);color:var(--text)}
-.chat-msg.own .bubble{background:var(--accent);color:#fff;border-radius:18px;border-bottom-right-radius:6px;border:none}
+.chat-msg .bubble{padding:8px 12px;border-radius:18px;border-bottom-left-radius:6px;word-break:break-word;position:relative}
+.chat-msg:not(.own) .bubble{background:var(--card);border:1px solid var(--border);color:var(--text);max-width:calc(100% - 34px)}
+.chat-msg.own .bubble{background:var(--accent);color:#fff;border-radius:18px;border-bottom-right-radius:6px;border:none;flex:1;min-width:0}
 .bubble-text{font-size:14px;line-height:1.4}
 .bubble-time{font-size:10px;opacity:.5;margin-top:3px;text-align:right}
 .chat-msg:not(.own) .bubble-time{color:var(--text2)}
@@ -165,9 +165,10 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   .topbar-tab .material-symbols-outlined{display:none}
   .topbar-logo{font-size:17px}
   .chats-layout{flex-direction:column}
-  .chats-sidebar{width:100%;min-width:0;height:100%;border-right:none}
+  .chats-sidebar{width:100%;min-width:0;height:100%;border-right:none;position:relative;z-index:5}
   .chats-sidebar.hidden-mobile{display:none}
-  .chats-main{position:absolute;inset:0;z-index:10}
+  .chats-main{position:absolute;inset:0;z-index:10;visibility:hidden;pointer-events:none}
+  .chats-main.chat-open{visibility:visible;pointer-events:auto}
   .chat-back{display:flex !important}
   .chat-item-wrap{padding:8px 10px}
   .chat-item-avatar{width:38px;height:38px}
@@ -297,7 +298,7 @@ themeBtn.addEventListener('click',()=>{const c=html.getAttribute('data-theme'),n
 function updateThemeIcon(){themeBtn.innerHTML=html.getAttribute('data-theme')==='dark'?'<span class="material-symbols-outlined filled">light_mode</span>':'<span class="material-symbols-outlined filled">dark_mode</span>'}
 
 const homeView=document.getElementById('viewHome'),chatsView=document.getElementById('viewChats'),tabs=document.querySelectorAll('.topbar-tab');
-function switchView(n){homeView.style.display=n==='home'?'flex':'none';chatsView.classList.toggle('active',n==='chats');tabs.forEach(t=>t.classList.toggle('active',t.dataset.view===n))}
+function switchView(n){homeView.style.display=n==='home'?'flex':'none';chatsView.classList.toggle('active',n==='chats');tabs.forEach(t=>t.classList.toggle('active',t.dataset.view===n));if(n==='chats'){chatsSidebar.classList.remove('hidden-mobile');if(currentUser)renderChatList(chatSearchInput.value)}}
 tabs.forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 document.getElementById('topbarLogo').addEventListener('click',()=>switchView('home'));
 
@@ -347,7 +348,7 @@ authLogoutBtn.addEventListener('click',async()=>{await signOut(auth);closeProfil
 
 function updateIdentityUI(name,email,avatar){const short=initials(name||email);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=avatar?'<img src="'+avatar+'">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=avatar?'<img src="'+avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
 
-async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const nick=data.nick||data.email?.split('@')[0]||d.id.slice(0,8);usersCache[d.id]={name:data.displayName||data.email||'',avatar:data.avatar||'',nick:nick}})}catch(e){}}
+async function loadAllUsers(){try{const s=await getDocs(collection(db,'users'));usersCache={};s.forEach(d=>{const data=d.data();const emailPrefix=data.email?.split('@')[0]||'';const nick=data.nick||emailPrefix;const name=data.displayName||emailPrefix||d.id.slice(0,8);usersCache[d.id]={name:name,avatar:data.avatar||'',nick:nick,email:data.email||''}})}catch(e){}}
 
 function makeChatId(a,b){return[a,b].sort().join('_')}
 const GLOBAL_CHAT_ID='global';
@@ -357,7 +358,16 @@ const chatListEl=document.getElementById('chatList'),chatBodyEl=document.getElem
 let activeChatId=null,activeChatTargetUid=null,unsubscribeChat=null,isFirstChatSnapshot=true;
 
 chatLoginBtn.addEventListener('click',()=>{closeAuth();openAuth();setMode('login')});
-chatBackBtn.addEventListener('click',()=>{chatsSidebar.classList.remove('hidden-mobile')});
+chatBackBtn.addEventListener('click',()=>{
+  chatsSidebar.classList.remove('hidden-mobile');
+  document.querySelector('.chats-main').classList.remove('chat-open');
+  chatMainHeaderEl.classList.add('hidden');
+  chatInputRowEl.classList.add('hidden');
+  chatBodyEl.innerHTML='<div class="chat-empty-main"><span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">forum</span>Найдите человека и начните общение</div>';
+  activeChatId=null;activeChatTargetUid=null;
+  if(unsubscribeChat){unsubscribeChat();unsubscribeChat=null}
+  renderChatList(chatSearchInput.value);
+});
 
 function renderGlobalChatItem(){
   const item=document.createElement('div');
@@ -379,6 +389,7 @@ function openGlobalChat(){
   if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');
   chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
   chatsSidebar.classList.add('hidden-mobile');
+  document.querySelector('.chats-main').classList.add('chat-open');
   subscribeChat();
 }
 
@@ -415,7 +426,7 @@ async function loadActiveChats(){
       unreadSnap.forEach(md=>{const mdData=md.data();if(mdData.uid!==currentUser.uid)unreadCount++})}catch(e){}
     }
     const badgeHTML=unreadCount>0?'<div class="chat-unread-badge">'+unreadCount+'</div>':'';
-    item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+'</div><div class="chat-item-last">'+(chat.lastMessage||'@'+other.nick)+'</div></div>'+badgeHTML;
+    item.innerHTML='<div class="chat-item-avatar">'+(other.avatar?'<img src="'+other.avatar+'">':initials(other.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+other.name+'</div><div class="chat-item-last">@'+other.nick+(chat.lastMessage?' &middot; '+chat.lastMessage:'')+'</div></div>'+badgeHTML;
     item.addEventListener('click',()=>openChatWith(otherUid));
     chatListEl.appendChild(item)}
   }catch(e){}
@@ -427,6 +438,8 @@ async function startChatWith(uid){
   const ref=doc(db,'chats',chatId);
   const snap=await getDoc(ref);
   if(!snap.exists()){await setDoc(ref,{participants:[currentUser.uid,uid],lastMessage:'',lastMessageAt:serverTimestamp()})}
+  chatSearchInput.value='';
+  renderChatList('');
   openChatWith(uid);
 }
 
@@ -447,6 +460,7 @@ function openChatWith(uid){
   document.querySelectorAll('.chat-item-wrap').forEach(el=>{el.classList.remove('active');const badge=el.querySelector('.chat-unread-badge');if(badge)badge.remove()});
   chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');
   chatsSidebar.classList.add('hidden-mobile');
+  document.querySelector('.chats-main').classList.add('chat-open');
   markChatRead(activeChatId);
   subscribeChat();
 }
