@@ -37,15 +37,27 @@
   ::selection{ background:var(--violet); color:#050308; }
   :focus-visible{ outline:1px solid var(--violet-bright); outline-offset:4px; }
 
-  /* ---------- background: light pillar ---------- */
+  /* ---------- background: WebGL light pillar ---------- */
 
-  .bg-pillar{
+  #pillarContainer{
     position:fixed;
     inset:0;
     width:100%;
     height:100%;
     z-index:-2;
     pointer-events:none;
+    mix-blend-mode:screen;
+  }
+  #pillarContainer canvas{
+    display:block;
+    width:100% !important;
+    height:100% !important;
+  }
+  .pillar-fallback{
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    background:radial-gradient(120% 90% at 70% 100%, rgba(139,92,246,0.35), transparent 60%);
   }
 
   .spotlight{
@@ -147,35 +159,58 @@
     to{ opacity:1; }
   }
 
-  /* ---------- auth trigger ---------- */
+  /* ---------- top-right controls ---------- */
 
-  .auth-trigger{
+  .top-controls{
     position:fixed;
     top:2.2rem;
     right:2.4rem;
     z-index:20;
+    display:flex;
+    gap:0.7rem;
+    opacity:0;
+    animation:fadeIn 1s ease-out .9s forwards;
+  }
+
+  .pill-btn{
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
     font-family:'JetBrains Mono', monospace;
     font-size:0.72rem;
     letter-spacing:0.04em;
     color:var(--ink-faint);
     background:transparent;
     border:1px solid var(--panel-border);
-    padding:0.55rem 1.1rem;
+    padding:0.45rem 1.1rem 0.45rem 0.45rem;
     border-radius:999px;
     cursor:pointer;
-    opacity:0;
-    animation:fadeIn 1s ease-out .9s forwards;
     transition:color .25s ease, border-color .25s ease, background .25s ease;
   }
-  .auth-trigger:hover{
+  .pill-btn.no-avatar{ padding:0.55rem 1.1rem; }
+  .pill-btn:hover{
     color:var(--violet-bright);
     border-color:var(--violet);
     background:rgba(139,92,246,0.08);
   }
+  .pill-btn .avatar{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
+    color:#050308;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size:0.62rem;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .pill-btn.logged-in .avatar{ display:flex; }
 
-  /* ---------- auth overlay ---------- */
+  /* ---------- shared overlay ---------- */
 
-  .auth-overlay{
+  .overlay{
     position:fixed;
     inset:0;
     z-index:50;
@@ -188,37 +223,40 @@
     pointer-events:none;
     transition:opacity .25s ease;
   }
-  .auth-overlay.open{
+  .overlay.open{
     opacity:1;
     pointer-events:auto;
   }
 
-  .auth-panel{
-    width:min(360px, 90vw);
+  .panel{
     background:var(--panel);
     border:1px solid var(--panel-border);
     border-radius:18px;
-    padding:2rem 1.8rem 1.8rem;
     box-shadow:0 30px 80px rgba(0,0,0,0.55), 0 0 60px rgba(139,92,246,0.08);
     transform:translateY(10px);
     transition:transform .3s cubic-bezier(.2,.7,.2,1);
   }
-  .auth-overlay.open .auth-panel{
+  .overlay.open .panel{
     transform:translateY(0);
   }
 
-  .auth-header{
+  .auth-panel{
+    width:min(360px, 90vw);
+    padding:2rem 1.8rem 1.8rem;
+  }
+
+  .panel-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
     margin-bottom:1.4rem;
   }
-  .auth-title{
+  .panel-title{
     font-weight:600;
     font-size:1.05rem;
     letter-spacing:-0.01em;
   }
-  .auth-close{
+  .panel-close{
     background:none;
     border:none;
     color:var(--ink-faint);
@@ -228,7 +266,7 @@
     padding:0.2rem 0.4rem;
     transition:color .2s ease;
   }
-  .auth-close:hover{ color:var(--violet-bright); }
+  .panel-close:hover{ color:var(--violet-bright); }
 
   .auth-tabs{
     display:flex;
@@ -257,20 +295,20 @@
     background:rgba(139,92,246,0.16);
   }
 
-  .auth-field{
+  .field{
     display:flex;
     flex-direction:column;
     gap:0.4rem;
     margin-bottom:0.9rem;
   }
-  .auth-field label{
+  .field label{
     font-family:'JetBrains Mono', monospace;
     font-size:0.65rem;
     letter-spacing:0.04em;
     color:var(--ink-faint);
     text-transform:uppercase;
   }
-  .auth-field input{
+  .field input, .field textarea{
     background:rgba(255,255,255,0.03);
     border:1px solid var(--panel-border);
     border-radius:8px;
@@ -279,14 +317,16 @@
     font-family:'Space Grotesk', sans-serif;
     font-size:0.88rem;
     outline:none;
+    resize:none;
     transition:border-color .2s ease, background .2s ease;
   }
-  .auth-field input:focus{
+  .field input:disabled{ color:var(--ink-faint); cursor:not-allowed; }
+  .field input:focus, .field textarea:focus{
     border-color:var(--violet);
     background:rgba(139,92,246,0.06);
   }
 
-  .auth-submit{
+  .btn-primary{
     width:100%;
     padding:0.75rem;
     border:none;
@@ -300,10 +340,28 @@
     margin-top:0.3rem;
     transition:background-position .4s ease, transform .15s ease;
   }
-  .auth-submit:hover{ background-position:100% 0; }
-  .auth-submit:active{ transform:scale(0.98); }
+  .btn-primary:hover{ background-position:100% 0; }
+  .btn-primary:active{ transform:scale(0.98); }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
 
-  .auth-divider{
+  .btn-ghost{
+    width:100%;
+    padding:0.65rem;
+    border-radius:8px;
+    border:1px solid var(--panel-border);
+    background:transparent;
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .btn-ghost:hover{
+    border-color:var(--violet);
+    color:var(--violet-bright);
+  }
+
+  .divider{
     display:flex;
     align-items:center;
     gap:0.7rem;
@@ -314,14 +372,14 @@
     letter-spacing:0.04em;
     text-transform:uppercase;
   }
-  .auth-divider::before, .auth-divider::after{
+  .divider::before, .divider::after{
     content:"";
     flex:1;
     height:1px;
     background:var(--panel-border);
   }
 
-  .auth-google{
+  .btn-google{
     width:100%;
     display:flex;
     align-items:center;
@@ -337,12 +395,12 @@
     cursor:pointer;
     transition:border-color .2s ease, background .2s ease;
   }
-  .auth-google:hover{
+  .btn-google:hover{
     border-color:var(--violet);
     background:rgba(139,92,246,0.06);
   }
 
-  .auth-message{
+  .msg{
     font-family:'JetBrains Mono', monospace;
     font-size:0.68rem;
     letter-spacing:0.01em;
@@ -350,41 +408,173 @@
     margin-top:0.9rem;
     text-align:center;
   }
-  .auth-message.error{ color:var(--danger); }
-  .auth-message.success{ color:var(--violet-bright); }
+  .msg.error{ color:var(--danger); }
+  .msg.success{ color:var(--violet-bright); }
 
-  .auth-userbar{
+  /* ---------- profile ---------- */
+
+  .profile-header{
     display:flex;
-    flex-direction:column;
-    gap:1rem;
-    text-align:center;
+    align-items:center;
+    gap:0.9rem;
+    margin-bottom:1.4rem;
   }
-  .auth-userbar .who{
+  .profile-avatar{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.2rem;
+    font-weight:700;
+    color:#050308;
+    flex-shrink:0;
+  }
+  .profile-email{
     font-family:'JetBrains Mono', monospace;
-    font-size:0.78rem;
+    font-size:0.72rem;
     color:var(--ink-faint);
     word-break:break-all;
   }
-  .auth-logout{
-    padding:0.65rem;
-    border-radius:8px;
+  .profile-since{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    color:var(--ink-faint);
+    margin-top:0.2rem;
+    opacity:0.7;
+  }
+
+  /* ---------- chat ---------- */
+
+  .chat-panel{
+    width:min(420px, 92vw);
+    height:min(560px, 80vh);
+    display:flex;
+    flex-direction:column;
+    padding:1.6rem 1.6rem 1.2rem;
+  }
+
+  .chat-body{
+    flex:1;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:0.7rem;
+    padding:0.4rem 0.2rem;
+    margin:0.6rem 0 1rem;
+    scrollbar-width:thin;
+    scrollbar-color:var(--violet-deep) transparent;
+  }
+  .chat-body::-webkit-scrollbar{ width:6px; }
+  .chat-body::-webkit-scrollbar-thumb{ background:var(--violet-deep); border-radius:6px; }
+
+  .chat-empty{
+    margin:auto;
+    color:var(--ink-faint);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.75rem;
+    text-align:center;
+  }
+
+  .chat-msg{
+    display:flex;
+    gap:0.6rem;
+    align-items:flex-start;
+  }
+  .chat-msg .bubble-avatar{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--violet-deep), var(--violet-bright));
+    color:#050308;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.62rem;
+    font-weight:700;
+    flex-shrink:0;
+  }
+  .chat-msg .bubble-content{
+    background:rgba(255,255,255,0.03);
     border:1px solid var(--panel-border);
-    background:transparent;
+    border-radius:10px;
+    padding:0.5rem 0.7rem;
+    max-width:78%;
+  }
+  .chat-msg.own{ flex-direction:row-reverse; }
+  .chat-msg.own .bubble-content{
+    background:rgba(139,92,246,0.14);
+    border-color:rgba(139,92,246,0.4);
+  }
+  .bubble-name{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.62rem;
+    color:var(--violet-bright);
+    margin-bottom:0.2rem;
+  }
+  .bubble-text{
+    font-size:0.85rem;
+    line-height:1.35;
+    word-break:break-word;
+  }
+  .bubble-time{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.58rem;
+    color:var(--ink-faint);
+    margin-top:0.25rem;
+  }
+
+  .chat-input-row{
+    display:flex;
+    gap:0.6rem;
+  }
+  .chat-input-row input{
+    flex:1;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--panel-border);
+    border-radius:8px;
+    padding:0.65rem 0.8rem;
     color:var(--ink);
     font-family:'Space Grotesk', sans-serif;
     font-size:0.85rem;
-    cursor:pointer;
-    transition:border-color .2s ease, color .2s ease;
+    outline:none;
+    transition:border-color .2s ease, background .2s ease;
   }
-  .auth-logout:hover{
+  .chat-input-row input:focus{
     border-color:var(--violet);
-    color:var(--violet-bright);
+    background:rgba(139,92,246,0.06);
+  }
+  .chat-send{
+    padding:0.65rem 1.2rem;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(100deg, var(--violet-deep), var(--violet), var(--violet-bright));
+    background-size:200% 100%;
+    color:#050308;
+    font-weight:600;
+    font-size:0.85rem;
+    cursor:pointer;
+    transition:background-position .3s ease;
+  }
+  .chat-send:hover{ background-position:100% 0; }
+  .chat-send:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .chat-locked{
+    margin:auto;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:0.9rem;
+    color:var(--ink-faint);
+    font-size:0.85rem;
   }
 
   .hidden{ display:none !important; }
 
   @media (prefers-reduced-motion: reduce){
-    .mark, .mark .halo, .mark .core, .contact, .auth-trigger{
+    .mark, .mark .halo, .mark .core, .contact, .top-controls{
       animation:none !important;
       opacity:1 !important;
       filter:none !important;
@@ -394,50 +584,16 @@
 </head>
 <body>
 
-<svg class="bg-pillar" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="pillarGrad" gradientUnits="userSpaceOnUse" x1="0" y1="1180" x2="2000" y2="-80">
-      <stop offset="0%"  stop-color="#8b5cf6" stop-opacity="0"/>
-      <stop offset="20%" stop-color="#6d3fd6" stop-opacity="0.30"/>
-      <stop offset="42%" stop-color="#c3b2ff" stop-opacity="0.8"/>
-      <stop offset="58%" stop-color="#8b5cf6" stop-opacity="0.5"/>
-      <stop offset="82%" stop-color="#4c2f8c" stop-opacity="0.16"/>
-      <stop offset="100%" stop-color="#4c2f8c" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="vignette" cx="50%" cy="55%" r="75%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="70%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.75"/>
-    </radialGradient>
-    <filter id="pillarGlowWide" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="30"/>
-    </filter>
-    <filter id="pillarGlowSoft" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="8"/>
-    </filter>
-    <filter id="grain">
-      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise"/>
-      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0"/>
-    </filter>
-  </defs>
-
-  <rect width="1920" height="1080" fill="#050308"/>
-
-  <path d="M -120 1200 C 280 970, 480 760, 740 610 C 940 490, 1000 360, 1240 260 C 1440 185, 1600 120, 2040 -100"
-        fill="none" stroke="url(#pillarGrad)" stroke-width="52" stroke-linecap="round" filter="url(#pillarGlowWide)"/>
-  <path d="M -120 1200 C 280 970, 480 760, 740 610 C 940 490, 1000 360, 1240 260 C 1440 185, 1600 120, 2040 -100"
-        fill="none" stroke="url(#pillarGrad)" stroke-width="7" stroke-linecap="round" filter="url(#pillarGlowSoft)"/>
-
-  <path d="M 1040 440 C 1140 385, 1260 345, 1560 235 C 1660 198, 1760 215, 1860 165"
-        fill="none" stroke="url(#pillarGrad)" stroke-width="20" stroke-linecap="round" opacity="0.6" filter="url(#pillarGlowWide)"/>
-
-  <rect width="1920" height="1080" filter="url(#grain)"/>
-  <rect width="1920" height="1080" fill="url(#vignette)"/>
-</svg>
-
+<div id="pillarContainer"></div>
 <div class="spotlight" id="spotlight"></div>
 
-<button class="auth-trigger" id="authTrigger">войти</button>
+<div class="top-controls">
+  <button class="pill-btn no-avatar" id="chatTrigger">чат</button>
+  <button class="pill-btn" id="authTrigger">
+    <span class="avatar" id="triggerAvatar"></span>
+    <span id="triggerLabel">войти</span>
+  </button>
+</div>
 
 <div class="stage">
   <div class="mark" id="mark">
@@ -448,36 +604,35 @@
 
 <div class="contact"><a href="mailto:hello@iqua.dev">hello@iqua.dev</a></div>
 
-<!-- ================= AUTH OVERLAY ================= -->
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-panel">
+<!-- ================= AUTH / PROFILE OVERLAY ================= -->
+<div class="overlay" id="authOverlay">
+  <div class="panel auth-panel">
 
-    <div class="auth-header">
-      <div class="auth-title" id="authTitle">Вход</div>
-      <button class="auth-close" id="authClose">&times;</button>
+    <div class="panel-header">
+      <div class="panel-title" id="authTitle">Вход</div>
+      <button class="panel-close" id="authClose">&times;</button>
     </div>
 
-    <!-- форма входа/регистрации (видна, когда пользователь не залогинен) -->
     <div id="authForms">
       <div class="auth-tabs">
         <button class="auth-tab active" data-mode="login">Вход</button>
         <button class="auth-tab" data-mode="register">Регистрация</button>
       </div>
 
-      <div class="auth-field">
+      <div class="field">
         <label for="authEmail">Email</label>
         <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email">
       </div>
-      <div class="auth-field">
+      <div class="field">
         <label for="authPassword">Пароль</label>
         <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
       </div>
 
-      <button class="auth-submit" id="authSubmit">Войти</button>
+      <button class="btn-primary" id="authSubmit">Войти</button>
 
-      <div class="auth-divider">или</div>
+      <div class="divider">или</div>
 
-      <button class="auth-google" id="authGoogle">
+      <button class="btn-google" id="authGoogle">
         <svg width="16" height="16" viewBox="0 0 48 48">
           <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 35.5 24 35.5c-6.4 0-11.7-5.2-11.7-11.7S17.6 12.1 24 12.1c3 0 5.7 1.1 7.8 3l5.7-5.7C34.5 6 29.5 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
           <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.4 18.9 12.1 24 12.1c3 0 5.7 1.1 7.8 3l5.7-5.7C34.5 6 29.5 4 24 4c-7.4 0-13.8 4.2-17 10.3z"/>
@@ -487,46 +642,281 @@
         Продолжить с Google
       </button>
 
-      <div class="auth-message" id="authMessage"></div>
+      <div class="msg" id="authMessage"></div>
     </div>
 
-    <!-- панель "уже вошёл" (видна, когда пользователь залогинен) -->
-    <div id="authUserbar" class="auth-userbar hidden">
-      <div class="who" id="authWho"></div>
-      <button class="auth-logout" id="authLogout">Выйти</button>
+    <!-- ---------- ПРОФИЛЬ (Firestore: users/{uid}) ---------- -->
+    <div id="profilePanel" class="hidden">
+
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div>
+          <div class="profile-email" id="profileEmail"></div>
+          <div class="profile-since" id="profileSince"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="profileName">Имя профиля</label>
+        <input type="text" id="profileName" placeholder="Как к тебе обращаться?" maxlength="40">
+      </div>
+
+      <div class="field">
+        <label for="profileBio">О себе</label>
+        <textarea id="profileBio" rows="3" maxlength="200" placeholder="Пара слов о себе (необязательно)"></textarea>
+      </div>
+
+      <button class="btn-primary" id="profileSave">Сохранить</button>
+
+      <div class="msg" id="profileMessage"></div>
+
+      <button class="btn-ghost" id="authLogout" style="margin-top:0.7rem;">Выйти</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= CHAT OVERLAY ================= -->
+<div class="overlay" id="chatOverlay">
+  <div class="panel chat-panel">
+
+    <div class="panel-header">
+      <div class="panel-title">Чат</div>
+      <button class="panel-close" id="chatClose">&times;</button>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="chat-empty" id="chatEmpty">Пока нет сообщений</div>
+    </div>
+
+    <!-- показывается, если пользователь не авторизован -->
+    <div class="chat-locked hidden" id="chatLocked">
+      <div>Чтобы читать и писать сообщения, нужно войти в аккаунт</div>
+      <button class="btn-primary" id="chatLoginBtn">Войти</button>
+    </div>
+
+    <!-- показывается, если пользователь авторизован -->
+    <div class="chat-input-row" id="chatInputRow">
+      <input type="text" id="chatInput" placeholder="Напиши сообщение..." maxlength="500">
+      <button class="chat-send" id="chatSend">→</button>
     </div>
 
   </div>
 </div>
 
 <script>
-  // курсор двигает мягкое фиолетовое пятно света
   const spot = document.getElementById('spotlight');
   window.addEventListener('pointermove', (e) => {
     spot.style.setProperty('--mx', e.clientX + 'px');
     spot.style.setProperty('--my', e.clientY + 'px');
   });
-
-  // на мобильных без курсора — пятно тихо дышит в центре
   if (window.matchMedia('(hover: none)').matches){
     spot.style.setProperty('--mx', '50%');
     spot.style.setProperty('--my', '42%');
   }
 </script>
 
-<!-- ================= FIREBASE AUTH ================= -->
+<!-- ================= WEBGL LIGHT PILLAR ================= -->
+<script type="module">
+  import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+
+  function createLightPillar(container, opts){
+    const {
+      topColor = '#c3b2ff', bottomColor = '#4c2f8c', intensity = 1.3,
+      rotationSpeed = 0.25, interactive = false, glowAmount = 0.0013,
+      pillarWidth = 2.6, pillarHeight = 0.32, noiseIntensity = 0.4,
+      pillarRotation = 57, mixBlendMode = 'screen'
+    } = opts || {};
+
+    const canvasEl = document.createElement('canvas');
+    const gl = canvasEl.getContext('webgl') || canvasEl.getContext('experimental-webgl');
+    if (!gl){ container.classList.add('pillar-fallback'); return () => {}; }
+
+    let width = container.clientWidth;
+    let height = container.clientHeight;
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isLowEnd = isMobile || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    let quality = isMobile ? 'low' : (isLowEnd ? 'medium' : 'high');
+
+    const qualitySettings = {
+      low:    { iterations:24, waveIterations:1, pixelRatio:0.5,  precision:'mediump', stepMultiplier:1.5 },
+      medium: { iterations:40, waveIterations:2, pixelRatio:0.65, precision:'mediump', stepMultiplier:1.2 },
+      high:   { iterations:80, waveIterations:4, pixelRatio:Math.min(window.devicePixelRatio,2), precision:'highp', stepMultiplier:1.0 }
+    };
+    const settings = qualitySettings[quality];
+
+    let renderer;
+    try{
+      renderer = new THREE.WebGLRenderer({
+        antialias:false, alpha:true,
+        powerPreference: quality === 'high' ? 'high-performance' : 'low-power',
+        precision: settings.precision, stencil:false, depth:false
+      });
+    } catch(e){ container.classList.add('pillar-fallback'); return () => {}; }
+
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(settings.pixelRatio);
+    container.appendChild(renderer.domElement);
+    container.style.mixBlendMode = mixBlendMode;
+
+    const parseColor = hex => { const c = new THREE.Color(hex); return new THREE.Vector3(c.r, c.g, c.b); };
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }
+    `;
+    const fragmentShader = `
+      precision ${settings.precision} float;
+      uniform float uTime;
+      uniform vec2 uResolution;
+      uniform vec2 uMouse;
+      uniform vec3 uTopColor;
+      uniform vec3 uBottomColor;
+      uniform float uIntensity;
+      uniform bool uInteractive;
+      uniform float uGlowAmount;
+      uniform float uPillarWidth;
+      uniform float uPillarHeight;
+      uniform float uNoiseIntensity;
+      uniform float uRotCos;
+      uniform float uRotSin;
+      uniform float uPillarRotCos;
+      uniform float uPillarRotSin;
+      uniform float uWaveSin;
+      uniform float uWaveCos;
+      varying vec2 vUv;
+      const float STEP_MULT = ${settings.stepMultiplier.toFixed(1)};
+      const int MAX_ITER = ${settings.iterations};
+      const int WAVE_ITER = ${settings.waveIterations};
+      void main(){
+        vec2 uv = (vUv * 2.0 - 1.0) * vec2(uResolution.x / uResolution.y, 1.0);
+        uv = vec2(uPillarRotCos * uv.x - uPillarRotSin * uv.y, uPillarRotSin * uv.x + uPillarRotCos * uv.y);
+        vec3 ro = vec3(0.0, 0.0, -10.0);
+        vec3 rd = normalize(vec3(uv, 1.0));
+        float rotC = uRotCos;
+        float rotS = uRotSin;
+        if(uInteractive && (uMouse.x != 0.0 || uMouse.y != 0.0)){
+          float a = uMouse.x * 6.283185;
+          rotC = cos(a); rotS = sin(a);
+        }
+        vec3 col = vec3(0.0);
+        float t = 0.1;
+        for(int i = 0; i < MAX_ITER; i++){
+          vec3 p = ro + rd * t;
+          p.xz = vec2(rotC * p.x - rotS * p.z, rotS * p.x + rotC * p.z);
+          vec3 q = p;
+          q.y = p.y * uPillarHeight + uTime;
+          float freq = 1.0;
+          float amp = 1.0;
+          for(int j = 0; j < WAVE_ITER; j++){
+            q.xz = vec2(uWaveCos * q.x - uWaveSin * q.z, uWaveSin * q.x + uWaveCos * q.z);
+            q += cos(q.zxy * freq - uTime * float(j) * 2.0) * amp;
+            freq *= 2.0; amp *= 0.5;
+          }
+          float d = length(cos(q.xz)) - 0.2;
+          float bound = length(p.xz) - uPillarWidth;
+          float k = 4.0;
+          float h = max(k - abs(d - bound), 0.0);
+          d = max(d, bound) + h * h * 0.0625 / k;
+          d = abs(d) * 0.15 + 0.01;
+          float grad = clamp((15.0 - p.y) / 30.0, 0.0, 1.0);
+          col += mix(uBottomColor, uTopColor, grad) / d;
+          t += d * STEP_MULT;
+          if(t > 50.0) break;
+        }
+        float widthNorm = uPillarWidth / 3.0;
+        col = tanh(col * uGlowAmount / widthNorm);
+        col -= fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) / 15.0 * uNoiseIntensity;
+        gl_FragColor = vec4(col * uIntensity, 1.0);
+      }
+    `;
+
+    const pillarRotRad = (pillarRotation * Math.PI) / 180;
+    const waveSin = Math.sin(0.4);
+    const waveCos = Math.cos(0.4);
+    const mouse = new THREE.Vector2(0, 0);
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader,
+      uniforms: {
+        uTime: { value: 0 }, uResolution: { value: new THREE.Vector2(width, height) },
+        uMouse: { value: mouse }, uTopColor: { value: parseColor(topColor) },
+        uBottomColor: { value: parseColor(bottomColor) }, uIntensity: { value: intensity },
+        uInteractive: { value: interactive }, uGlowAmount: { value: glowAmount },
+        uPillarWidth: { value: pillarWidth }, uPillarHeight: { value: pillarHeight },
+        uNoiseIntensity: { value: noiseIntensity }, uRotCos: { value: 1.0 }, uRotSin: { value: 0.0 },
+        uPillarRotCos: { value: Math.cos(pillarRotRad) }, uPillarRotSin: { value: Math.sin(pillarRotRad) },
+        uWaveSin: { value: waveSin }, uWaveCos: { value: waveCos }
+      },
+      transparent: true, depthWrite: false, depthTest: false
+    });
+
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    let time = 0;
+    let rafId = null;
+    let lastTime = performance.now();
+    const targetFPS = quality === 'low' ? 30 : 60;
+    const frameTime = 1000 / targetFPS;
+
+    function animate(currentTime){
+      const deltaTime = currentTime - lastTime;
+      if (deltaTime >= frameTime){
+        time += 0.016 * rotationSpeed;
+        material.uniforms.uTime.value = time;
+        material.uniforms.uRotCos.value = Math.cos(time * 0.3);
+        material.uniforms.uRotSin.value = Math.sin(time * 0.3);
+        renderer.render(scene, camera);
+        lastTime = currentTime - (deltaTime % frameTime);
+      }
+      rafId = requestAnimationFrame(animate);
+    }
+    rafId = requestAnimationFrame(animate);
+
+    let resizeTimeout = null;
+    function handleResize(){
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = window.setTimeout(() => {
+        width = container.clientWidth; height = container.clientHeight;
+        renderer.setSize(width, height);
+        material.uniforms.uResolution.value.set(width, height);
+      }, 150);
+    }
+    window.addEventListener('resize', handleResize, { passive:true });
+
+    return function cleanup(){
+      window.removeEventListener('resize', handleResize);
+      if (rafId) cancelAnimationFrame(rafId);
+      renderer.dispose(); renderer.forceContextLoss();
+      if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      material.dispose(); geometry.dispose();
+    };
+  }
+
+  createLightPillar(document.getElementById('pillarContainer'), {
+    topColor: '#c3b2ff', bottomColor: '#4c2f8c', intensity: 1.3, rotationSpeed: 0.25,
+    glowAmount: 0.0013, pillarWidth: 2.6, pillarHeight: 0.32, noiseIntensity: 0.4,
+    pillarRotation: 57, interactive: false, mixBlendMode: 'screen'
+  });
+</script>
+
+<!-- ================= FIREBASE: AUTH + FIRESTORE (профиль + чат) ================= -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
   import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    GoogleAuthProvider,
-    signInWithPopup
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+    onAuthStateChanged, updateProfile, GoogleAuthProvider, signInWithPopup
   } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp,
+    collection, addDoc, query, orderBy, limit, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",
@@ -541,32 +931,91 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
+  const db = getFirestore(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // ---------- элементы DOM ----------
-  const trigger     = document.getElementById('authTrigger');
-  const overlay      = document.getElementById('authOverlay');
-  const closeBtn     = document.getElementById('authClose');
-  const tabs          = document.querySelectorAll('.auth-tab');
-  const emailInput    = document.getElementById('authEmail');
-  const passwordInput = document.getElementById('authPassword');
-  const submitBtn     = document.getElementById('authSubmit');
-  const googleBtn     = document.getElementById('authGoogle');
-  const messageEl     = document.getElementById('authMessage');
-  const authForms     = document.getElementById('authForms');
-  const authUserbar   = document.getElementById('authUserbar');
-  const authWho       = document.getElementById('authWho');
-  const authLogout    = document.getElementById('authLogout');
-  const authTitle     = document.getElementById('authTitle');
+  // ---------- DOM: auth / profile ----------
+  const trigger        = document.getElementById('authTrigger');
+  const triggerAvatar  = document.getElementById('triggerAvatar');
+  const triggerLabel   = document.getElementById('triggerLabel');
+  const authOverlay    = document.getElementById('authOverlay');
+  const authClose      = document.getElementById('authClose');
+  const tabs           = document.querySelectorAll('.auth-tab');
+  const emailInput     = document.getElementById('authEmail');
+  const passwordInput  = document.getElementById('authPassword');
+  const submitBtn      = document.getElementById('authSubmit');
+  const googleBtn      = document.getElementById('authGoogle');
+  const messageEl      = document.getElementById('authMessage');
+  const authForms      = document.getElementById('authForms');
+  const authTitle      = document.getElementById('authTitle');
 
-  let mode = 'login'; // 'login' | 'register'
+  const profilePanel   = document.getElementById('profilePanel');
+  const profileAvatar  = document.getElementById('profileAvatar');
+  const profileEmail   = document.getElementById('profileEmail');
+  const profileSince   = document.getElementById('profileSince');
+  const profileName    = document.getElementById('profileName');
+  const profileBio     = document.getElementById('profileBio');
+  const profileSave    = document.getElementById('profileSave');
+  const profileMessage = document.getElementById('profileMessage');
+  const authLogout     = document.getElementById('authLogout');
 
-  function openOverlay(){ overlay.classList.add('open'); }
-  function closeOverlay(){ overlay.classList.remove('open'); setMessage(''); }
+  // ---------- DOM: chat ----------
+  const chatTrigger   = document.getElementById('chatTrigger');
+  const chatOverlay   = document.getElementById('chatOverlay');
+  const chatClose     = document.getElementById('chatClose');
+  const chatBody      = document.getElementById('chatBody');
+  const chatEmpty     = document.getElementById('chatEmpty');
+  const chatLocked    = document.getElementById('chatLocked');
+  const chatInputRow  = document.getElementById('chatInputRow');
+  const chatInput     = document.getElementById('chatInput');
+  const chatSend      = document.getElementById('chatSend');
+  const chatLoginBtn  = document.getElementById('chatLoginBtn');
+
+  let mode = 'login';
+  let currentUser = null;
+  let unsubscribeChat = null;
+  let profileDataLoaded = false;
+
+  // ---------- helpers ----------
+  function initials(text){ return text ? text.trim().slice(0, 2).toUpperCase() : '?'; }
+
+  function friendlyError(code){
+    const map = {
+      'auth/invalid-email': 'Некорректный email',
+      'auth/user-not-found': 'Пользователь не найден',
+      'auth/wrong-password': 'Неверный пароль',
+      'auth/email-already-in-use': 'Этот email уже зарегистрирован',
+      'auth/weak-password': 'Пароль слишком короткий (минимум 6 символов)',
+      'auth/invalid-credential': 'Неверный email или пароль',
+      'auth/popup-closed-by-user': 'Окно входа закрыто',
+      'permission-denied': 'Нет доступа. Проверь правила Firestore'
+    };
+    return map[code] || 'Что-то пошло не так, попробуй ещё раз';
+  }
+
+  function formatDate(ts){
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
+  }
+
+  function formatTime(ts){
+    if (!ts) return '...';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ---------- auth overlay ----------
+  function openAuth(){ authOverlay.classList.add('open'); }
+  function closeAuth(){ authOverlay.classList.remove('open'); setMessage(''); setProfileMessage(''); }
 
   function setMessage(text, type){
     messageEl.textContent = text || '';
-    messageEl.className = 'auth-message' + (type ? ' ' + type : '');
+    messageEl.className = 'msg' + (type ? ' ' + type : '');
+  }
+  function setProfileMessage(text, type){
+    profileMessage.textContent = text || '';
+    profileMessage.className = 'msg' + (type ? ' ' + type : '');
   }
 
   function setMode(newMode){
@@ -577,39 +1026,24 @@
     setMessage('');
   }
 
-  // человекочитаемые сообщения об ошибках Firebase
-  function friendlyError(code){
-    const map = {
-      'auth/invalid-email': 'Некорректный email',
-      'auth/user-not-found': 'Пользователь не найден',
-      'auth/wrong-password': 'Неверный пароль',
-      'auth/email-already-in-use': 'Этот email уже зарегистрирован',
-      'auth/weak-password': 'Пароль слишком короткий (минимум 6 символов)',
-      'auth/invalid-credential': 'Неверный email или пароль',
-      'auth/popup-closed-by-user': 'Окно входа закрыто'
-    };
-    return map[code] || 'Что-то пошло не так, попробуй ещё раз';
-  }
-
-  trigger.addEventListener('click', openOverlay);
-  closeBtn.addEventListener('click', closeOverlay);
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeOverlay(); });
-
+  trigger.addEventListener('click', openAuth);
+  authClose.addEventListener('click', closeAuth);
+  authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuth(); });
   tabs.forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    closeAuth();
+    closeChat();
+  });
 
   submitBtn.addEventListener('click', async () => {
     const email = emailInput.value.trim();
     const password = passwordInput.value;
-
-    if (!email || !password){
-      setMessage('Заполни email и пароль', 'error');
-      return;
-    }
+    if (!email || !password){ setMessage('Заполни email и пароль', 'error'); return; }
 
     submitBtn.disabled = true;
     setMessage('');
-
     try {
       if (mode === 'login'){
         await signInWithEmailAndPassword(auth, email, password);
@@ -624,31 +1058,200 @@
   });
 
   googleBtn.addEventListener('click', async () => {
+    try { await signInWithPopup(auth, googleProvider); }
+    catch (error) { setMessage(friendlyError(error.code), 'error'); }
+  });
+
+  authLogout.addEventListener('click', async () => { await signOut(auth); });
+
+  // ---------- Firestore: профиль ----------
+  async function ensureUserDoc(user){
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()){
+      await setDoc(ref, {
+        email: user.email || null,
+        displayName: user.displayName || '',
+        bio: '',
+        createdAt: serverTimestamp()
+      });
+      return { email: user.email, displayName: user.displayName || '', bio: '', createdAt: null };
+    }
+    return snap.data();
+  }
+
+  async function loadProfile(user){
     try {
-      await signInWithPopup(auth, googleProvider);
+      const data = await ensureUserDoc(user);
+      profileEmail.textContent = user.email || '';
+      profileSince.textContent = data.createdAt ? 'На сайте с ' + formatDate(data.createdAt) : '';
+      profileName.value = data.displayName || user.displayName || '';
+      profileBio.value = data.bio || '';
+      updateIdentityUI(data.displayName || user.displayName, user.email);
+      profileDataLoaded = true;
     } catch (error) {
-      setMessage(friendlyError(error.code), 'error');
+      setProfileMessage(friendlyError(error.code), 'error');
+    }
+  }
+
+  profileSave.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const name = profileName.value.trim();
+    const bio = profileBio.value.trim();
+
+    profileSave.disabled = true;
+    setProfileMessage('');
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { displayName: name, bio });
+      if ((user.displayName || '') !== name){
+        await updateProfile(user, { displayName: name || null });
+      }
+      updateIdentityUI(name, user.email);
+      setProfileMessage('Сохранено', 'success');
+    } catch (error) {
+      setProfileMessage(friendlyError(error.code), 'error');
+    } finally {
+      profileSave.disabled = false;
     }
   });
 
-  authLogout.addEventListener('click', async () => {
-    await signOut(auth);
-  });
+  function updateIdentityUI(name, email){
+    const label = name || 'аккаунт';
+    const short = initials(name || email);
+    triggerLabel.textContent = label;
+    triggerAvatar.textContent = short;
+    profileAvatar.textContent = short;
+  }
 
-  // ---------- обновление UI в зависимости от статуса входа ----------
-  onAuthStateChanged(auth, (user) => {
-    if (user){
-      trigger.textContent = 'аккаунт';
-      authForms.classList.add('hidden');
-      authUserbar.classList.remove('hidden');
-      authWho.textContent = user.email || user.displayName || 'Вход выполнен';
+  // ---------- Firestore: чат ----------
+  function openChat(){
+    chatOverlay.classList.add('open');
+    if (!currentUser){
+      chatLocked.classList.remove('hidden');
+      chatInputRow.classList.add('hidden');
     } else {
-      trigger.textContent = 'войти';
+      chatLocked.classList.add('hidden');
+      chatInputRow.classList.remove('hidden');
+    }
+  }
+  function closeChat(){ chatOverlay.classList.remove('open'); }
+
+  chatTrigger.addEventListener('click', openChat);
+  chatClose.addEventListener('click', closeChat);
+  chatOverlay.addEventListener('click', (e) => { if (e.target === chatOverlay) closeChat(); });
+  chatLoginBtn.addEventListener('click', () => { closeChat(); openAuth(); });
+
+  function renderMessages(docs){
+    if (docs.length === 0){
+      chatBody.innerHTML = '';
+      chatBody.appendChild(chatEmpty);
+      return;
+    }
+    chatBody.innerHTML = '';
+    docs.forEach(d => {
+      const m = d.data();
+      const isOwn = currentUser && m.uid === currentUser.uid;
+      const row = document.createElement('div');
+      row.className = 'chat-msg' + (isOwn ? ' own' : '');
+
+      const avatar = document.createElement('div');
+      avatar.className = 'bubble-avatar';
+      avatar.textContent = initials(m.name);
+
+      const content = document.createElement('div');
+      content.className = 'bubble-content';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'bubble-name';
+      nameEl.textContent = m.name || 'Без имени';
+
+      const textEl = document.createElement('div');
+      textEl.className = 'bubble-text';
+      textEl.textContent = m.text || '';
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'bubble-time';
+      timeEl.textContent = formatTime(m.createdAt);
+
+      content.appendChild(nameEl);
+      content.appendChild(textEl);
+      content.appendChild(timeEl);
+      row.appendChild(avatar);
+      row.appendChild(content);
+      chatBody.appendChild(row);
+    });
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function subscribeChat(){
+    if (unsubscribeChat) unsubscribeChat();
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'asc'), limit(100));
+    unsubscribeChat = onSnapshot(q, (snapshot) => {
+      renderMessages(snapshot.docs);
+    }, (error) => {
+      chatBody.innerHTML = '';
+      const err = document.createElement('div');
+      err.className = 'chat-empty';
+      err.textContent = friendlyError(error.code);
+      chatBody.appendChild(err);
+    });
+  }
+
+  async function sendMessage(){
+    const text = chatInput.value.trim();
+    if (!text || !currentUser) return;
+
+    chatSend.disabled = true;
+    try {
+      await addDoc(collection(db, 'messages'), {
+        uid: currentUser.uid,
+        name: triggerLabel.textContent && triggerLabel.textContent !== 'войти'
+          ? triggerLabel.textContent
+          : (currentUser.displayName || currentUser.email || 'Без имени'),
+        text: text.slice(0, 500),
+        createdAt: serverTimestamp()
+      });
+      chatInput.value = '';
+    } catch (error) {
+      alert(friendlyError(error.code));
+    } finally {
+      chatSend.disabled = false;
+    }
+  }
+
+  chatSend.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+  // ---------- статус авторизации ----------
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+
+    if (user){
+      trigger.classList.add('logged-in');
+      authForms.classList.add('hidden');
+      profilePanel.classList.remove('hidden');
+      authTitle.textContent = 'Профиль';
+      await loadProfile(user);
+
+      chatLocked.classList.add('hidden');
+      chatInputRow.classList.remove('hidden');
+    } else {
+      trigger.classList.remove('logged-in');
+      triggerLabel.textContent = 'войти';
       authForms.classList.remove('hidden');
-      authUserbar.classList.add('hidden');
+      profilePanel.classList.add('hidden');
+      authTitle.textContent = mode === 'login' ? 'Вход' : 'Регистрация';
       emailInput.value = '';
       passwordInput.value = '';
+
+      chatLocked.classList.remove('hidden');
+      chatInputRow.classList.add('hidden');
     }
+
+    subscribeChat();
   });
 </script>
 
