@@ -652,7 +652,14 @@
 
 <!-- SCRIPTS -->
 <script>
-  // ---------- theme ----------
+function initApp(){
+  const {
+    signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup,
+    signOut, onAuthStateChanged, updateProfile,
+    doc, getDoc, setDoc, updateDoc, serverTimestamp,
+    collection, addDoc, query, orderBy, limit, onSnapshot, getDocs
+  } = window.firebaseFns;
+
   const html = document.documentElement;
   const themeBtn = document.getElementById('themeToggle');
   const savedTheme = localStorage.getItem('qn-theme') || 'light';
@@ -1087,6 +1094,7 @@
   });
 
   renderChatList('');
+}
 </script>
 
 <script type="module">
@@ -1116,6 +1124,15 @@
   window.auth = getAuth(app);
   window.db = getFirestore(app);
   window.googleProvider = new GoogleAuthProvider();
+
+  window.firebaseFns = {
+    signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup,
+    signOut, onAuthStateChanged, updateProfile,
+    doc, getDoc, setDoc, updateDoc, serverTimestamp,
+    collection, addDoc, query, orderBy, limit, onSnapshot, getDocs
+  };
+
+  initApp();
 </script>
 
 </body>
