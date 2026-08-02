@@ -343,7 +343,11 @@ function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith(
 function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
 
 function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто'};return m[c]||'Что-то пошло не так'}
-function formatTime(ts){if(!ts)return'...';try{const d=ts.toDate?ts.toDate():new Date(ts);return isNaN(d.getTime())?'...':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}catch(e){return'сейчас'}}
+function formatTime(ts){
+  if(!ts)return'...';
+  if(typeof ts==='object'&&ts!==null&&typeof ts.toDate!=='function'&&!ts.seconds)return'сейчас';
+  try{const d=ts.toDate?ts.toDate():ts.seconds?new Date(ts.seconds*1000):new Date(ts);return isNaN(d.getTime())?'...':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}catch(e){return'сейчас'}
+}
 
 let mode='login',currentUser=null,usersCache={},currentAvatarData=null;
 
@@ -451,9 +455,11 @@ async function renderChatList(q){
   loadActiveChats();
 }
 
+let chatsLoadGeneration=0;
 async function loadActiveChats(){
-  try{const s=await getDocs(collection(db,'chats'));const myChats=[];
-  s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID)return;if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
+  const gen=++chatsLoadGeneration;
+  try{const s=await getDocs(collection(db,'chats'));if(gen!==chatsLoadGeneration)return;const myChats=[];
+  s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID||data.type==='global')return;if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
   myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
   for(const chat of myChats){
     const otherUid=chat.participants.find(p=>p!==currentUser.uid);
@@ -533,9 +539,15 @@ function subscribeChat(){
 let renderedMsgIds=new Set();
 const isAdmin=()=>!!usersCache[currentUser?.uid]?.admin;
 function renderMessages(docs){
-  if(docs.length===0){chatBodyEl.innerHTML='';renderedMsgIds.clear();return}
-  docs.forEach(d=>{if(renderedMsgIds.has(d.id))return;
-  const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');
+  const currentIds=new Set(docs.map(d=>d.id));
+  Array.from(chatBodyEl.children).forEach(el=>{if(!currentIds.has(el.dataset.mid))el.remove()});
+  docs.forEach(d=>{
+    if(renderedMsgIds.has(d.id)){
+      const el=chatBodyEl.querySelector('[data-mid="'+d.id+'"]');
+      if(el){const timeEl=el.querySelector('.bubble-time');if(timeEl){const m=d.data();const txt=formatTime(m.createdAt);if(timeEl.textContent!==txt)timeEl.textContent=txt}}
+      return
+    }
+  const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');row.dataset.mid=d.id;
   const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);
   const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick">@'+esc(mNick)+'</div>':'';
   const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';
@@ -606,7 +618,8 @@ onAuthStateChanged(auth,async user=>{
     profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
     if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;
-    await loadAllUsers();renderChatList('');ensureGlobalChat();
+    await loadAllUsers();ensureGlobalChat();
+    renderChatList(chatSearchInput.value);
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
     }catch(e){}
     chatLockedEl.classList.add('hidden');
