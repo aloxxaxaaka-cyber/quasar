@@ -172,6 +172,85 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .material-symbols-outlined.filled{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
+.sub-view{height:100%;overflow-y:auto}
+.sub-auth{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:2rem}
+.sub-auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:min(400px,90vw);box-shadow:0 8px 32px var(--shadow)}
+.sub-brand{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.sub-brand-mark{width:36px;height:36px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px}
+.sub-brand strong{display:block;font-size:13px}.sub-brand span{display:block;color:var(--text2);font-size:11px}
+.sub-auth-card h2{margin:0 0 1rem;font-size:20px}
+.sub-tabs{display:flex;gap:0;margin-bottom:1rem;background:var(--hover);border-radius:10px;padding:3px}
+.sub-tab{flex:1;padding:8px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;font-family:inherit;font-size:13px;transition:all .2s}
+.sub-tab.active{background:var(--card);color:var(--text)}
+.sub-tab-content{display:none}.sub-tab-content.active{display:block}
+.sub-shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px)}
+.sub-sidebar{background:var(--sidebar);border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;position:sticky;top:52px;height:calc(100vh - 52px)}
+.sub-sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sub-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px;flex-shrink:0;background-size:cover;background-position:center}
+.sub-sidebar-user strong{display:block;font-size:13px}.sub-sidebar-user span{display:block;color:var(--text2);font-size:10px;font-family:monospace}
+.sub-nav{display:flex;flex-direction:column;gap:4px;flex:1}
+.sub-nav-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;font-family:inherit;font-size:13px;transition:all .2s;text-align:left}
+.sub-nav-btn:hover{background:var(--hover);color:var(--text)}
+.sub-nav-btn.active{background:var(--accent);color:#fff}
+.sub-nav-btn .material-symbols-outlined{font-size:18px}
+.sub-admin-btn{color:#dc2626 !important}.sub-admin-btn.active{color:#fff !important}
+.sub-sidebar-footer{margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}
+.sub-main{padding:24px;overflow-y:auto}
+.sub-view-panel{display:none}.sub-view-panel.active{display:block}
+.sub-view-panel h2{margin:0 0 20px;font-size:22px}
+.sub-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sub-metric{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
+.sub-metric.primary{border-color:var(--accent)}
+.sub-metric span{color:var(--text2);font-size:11px;display:block}
+.sub-metric strong{display:block;margin:10px 0 4px;font-size:22px;color:var(--text)}
+.sub-metric.primary strong{color:var(--accent)}
+.sub-metric small{color:var(--text2);font-size:11px;display:block}
+.sub-sub-header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+.sub-sub-header h2{margin:0 0 6px;font-size:24px}.sub-sub-header p{margin:0;color:var(--text2);font-size:13px}
+.sub-days-circle{width:90px;height:90px;border-radius:50%;background:var(--hover);display:grid;place-content:center;text-align:center}
+.sub-days-circle strong{display:block;font-size:28px;color:var(--accent)}.sub-days-circle span{font-size:11px;color:var(--text2)}
+.sub-key-panel,.sub-pass-panel,.sub-history-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.sub-key-panel h3,.sub-pass-panel h3,.sub-history-panel h3{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:8px}
+.sub-key-form{display:grid;grid-template-columns:1fr auto;gap:8px}
+.sub-key-form input{font-family:monospace;text-transform:uppercase}
+.sub-history{max-height:300px;overflow-y:auto}
+.sub-history-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.sub-history-item:last-child{border-bottom:0}
+.sub-history-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0}
+.admin-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.admin-tab{padding:6px 14px;border:1px solid var(--border);background:var(--card);color:var(--text2);border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;transition:all .2s}
+.admin-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.admin-panel{display:none}.admin-panel.active{display:block}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.admin-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.admin-stat span{display:block;font-size:11px;color:var(--text2)}.admin-stat strong{display:block;font-size:24px;margin:6px 0}
+.admin-toolbar{margin-bottom:12px}.admin-toolbar input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input);color:var(--text);font-family:inherit;font-size:13px}
+.admin-table-wrap{overflow-x:auto}
+.admin-table{width:100%;border-collapse:collapse;font-size:12px}
+.admin-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--text2);font-size:11px;font-weight:600;white-space:nowrap}
+.admin-table td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.admin-gen-keys{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap}
+.admin-gen-keys .field{min-width:100px}
+.admin-badge-admin{color:#dc2626;font-weight:600;font-size:11px}
+.admin-btn-sm{padding:3px 8px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.admin-btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.admin-btn-sm.danger{color:#dc2626;border-color:#dc2626}
+.admin-btn-sm.danger:hover{background:#dc2626;color:#fff}
+.admin-btn-sm.success{color:#16a34a;border-color:#16a34a}
+.admin-view{padding:20px;max-width:1100px;margin:0 auto}
+.admin-view h2{margin:0 0 16px;font-size:20px}
+.admin-view-inner{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+@media(max-width:700px){
+  .sub-shell{grid-template-columns:1fr}
+  .sub-sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .sub-nav{flex-direction:row;overflow-x:auto}
+  .sub-nav-btn{white-space:nowrap}
+  .sub-metrics{grid-template-columns:1fr}
+  .admin-gen-keys{flex-direction:column}
+  .admin-view{padding:12px}
+  .admin-view-inner{padding:16px}
+}
+
 @media(max-width:700px){
   .topbar-nav{gap:2px;margin-left:12px}
   .topbar-tab{padding:6px 10px;font-size:12px}
@@ -199,6 +278,8 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   <div class="topbar-nav">
     <button class="topbar-tab active" data-view="home"><span class="material-symbols-outlined" style="font-size:18px">home</span><span>Главная</span></button>
     <button class="topbar-tab" data-view="chats"><span class="material-symbols-outlined" style="font-size:18px">chat</span><span>Чаты</span></button>
+    <button class="topbar-tab" data-view="sub"><span class="material-symbols-outlined" style="font-size:18px">card_membership</span><span>Подписка</span></button>
+    <button class="topbar-tab" data-view="admin" id="topbarAdminTab" style="display:none"><span class="material-symbols-outlined" style="font-size:18px">admin_panel_settings</span><span>Админ</span></button>
   </div>
   <div class="topbar-right">
     <button class="theme-toggle" id="themeToggle"><span class="material-symbols-outlined">dark_mode</span></button>
@@ -251,6 +332,116 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
       <div class="chat-input-row hidden" id="chatInputRow">
         <input type="text" id="chatInput" placeholder="Сообщение..." maxlength="500">
         <button class="chat-send" id="chatSend"><span class="material-symbols-outlined">send</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-view" id="viewSub" style="display:none">
+    <div class="sub-auth" id="subAuthScreen">
+      <div class="sub-auth-card">
+        <div class="sub-brand"><div class="sub-brand-mark">Q</div><div><strong>QUASAR</strong><span>Account Center</span></div></div>
+        <h2 id="subAuthHeading">Вход в Quasar</h2>
+        <div class="sub-tabs">
+          <button class="sub-tab active" onclick="subSwitchTab('login')">Вход</button>
+          <button class="sub-tab" onclick="subSwitchTab('register')">Регистрация</button>
+        </div>
+        <div id="subTabLogin" class="sub-tab-content active">
+          <div class="field"><label>Email</label><input type="email" id="subLoginUser" placeholder="you@example.com" autocomplete="email"></div>
+          <div class="field"><label>Пароль</label><input type="password" id="subLoginPass" placeholder="Пароль" autocomplete="current-password"></div>
+          <button class="btn btn-primary btn-block" onclick="subLogin()">Войти</button>
+          <div class="msg" id="subLoginError"></div>
+        </div>
+        <div id="subTabRegister" class="sub-tab-content">
+          <div class="field"><label>Email</label><input type="email" id="subRegUser" placeholder="you@example.com" autocomplete="email"></div>
+          <div class="field"><label>Пароль</label><input type="password" id="subRegPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
+          <button class="btn btn-primary btn-block" onclick="subRegister()">Создать аккаунт</button>
+          <div class="msg" id="subRegError"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sub-account hidden" id="subAccountScreen">
+      <div class="sub-shell">
+        <aside class="sub-sidebar">
+          <div class="sub-sidebar-user">
+            <div class="sub-avatar" id="subAvatar"></div>
+            <div><strong id="subSideName">-</strong><span id="subSideUid">UID -</span></div>
+          </div>
+          <nav class="sub-nav">
+            <button class="sub-nav-btn active" onclick="subShowView('overview')"><span class="material-symbols-outlined">dashboard</span>Обзор</button>
+            <button class="sub-nav-btn" onclick="subShowView('subscription')"><span class="material-symbols-outlined">card_membership</span>Подписка</button>
+            <button class="sub-nav-btn" onclick="subShowView('security')"><span class="material-symbols-outlined">shield</span>Безопасность</button>
+          </nav>
+          <div class="sub-sidebar-footer">
+            <button class="btn" onclick="subLogout()"><span class="material-symbols-outlined" style="font-size:16px">logout</span>Выйти</button>
+          </div>
+        </aside>
+        <main class="sub-main">
+          <div id="subViewOverview" class="sub-view-panel active">
+            <h2>Обзор</h2>
+            <div class="sub-metrics">
+              <div class="sub-metric primary"><span>Подписка</span><strong id="subStatus">-</strong><small id="subExpires">-</small></div>
+              <div class="sub-metric"><span>Осталось</span><strong id="subDays">0 дн.</strong><small>Текущий тариф</small></div>
+              <div class="sub-metric"><span>Последний вход</span><strong id="subLastLogin">-</strong><small id="subLastIp">IP неизвестен</small></div>
+            </div>
+          </div>
+          <div id="subViewSubscription" class="sub-view-panel">
+            <div class="sub-sub-header">
+              <div><h2 id="subHeadline">Нет активной подписки</h2><p id="subCaption">Активируйте ключ, чтобы продлить доступ.</p></div>
+              <div class="sub-days-circle"><strong id="subDaysVal">0</strong><span>дней</span></div>
+            </div>
+            <div class="sub-key-panel">
+              <h3>Активация ключа</h3>
+              <div class="sub-key-form">
+                <input type="text" id="subKeyInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off">
+                <button class="btn btn-primary" onclick="subActivateKey()">Активировать</button>
+              </div>
+            </div>
+          </div>
+          <div id="subViewSecurity" class="sub-view-panel">
+            <h2>Безопасность</h2>
+            <div class="sub-pass-panel">
+              <h3>Смена пароля</h3>
+              <div class="field"><label>Текущий пароль</label><input type="password" id="subOldPass" autocomplete="current-password"></div>
+              <div class="field"><label>Новый пароль</label><input type="password" id="subNewPass" autocomplete="new-password"></div>
+              <button class="btn btn-primary" onclick="subChangePassword()">Обновить пароль</button>
+            </div>
+            <div class="sub-history-panel">
+              <h3>История входов <button class="btn" onclick="subLoadHistory()" style="font-size:11px;padding:4px 8px">Обновить</button></h3>
+              <div id="subHistoryList" class="sub-history"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-view" id="viewAdmin" style="display:none">
+    <div class="admin-view-inner">
+      <h2 style="margin-bottom:16px">Админ-панель</h2>
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="adminShowTab('dashboard')">Обзор</button>
+        <button class="admin-tab" onclick="adminShowTab('users')">Пользователи</button>
+        <button class="admin-tab" onclick="adminShowTab('keys')">Ключи</button>
+        <button class="admin-tab" onclick="adminShowTab('audit')">Журнал</button>
+      </div>
+      <div id="adminDashboard" class="admin-panel active">
+        <div class="admin-stats" id="adminStats"></div>
+      </div>
+      <div id="adminUsers" class="admin-panel">
+        <div class="admin-toolbar"><input type="text" id="adminSearchUsers" placeholder="Поиск..." oninput="adminFilterUsers()"></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>UID</th><th>Username</th><th>Role</th><th>Sub</th><th>Status</th><th>Действия</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
+      </div>
+      <div id="adminKeys" class="admin-panel">
+        <div class="admin-gen-keys">
+          <div class="field"><label>Кол-во</label><input type="number" id="adminKeyCount" value="1" min="1" max="100"></div>
+          <div class="field"><label>Дней</label><input type="number" id="adminKeyDays" value="30" min="1"></div>
+          <div class="field"><label>Роль</label><select id="adminKeyRole"><option value="">Нет</option><option value="USER">User</option><option value="MEDIA">Media</option><option value="BETA">Beta</option></select></div>
+          <button class="btn btn-primary" onclick="adminGenKeys()">Создать</button>
+        </div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Ключ</th><th>Дней</th><th>Роль</th><th>Статус</th><th>Активировал</th></tr></thead><tbody id="adminKeysBody"></tbody></table></div>
+      </div>
+      <div id="adminAudit" class="admin-panel">
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>#</th><th>Действие</th><th>Цель</th><th>Детали</th><th>Время</th></tr></thead><tbody id="adminAuditBody"></tbody></table></div>
       </div>
     </div>
   </div>
@@ -329,10 +520,7 @@ updateThemeIcon();
 themeBtn.addEventListener('click',()=>{const c=html.getAttribute('data-theme'),n=c==='dark'?'light':'dark';html.setAttribute('data-theme',n);localStorage.setItem('qn-theme',n);updateThemeIcon()});
 function updateThemeIcon(){themeBtn.innerHTML=html.getAttribute('data-theme')==='dark'?'<span class="material-symbols-outlined filled">light_mode</span>':'<span class="material-symbols-outlined filled">dark_mode</span>'}
 
-const homeView=document.getElementById('viewHome'),chatsView=document.getElementById('viewChats'),tabs=document.querySelectorAll('.topbar-tab');
-function switchView(n){homeView.style.display=n==='home'?'flex':'none';chatsView.classList.toggle('active',n==='chats');tabs.forEach(t=>t.classList.toggle('active',t.dataset.view===n));if(n==='chats'){chatsSidebar.classList.remove('hidden-mobile');if(currentUser)renderChatList(chatSearchInput.value)}}
-tabs.forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
-document.getElementById('topbarLogo').addEventListener('click',()=>switchView('home'));
+const homeView=document.getElementById('viewHome'),chatsView=document.getElementById('viewChats');
 
 const toastStack=document.getElementById('toastStack');
 function showToast(title,body,opts){opts=opts||{};const t=document.createElement('div');t.className='toast';t.innerHTML='<div class="toast-icon"><span class="material-symbols-outlined filled">info</span></div><div class="toast-text"><b></b><span></span></div>';t.querySelector('b').textContent=title;t.querySelector('span').textContent=body||'';toastStack.appendChild(t);requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400)},opts.duration||3500)}
@@ -443,9 +631,9 @@ function openGlobalChat(){
 
 async function renderChatList(q){
   if(!currentUser){chatListEl.innerHTML='<div class="chat-empty">Войдите, чтобы видеть чаты</div>';return}
-  chatListEl.innerHTML='';
-  renderGlobalChatItem();
   if(q){
+    chatListEl.innerHTML='';
+    renderGlobalChatItem();
     const s=q.toLowerCase(),results=[];
     for(const [uid,d] of Object.entries(usersCache)){if(uid===currentUser.uid)continue;if(d.name.toLowerCase().includes(s)||d.nick.toLowerCase().includes(s))results.push({uid,...d})}
     if(results.length===0){chatListEl.innerHTML+='<div class="chat-empty" style="padding:20px">Никого не нашли</div>';return}
@@ -455,10 +643,14 @@ async function renderChatList(q){
   loadActiveChats();
 }
 
-let chatsLoadGeneration=0;
+let chatsLoadGeneration=0,loadActiveChatsRunning=false;
 async function loadActiveChats(){
+  if(loadActiveChatsRunning){chatsLoadGeneration++;return}
+  loadActiveChatsRunning=true;
   const gen=++chatsLoadGeneration;
-  try{const s=await getDocs(collection(db,'chats'));if(gen!==chatsLoadGeneration)return;const myChats=[];
+  try{const s=await getDocs(collection(db,'chats'));if(gen!==chatsLoadGeneration)return;
+  chatListEl.innerHTML='';renderGlobalChatItem();
+  const myChats=[];
   s.forEach(d=>{const data=d.data();if(d.id===GLOBAL_CHAT_ID||data.type==='global')return;if(data.participants&&data.participants.includes(currentUser.uid))myChats.push({id:d.id,...data})});
   myChats.sort((a,b)=>(b.lastMessageAt?.seconds||0)-(a.lastMessageAt?.seconds||0));
   for(const chat of myChats){
@@ -486,18 +678,19 @@ async function loadActiveChats(){
     item.addEventListener('click',()=>openChatWith(otherUid));
     chatListEl.appendChild(item)}
   }catch(e){}
+  finally{loadActiveChatsRunning=false}
 }
 
 async function startChatWith(uid){
   if(!currentUser||!usersCache[uid]||chatOpening)return;
   chatOpening=true;
   try{
+    chatSearchInput.value='';renderChatList('');
     const chatId=makeChatId(currentUser.uid,uid);
     const ref=doc(db,'chats',chatId);
     const snap=await getDoc(ref);
     if(!snap.exists()){await setDoc(ref,{participants:[currentUser.uid,uid],lastMessage:'',lastMessageAt:serverTimestamp()})}
-    chatSearchInput.value='';
-    renderChatList('');
+    openChatWith(uid);
     openChatWith(uid);
   }finally{chatOpening=false}
 }
@@ -619,12 +812,13 @@ onAuthStateChanged(auth,async user=>{
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
     if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;
     await loadAllUsers();ensureGlobalChat();
+    try{const subSnap=await getDoc(doc(db,'sub_users',user.uid));if(subSnap.exists()&&subSnap.data().role==='ADMIN')document.getElementById('topbarAdminTab').style.display='';else document.getElementById('topbarAdminTab').style.display='none'}catch(e){document.getElementById('topbarAdminTab').style.display='none'}
     renderChatList(chatSearchInput.value);
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
     }catch(e){}
     chatLockedEl.classList.add('hidden');
   }else{
-    authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';
+    authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';document.getElementById('topbarAdminTab').style.display='none';
     authForms.classList.remove('hidden');profileOverlay.classList.remove('open');authTitle.textContent=mode==='login'?'Вход':'Регистрация';
     emailInput.value='';passwordInput.value='';currentAvatarData=null;avatarFileInput.value='';
     chatLockedEl.classList.remove('hidden');chatInputRowEl.classList.add('hidden');usersCache={};activeChatId=null;
@@ -635,21 +829,112 @@ onAuthStateChanged(auth,async user=>{
   renderChatList(chatSearchInput.value);
 });
 
+// ── View switching (home/chats/sub/admin) ──
+let currentView='home';
+const viewHome=document.getElementById('viewHome'),viewChats=document.getElementById('viewChats'),viewSubEl=document.getElementById('viewSub'),viewAdminEl=document.getElementById('viewAdmin');
+const viewMap={home:viewHome,chats:viewChats,sub:viewSubEl,admin:viewAdminEl};
+function switchMainView(v){currentView=v;Object.values(viewMap).forEach(el=>el.style.display='none');if(viewMap[v])viewMap[v].style.display='';document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='sub'){if(currentUser){subUser=currentUser;subLoadProfile()}else{subShowAuth()}}if(v==='admin')adminLoadDashboard()}
+document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',()=>switchMainView(t.dataset.view)));
+document.getElementById('topbarLogo').addEventListener('click',()=>switchMainView('home'));
+
+// ── Subscription system (Firestore) ──
+let subUser=null,subProfile=null;
+const SUB_COLLECTIONS={users:'sub_users',keys:'sub_keys',audit:'sub_audit',history:'sub_history'};
+function subToast(msg,type){showToast(msg,type==='error'?'Ошибка':'Уведомление')}
+function subSwitchTab(n){document.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.sub-tab-content').forEach(c=>c.classList.remove('active'));document.querySelector('.sub-tab[onclick*="'+n+'"]').classList.add('active');document.getElementById('subTab'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active');document.getElementById('subAuthHeading').textContent=n==='login'?'Вход в Quasar':'Новый аккаунт'}
+function subShowView(n){document.querySelectorAll('.sub-view-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.sub-nav-btn').forEach(b=>b.classList.remove('active'));const panels={overview:'subViewOverview',subscription:'subViewSubscription',security:'subViewSecurity'};const el=document.getElementById(panels[n]);if(el)el.classList.add('active');document.querySelectorAll('.sub-nav-btn').forEach(b=>{if(b.textContent.includes({overview:'Обзор',subscription:'Подписка',security:'Безопасность'}[n]||''))b.classList.add('active')})}
+function subShowAuth(){document.getElementById('subAuthScreen').classList.remove('hidden');document.getElementById('subAccountScreen').classList.add('hidden')}
+function subShowAccount(){
+  document.getElementById('subAuthScreen').classList.add('hidden');document.getElementById('subAccountScreen').classList.remove('hidden');
+  const p=subProfile||{};const u=subUser||{};
+  const days=p.subscription_days||0,start=p.subscription_start?new Date(p.subscription_start):null,end=start&&days?new Date(start.getTime()+days*86400000):null,active=end&&Date.now()<end.getTime();
+  const uname=p.username||u.email?.split('@')[0]||'-';
+  document.getElementById('subSideName').textContent=uname;document.getElementById('subSideUid').textContent='UID '+(u.uid||'-');
+  document.getElementById('subStatus').textContent=active?'Активна':'Неактивна';document.getElementById('subStatus').style.color=active?'#16a34a':'#dc2626';
+  document.getElementById('subExpires').textContent=end?'До '+end.toLocaleDateString('ru-RU'):'Ключ не активирован';
+  document.getElementById('subDays').textContent=days+' дн.';
+  document.getElementById('subLastLogin').textContent=p.last_login?new Date(p.last_login).toLocaleString('ru-RU'):'-';
+  document.getElementById('subLastIp').textContent=p.last_ip?'IP '+p.last_ip:'IP неизвестен';
+  document.getElementById('subDaysVal').textContent=days;
+  document.getElementById('subHeadline').textContent=active?'Доступ активен':'Нет активной подписки';
+  document.getElementById('subCaption').textContent=active&&end?`Доступ действует до ${end.toLocaleDateString('ru-RU')}.`:'Активируйте ключ, чтобы открыть доступ.';
+  document.getElementById('subAvatar').textContent=uname[0]?.toUpperCase()||'?';
+  subShowView('overview');
+}
+async function subLogin(){
+  const email=document.getElementById('subLoginUser').value.trim(),pass=document.getElementById('subLoginPass').value,e=document.getElementById('subLoginError');e.textContent='';
+  if(!email||!pass){e.textContent='Заполните оба поля';return}
+  try{const cred=await signInWithEmailAndPassword(auth,email,pass);subUser=cred.user;await subLoadProfile()}catch(err){e.textContent=err.code==='auth/invalid-credential'?'Неверный email или пароль':err.code==='auth/user-not-found'?'Пользователь не найден':err.code==='auth/wrong-password'?'Неверный пароль':err.message}
+}
+async function subRegister(){
+  const email=document.getElementById('subRegUser').value.trim(),pass=document.getElementById('subRegPass').value,e=document.getElementById('subRegError');e.textContent='';
+  if(!email||!pass){e.textContent='Заполните оба поля';return}
+  if(pass.length<6){e.textContent='Пароль минимум 6 символов';return}
+  try{const cred=await createUserWithEmailAndPassword(auth,email,pass);await setDoc(doc(db,SUB_COLLECTIONS.users,cred.user.uid),{uid:cred.user.uid,username:email.split('@')[0],role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''});subToast('Аккаунт создан');subSwitchTab('login');document.getElementById('subLoginUser').value=email}catch(err){e.textContent=err.code==='auth/email-already-in-use'?'Email уже зарегистрирован':err.message}
+}
+async function subLoadProfile(){
+  if(!subUser)return;
+  try{const snap=await getDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid));if(snap.exists()){subProfile=snap.data()}else{subProfile={uid:subUser.uid,username:subUser.email?.split('@')[0]||'User',role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''};await setDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),subProfile)}document.getElementById('topbarAdminTab').style.display=subProfile?.role==='ADMIN'?'':'none';subShowAccount()}catch(e){console.error('subLoadProfile:',e)}
+}
+async function subActivateKey(){
+  const inp=document.getElementById('subKeyInput'),key=inp.value.trim().toUpperCase();if(!key){subToast('Введите ключ','error');return}
+  if(!subUser){subToast('Войдите в аккаунт','error');return}
+  try{await runTransaction(db,async tx=>{
+    const keyRef=doc(db,SUB_COLLECTIONS.keys,key);const keySnap=await tx.get(keyRef);if(!keySnap.exists())throw new Error('Ключ не найден');const kd=keySnap.data();if(kd.activated_by)throw new Error('Ключ уже использован');
+    const userRef=doc(db,SUB_COLLECTIONS.users,subUser.uid);const userSnap=await tx.get(userRef);if(!userSnap.exists())throw new Error('Профиль не найден');const ud=userSnap.data();if(ud.is_banned)throw new Error('Аккаунт заблокирован');
+    const now=new Date();const subStart=ud.subscription_start?new Date(ud.subscription_start):null;const newStart=subStart&&subStart>now?subStart:now;const newDays=(ud.subscription_days||0)+(kd.days||0);
+    tx.update(userRef,{subscription_days:newDays,subscription_start:newStart.toISOString()});
+    tx.update(keyRef,{activated_by:subUser.uid,activated_at:now.toISOString()});
+    tx.set(doc(db,SUB_COLLECTIONS.audit,key+subUser.uid),{action:'key_activate',target_uid:subUser.uid,details:'Key: '+key+' +'+kd.days+'d',created_at:now.toISOString()});
+  });inp.value='';subToast('Ключ активирован');await subLoadProfile()}catch(e){subToast(e.message,'error')}
+}
+async function subChangePassword(){
+  const op=document.getElementById('subOldPass').value,np=document.getElementById('subNewPass').value;
+  if(!op||!np){subToast('Заполните оба поля','error');return}
+  if(!subUser){subToast('Войдите','error');return}
+  try{await reauthenticateWithCredential(subUser,EmailAuthProvider.credential(subUser.email,op));await updatePassword(subUser,np);document.getElementById('subOldPass').value='';document.getElementById('subNewPass').value='';subToast('Пароль обновлён')}catch(e){subToast(e.code==='auth/wrong-password'?'Неверный текущий пароль':e.message,'error')}
+}
+async function subLoadHistory(){
+  if(!subUser)return;
+  try{const q=query(collection(db,SUB_COLLECTIONS.history),where('uid','==',subUser.uid),orderBy('created_at','desc'),limit(20));const snap=await getDocs(q);const c=document.getElementById('subHistoryList');c.innerHTML='';snap.forEach(d=>{const h=d.data();const i=document.createElement('div');i.className='sub-history-item';i.innerHTML='<span class="sub-history-dot"></span><span style="font-family:monospace">'+(h.ip||'-')+'</span><span>'+(h.type==='login'?'Вход':h.type||'Вход')+'</span><span style="color:var(--text2)">'+new Date(h.created_at).toLocaleString('ru-RU')+'</span>';c.appendChild(i)});if(snap.empty)c.innerHTML='<div style="color:var(--text2);font-size:12px;padding:12px">История пуста</div>'}catch(e){console.error(e)}
+}
+function subLogout(){signOut(auth);subUser=null;subProfile=null;subShowAuth();document.getElementById('subLoginPass').value='';document.getElementById('subLoginError').textContent=''}
+async function subRecordLogin(){if(!subUser)return;try{await addDoc(collection(db,SUB_COLLECTIONS.history),{uid:subUser.uid,ip:'',type:'login',created_at:new Date().toISOString()});await updateDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),{last_login:new Date().toISOString()})}catch(e){}}
+function subInitAuth(){onAuthStateChanged(auth,async user=>{if(user){subUser=user;if(currentView==='sub')await subLoadProfile()}else{subUser=null;subProfile=null;if(currentView==='sub')subShowAuth()}})}
+
+// ── Admin panel (Firestore) ──
+let adminData={users:[],keys:[],audit:[]};
+function adminShowTab(n){document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));document.querySelector('.admin-tab[onclick*="'+n+'"]').classList.add('active');document.getElementById('admin'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active');if(n==='dashboard')adminLoadDashboard();if(n==='users')adminLoadUsers();if(n==='keys')adminLoadKeys();if(n==='audit')adminLoadAudit()}
+async function adminLoadDashboard(){
+  try{const[usersSnap,keysSnap]=await Promise.all([getDocs(collection(db,SUB_COLLECTIONS.users)),getDocs(collection(db,SUB_COLLECTIONS.keys))]);
+  const users=[];usersSnap.forEach(d=>users.push(d.data()));const keys=[];keysSnap.forEach(d=>keys.push(d.data()));
+  const total=users.length,banned=users.filter(u=>u.is_banned).length,admins=users.filter(u=>u.role==='ADMIN').length,media=users.filter(u=>u.role==='MEDIA').length,betas=users.filter(u=>u.role==='BETA').length,regUsers=users.filter(u=>u.role==='USER').length;
+  const freeKeys=keys.filter(k=>!k.activated_by).length,usedKeys=keys.filter(k=>k.activated_by).length;
+  const c=document.getElementById('adminStats');c.innerHTML='';[{l:'Всего',v:total,c:'var(--accent)'},{l:'Админы',v:admins,c:'var(--text2)'},{l:'Медиа',v:media,c:'var(--text2)'},{l:'Бета',v:betas,c:'var(--text2)'},{l:'Юзеры',v:regUsers,c:'#16a34a'},{l:'Забанены',v:banned,c:'#dc2626'},{l:'Свободные ключи',v:freeKeys,c:'var(--accent)'},{l:'Исп. ключи',v:usedKeys,c:'var(--text2)'}].forEach(s=>{const e=document.createElement('div');e.className='admin-stat';e.innerHTML='<span>'+s.l+'</span><strong style="color:'+s.c+'">'+s.v+'</strong>';c.appendChild(e)})}catch(e){console.error(e)}}
+async function adminLoadUsers(){try{const snap=await getDocs(collection(db,SUB_COLLECTIONS.users));adminData.users=[];snap.forEach(d=>adminData.users.push(d.data()));adminRenderUsers(adminData.users)}catch(e){console.error(e)}}
+function adminRenderUsers(users){const b=document.getElementById('adminUsersBody');b.innerHTML='';users.forEach(u=>{const now=new Date(),subEnd=u.subscription_start&&u.subscription_days?new Date(new Date(u.subscription_start).getTime()+u.subscription_days*86400000):null,active=subEnd&&now<subEnd;const r=document.createElement('tr');r.innerHTML='<td>'+(u.uid||'-')+'</td><td>'+(u.username||'-')+'</td><td><span style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:4px">'+(u.role||'USER')+'</span></td><td>'+(u.subscription_days||0)+'d</td><td>'+(u.is_banned?'<span style="color:#dc2626">Забанен</span>':active?'<span style="color:#16a34a">Активен</span>':'<span style="color:var(--text2)">Нет</span>')+'</td><td style="display:flex;gap:4px;flex-wrap:wrap">'+(u.role!=='ADMIN'?'<button class="admin-btn-sm" onclick="adminSubDays(\''+u.uid+'\')">+Дней</button><button class="admin-btn-sm danger" onclick="adminBan(\''+u.uid+'\')">Ban</button>':'')+'</td>';b.appendChild(r)})}
+function adminFilterUsers(){const q=document.getElementById('adminSearchUsers').value.toLowerCase();adminRenderUsers(adminData.users.filter(u=>(u.username||'').toLowerCase().includes(q)||(u.uid||'').includes(q)))}
+async function adminSubDays(uid){const d=prompt('Дней для добавления:');if(!d||parseInt(d)<=0)return;try{const ref=doc(db,SUB_COLLECTIONS.users,uid);const snap=await getDoc(ref);if(!snap.exists())return;const ud=snap.data();const now=new Date();const start=ud.subscription_start&&new Date(ud.subscription_start)>now?new Date(ud.subscription_start):now;await updateDoc(ref,{subscription_days:(ud.subscription_days||0)+parseInt(d),subscription_start:start.toISOString()});subToast('Дни добавлены');adminLoadUsers()}catch(e){subToast(e.message,'error')}}
+async function adminBan(uid){if(!confirm('Забанить?'))return;try{await updateDoc(doc(db,SUB_COLLECTIONS.users,uid),{is_banned:1,ban_reason:'Banned from admin'});subToast('Забанен');adminLoadUsers()}catch(e){subToast(e.message,'error')}}
+async function adminLoadKeys(){try{const snap=await getDocs(collection(db,SUB_COLLECTIONS.keys));adminData.keys=[];snap.forEach(d=>adminData.keys.push({id:d.id,...d.data()}));adminRenderKeys(adminData.keys)}catch(e){console.error(e)}}
+function adminRenderKeys(keys){const b=document.getElementById('adminKeysBody');b.innerHTML='';keys.forEach(k=>{const r=document.createElement('tr');r.innerHTML='<td style="font-family:monospace;font-size:11px">'+k.key+'</td><td>'+(k.days||0)+'d</td><td>'+(k.role||'-')+'</td><td>'+(k.activated_by?'<span style="color:var(--text2)">Used</span>':'<span style="color:#16a34a">Active</span>')+'</td><td>'+(k.activated_by?k.activated_by:'-')+'</td>';b.appendChild(r)})}
+async function adminGenKeys(){const count=parseInt(document.getElementById('adminKeyCount').value)||1,days=parseInt(document.getElementById('adminKeyDays').value)||30,role=document.getElementById('adminKeyRole').value||null;const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let created=0;for(let i=0;i<count;i++){let key;do{key='';for(let s=0;s<4;s++){if(s>0)key+='-';for(let j=0;j<5;j++)key+=chars[Math.floor(Math.random()*chars.length)]}}while(adminData.keys.some(k=>k.key===key));try{await setDoc(doc(db,SUB_COLLECTIONS.keys,key),{key,days,role:role||null,created_by:subUser?.uid||'',created_at:new Date().toISOString(),activated_by:null,activated_at:null});created++}catch(e){}}subToast('Создано '+created+' ключей');adminLoadKeys()}
+async function adminLoadAudit(){try{const q=query(collection(db,SUB_COLLECTIONS.audit),orderBy('created_at','desc'),limit(100));const snap=await getDocs(q);const b=document.getElementById('adminAuditBody');b.innerHTML='';let i=0;snap.forEach(d=>{const e=d.data();i++;const r=document.createElement('tr');r.innerHTML='<td style="font-family:monospace;font-size:10px;color:var(--text2)">#'+i+'</td><td style="font-weight:600">'+(e.action||'-')+'</td><td>'+(e.target_uid||'-')+'</td><td style="font-size:11px">'+(e.details||'-')+'</td><td style="font-size:11px;color:var(--text2)">'+new Date(e.created_at).toLocaleString('ru-RU')+'</td>';b.appendChild(r)})}catch(e){console.error(e)}}
+
 async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);const snap=await getDoc(ref);if(!snap.exists())await setRef(ref,{type:'global',name:'Общий чат',lastMessageAt:serverTimestamp()})}catch(e){}}
 function setRef(ref,data){return setDoc(ref,data).catch(()=>{})}
-
-renderChatList('');
+subInitAuth();
 }
 </script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
 initApp();
 </script>
 </body>
