@@ -174,11 +174,11 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-price .material-symbols-outlined{font-size:15px;color:#f59e0b}
 .market-buy-btn{margin-top:4px;width:100%}
 .market-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
-.market-body{display:flex;gap:16px}
-.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;flex:1;min-width:0;transition:all .35s cubic-bezier(.4,0,.2,1)}
-.market-body.panel-open .market-grid{flex:0 0 0;min-width:0;max-width:0;opacity:0;pointer-events:none;gap:0;overflow:hidden}
-.market-detail{width:0;overflow:hidden;background:var(--card);border:1px solid var(--border);border-radius:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:14px;transition:all .35s cubic-bezier(.4,0,.2,1)}
-.market-body.panel-open .market-detail{width:360px;padding:28px 24px;overflow-y:auto;box-shadow:-4px 0 24px var(--shadow)}
+.market-body{display:flex;gap:0;position:relative;min-height:400px}
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;flex:1;min-width:0;transition:all .3s cubic-bezier(.4,0,.2,1);padding-right:16px}
+.market-body.panel-open .market-grid{flex:0 0 55%;max-width:55%;opacity:1;pointer-events:auto}
+.market-detail{position:absolute;right:0;top:0;bottom:0;width:0;overflow:hidden;background:var(--card);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;gap:14px;transition:all .3s cubic-bezier(.4,0,.2,1);box-shadow:none}
+.market-body.panel-open .market-detail{width:45%;padding:28px 24px;overflow-y:auto;box-shadow:-4px 0 24px var(--shadow)}
 .market-detail-close{position:sticky;top:0;align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:8px;transition:all .2s;z-index:11;margin-bottom:-8px}
 .market-detail-close:hover{background:var(--hover);color:var(--text)}
 .market-detail-preview{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0;animation:popIn .3s ease}
@@ -477,20 +477,28 @@ const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.g
 let unsubscribeOwnUser=null;
 function subscribeOwnUser(uid){if(unsubscribeOwnUser)unsubscribeOwnUser();unsubscribeOwnUser=onSnapshot(doc(db,'users',uid),snap=>{if(!snap.exists())return;const d=snap.data();updateBalanceUI(d.balance);if(usersCache[uid])usersCache[uid].admin=!!d.admin;if(d.banned&&currentUser)signOut(auth)},()=>{})}
 function updateBalanceUI(bal){const b=typeof bal==='number'?bal:0;balanceAmountEl.textContent=b;profileBalanceEl.textContent=b;balancePillEl.classList.add('visible')}
-async function renderInventory(uid){inventoryListEl.innerHTML='';try{const s=await getDocs(collection(db,'users',uid,'inventory'));const sellWrap=document.getElementById('inventorySellWrap');let hasItems=false;s.forEach(d=>{const it=d.data();if(!it.quantity||it.quantity<1)return;hasItems=true;const row=document.createElement('div');row.className='inventory-item';const iconStyle=it.iconColor?'color:'+esc(it.iconColor)+';font-weight:700':it.iconFont?'font:'+esc(it.iconFont):'';row.innerHTML='<span class="inventory-icon"'+(iconStyle?' style="'+iconStyle+'"':'')+'>'+esc(it.icon||'...')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';const btnWrap=document.createElement('span');btnWrap.style.cssText='display:flex;gap:4px;margin-left:auto';if(it.type&&it.type!=='credits'){const useBtn=document.createElement('button');useBtn.className='btn';useBtn.style.cssText='padding:3px 8px;font-size:11px';useBtn.textContent='Надеть';useBtn.addEventListener('click',()=>equipItem(d.id,it));btnWrap.appendChild(useBtn)}const sellPrice=Math.floor((it.price||0)*0.5);if(sellPrice>0){const sellBtn=document.createElement('button');sellBtn.className='btn';sellBtn.style.cssText='padding:3px 8px;font-size:11px;color:#dc2626';sellBtn.textContent='Продать за '+sellPrice;sellBtn.addEventListener('click',()=>sellItem(d.id,it));btnWrap.appendChild(sellBtn)}row.appendChild(btnWrap);inventoryListEl.appendChild(row)});if(!hasItems){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пусто</div>'}if(sellWrap)sellWrap.classList.toggle('hidden',!hasItems)}catch(e){inventoryListEl.innerHTML=''}}
-async function equipItem(itemId,item){
+const FIELD_MAP={nickColor:'equippedNickColor',nickGlow:'equippedNickGlow',nickFont:'equippedNickFont',nickAnimated:'equippedNickAnim',avatarEffect:'equippedAvatarEffect'};
+function isEquipped(type,value){if(!currentUser||!type)return false;const u=usersCache[currentUser.uid];if(!u)return false;const field=FIELD_MAP[type];return field&&u[field]===value}
+function setEquippedCache(type,value){if(!currentUser||!type)return;const field=FIELD_MAP[type];if(field&&usersCache[currentUser.uid])usersCache[currentUser.uid][field]=value}
+async function renderInventory(uid){inventoryListEl.innerHTML='';_invCache={};try{const s=await getDocs(collection(db,'users',uid,'inventory'));const sellWrap=document.getElementById('inventorySellWrap');let hasItems=false;s.forEach(d=>{const it=d.data();if(!it.quantity||it.quantity<1)return;_invCache[d.id]=it;hasItems=true;const row=document.createElement('div');row.className='inventory-item';const iconStyle=it.iconColor?'color:'+esc(it.iconColor)+';font-weight:700':it.iconFont?'font:'+esc(it.iconFont):'';row.innerHTML='<span class="inventory-icon"'+(iconStyle?' style="'+iconStyle+'"':'')+'>'+esc(it.icon||'...')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';const btnWrap=document.createElement('span');btnWrap.style.cssText='display:flex;gap:4px;margin-left:auto';if(it.type&&it.type!=='credits'){const equipped=isEquipped(it.type,it.value);const useBtn=document.createElement('button');useBtn.className='btn';useBtn.style.cssText='padding:3px 8px;font-size:11px'+(equipped?';color:#16a34a;font-weight:600':'');useBtn.textContent=equipped?'Снять':'Надеть';useBtn.dataset.type=it.type;useBtn.dataset.value=it.value;useBtn.dataset.invId=d.id;useBtn.addEventListener('click',()=>toggleEquip(useBtn,it));btnWrap.appendChild(useBtn)}const sellPrice=Math.floor((it.price||0)*0.5);if(sellPrice>0){const sellBtn=document.createElement('button');sellBtn.className='btn';sellBtn.style.cssText='padding:3px 8px;font-size:11px;color:#dc2626';sellBtn.textContent='Продать за '+sellPrice;sellBtn.addEventListener('click',()=>sellItem(d.id,it));btnWrap.appendChild(sellBtn)}row.appendChild(btnWrap);inventoryListEl.appendChild(row)});if(!hasItems){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пусто</div>'}if(sellWrap)sellWrap.classList.toggle('hidden',!hasItems)}catch(e){inventoryListEl.innerHTML=''}}
+async function toggleEquip(btn,item){
   if(!currentUser)return;
-  const fieldMap={nickColor:'equippedNickColor',nickGlow:'equippedNickGlow',nickFont:'equippedNickFont',nickAnimated:'equippedNickAnim',avatarEffect:'equippedAvatarEffect'};
-  const field=fieldMap[item.type];
+  const field=FIELD_MAP[item.type];
   if(!field){showToast('Ошибка','Этот предмет нельзя надеть');return}
+  const equipped=isEquipped(item.type,item.value);
   try{
-    const update={};update[field]=item.value;
+    const update={};update[field]=equipped?null:item.value;
     await updateDoc(doc(db,'users',currentUser.uid),update);
-    showToast('Экипировано',item.name);
-    renderInventory(currentUser.uid);
+    setEquippedCache(item.type,equipped?null:item.value);
+    btn.textContent=equipped?'Надеть':'Снять';
+    btn.style.color=equipped?'':'#16a34a';
+    btn.style.fontWeight=equipped?'':'600';
+    showToast(equipped?'Снято':'Экипировано',item.name);
+    renderEquippedEffects();
     applyEffects();
-  }catch(e){showToast('Ошибка','Не удалось экипировать')}
+  }catch(e){showToast('Ошибка','Не удалось')}
 }
+async function sellItem(itemId,item){if(!currentUser)return;const price=Math.floor((item.price||0)*0.5);if(price<1){showToast('Ошибка','Нельзя продать');return}try{const ref=doc(db,'users',currentUser.uid,'inventory',itemId);const snap=await getDoc(ref);if(!snap.exists())return;const data=snap.data();const qty=(data.quantity||1)-1;if(qty<=0)await deleteDoc(ref);else await updateDoc(ref,{quantity:qty});const userRef=doc(db,'users',currentUser.uid);const userSnap=await getDoc(userRef);const bal=(userSnap.exists()?userSnap.data().balance:0)||0;await updateDoc(userRef,{balance:bal+price});showToast('Продано','+'+price);renderInventory(currentUser.uid);updateBalanceUI(bal+price)}catch(e){showToast('Ошибка','Не удалось продать')}}
 function renderEquippedEffects(){
   const el=document.getElementById('equippedEffectsList');
   if(!el||!currentUser)return;
@@ -541,6 +549,8 @@ async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div c
 async function deleteMarketItem(id){if(!isAdmin())return;try{await deleteDoc(doc(db,'market',id));showToast('Удалено','');closeMarketDetail();loadMarketItems()}catch(e){showToast('Ошибка',e.message)}}
 
 let currentDetailItem=null;
+let _invCache=null;
+function isMarketItemOwned(it){return!!_invCache&&!!_invCache[it.id]&&_invCache[it.id].quantity>0}
 function openMarketDetail(it){
   currentDetailItem=it;
   const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';
@@ -560,10 +570,20 @@ function openMarketDetail(it){
   marketDetailPrice.innerHTML='<span class="material-symbols-outlined filled">toll</span>'+(it.price||0);
   const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';
   marketDetailName.innerHTML+=hid;
-  marketDetailBuy.classList.remove('hidden');
-  marketDetailEquip.classList.add('hidden');
-  marketDetailBuy.disabled=false;
-  marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
+  const hasInv=isMarketItemOwned(it);
+  const equipped=isEquipped(it.type,it.value);
+  if(hasInv){
+    marketDetailBuy.classList.add('hidden');
+    marketDetailEquip.classList.remove('hidden');
+    marketDetailEquip.textContent=equipped?'Снять':'Надеть';
+    marketDetailEquip.style.color=equipped?'#dc2626':'';
+    marketDetailEquip.onclick=()=>toggleEquip(marketDetailEquip,it);
+  }else{
+    marketDetailBuy.classList.remove('hidden');
+    marketDetailEquip.classList.add('hidden');
+    marketDetailBuy.disabled=false;
+    marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
+  }
   marketBodyEl.classList.add('panel-open');
 }
 function closeMarketDetail(){
@@ -590,21 +610,12 @@ marketDetailBuy.addEventListener('click',async()=>{
     });
     showToast('Покупка','Товар добавлен');
     updateBalanceUI((usersCache[currentUser.uid]?.balance||0)-currentDetailItem.price);
-    renderInventory(currentUser.uid);
+    _invCache[currentDetailItem.id]={quantity:(_invCache[currentDetailItem.id]?.quantity||0)+1};
     marketDetailBuy.classList.add('hidden');
     marketDetailEquip.classList.remove('hidden');
-    marketDetailEquip.onclick=async()=>{
-      const fieldMap={nickColor:'equippedNickColor',nickGlow:'equippedNickGlow',nickFont:'equippedNickFont',nickAnimated:'equippedNickAnim',avatarEffect:'equippedAvatarEffect'};
-      const field=fieldMap[currentDetailItem.type];
-      if(!field){showToast('Ошибка','Этот предмет нельзя надеть');return}
-      try{
-        const update={};update[field]=currentDetailItem.value;
-        await updateDoc(doc(db,'users',currentUser.uid),update);
-        showToast('Экипировано',currentDetailItem.name);
-        renderInventory(currentUser.uid);
-        applyEffects();
-      }catch(e){showToast('Ошибка','Не удалось экипировать')}
-    };
+    marketDetailEquip.textContent='Надеть';
+    marketDetailEquip.style.color='';
+    marketDetailEquip.onclick=()=>toggleEquip(marketDetailEquip,currentDetailItem);
   }catch(e){showToast('Ошибка',e.message);
     marketDetailBuy.classList.remove('hidden');
     marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
