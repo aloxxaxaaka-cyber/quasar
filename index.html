@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://www.google-analytics.com https://analytics.google.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com https://accounts.google.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://www.google-analytics.com https://analytics.google.com https://accounts.google.com;">
 <title>quasarNet</title>
 <link rel="icon" type="image/png" sizes="16x16" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -356,7 +356,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 
 <script>
 function initApp(){
-const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updateProfile,reauthenticateWithCredential,EmailAuthProvider,updatePassword,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}=window.firebaseFns;
+const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged,updateProfile,reauthenticateWithCredential,EmailAuthProvider,updatePassword,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}=window.firebaseFns;
+
+getRedirectResult(auth).then(()=>{}).catch(()=>{});
 
 const html=document.documentElement;
 const themeBtn=document.getElementById('themeToggle');
@@ -371,7 +373,7 @@ function initials(t){return t?t.trim().slice(0,2).toUpperCase():'?'}
 function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function sanitizeAvatar(u){if(!u||typeof u!=='string')return'';if(!u.startsWith('data:image/'))return'';if(u.length>300000)return'';return u}
 function sanitizeNick(n){if(!n)return'';return n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'').slice(0,30)}
-function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто','auth/popup-blocked':'Окно заблокировано','auth/cancelled-popup-request':'Вход отменён','auth/operation-not-allowed':'Google вход не включён','auth/unauthorized-domain':'Домен не авторизован'};return m[c]||'Ошибка ('+c+')'}
+function friendlyError(c){const m={'auth/invalid-email':'Некорректный email','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/email-already-in-use':'Email уже зарегистрирован','auth/weak-password':'Пароль слишком короткий','auth/invalid-credential':'Неверный email или пароль','auth/popup-closed-by-user':'Окно входа закрыто','auth/popup-blocked':'Окно заблокировано браузером','auth/cancelled-popup-request':'Вход отменён','auth/operation-not-allowed':'Google вход не включён в Firebase Console','auth/unauthorized-domain':'Домен не авторизован в Firebase','auth/internal-error':'Ошибка конфигурации Firebase. Включите Google Auth в Console'};return m[c]||'Ошибка ('+c+')'}
 function formatTime(ts){if(!ts)return'...';if(typeof ts==='object'&&ts!==null&&typeof ts.toDate!=='function'&&!ts.seconds)return'сейчас';try{const d=ts.toDate?ts.toDate():ts.seconds?new Date(ts.seconds*1000):new Date(ts);return isNaN(d.getTime())?'...':d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}catch(e){return'сейчас'}}
 
 let mode='login',currentUser=null,usersCache={},currentAvatarData=null;
@@ -395,7 +397,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAuth();closePr
 
 let authAttempts=0,authCooldownUntil=0;
 submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){setMessage('Заполни email и пароль','error');return}if(Date.now()<authCooldownUntil){setMessage('Подождите','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else{if(password.length<6){setMessage('Минимум 6 символов','error');submitBtn.disabled=false;return}await createUserWithEmailAndPassword(auth,email,password)}authAttempts=0;closeAuth()}catch(e){authAttempts++;if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток','error')}else setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
-googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider);closeAuth()}catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/internal-error'){try{await signInWithRedirect(auth,window.googleProvider);return}catch(e2){}}setMessage(friendlyError(e.code),'error')}});
+googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider);closeAuth()}catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){try{await signInWithRedirect(auth,window.googleProvider);return}catch(e2){}}if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request')setMessage(friendlyError(e.code),'error')}});
 
 const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap'),profileDisplayNameEl=document.getElementById('profileDisplayName'),secCurrentPass=document.getElementById('secCurrentPass'),secNewPass=document.getElementById('secNewPass'),secChangePassBtn=document.getElementById('secChangePass'),secPassMsg=document.getElementById('secPassMsg'),secUidEl=document.getElementById('secUid'),secEmailEl=document.getElementById('secEmail'),secNickEl=document.getElementById('secNick'),balancePillEl=document.getElementById('balancePill'),balanceAmountEl=document.getElementById('balanceAmount'),profileBalanceEl=document.getElementById('profileBalance'),inventoryListEl=document.getElementById('inventoryList');
 const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn');
@@ -478,7 +480,7 @@ chatSendBtn.addEventListener('click',sendMessage);
 chatInputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
 
 const viewHome=document.getElementById('viewHome'),viewChats=document.getElementById('viewChats');
-function switchMainView(v){currentView=v;[viewHome,viewChats,viewMarketEl].forEach(el=>el.style.display='none');if(v==='home')viewHome.style.display='flex';else if(v==='chats')viewChats.style.display='flex';else if(v==='market'){viewMarketEl.style.display='';loadMarketItems()}document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='chats'&&currentUser)renderChatList(chatSearchInput.value)}
+function switchMainView(v){currentView=v;viewHome.style.display='none';viewChats.style.display='none';viewMarketEl.classList.add('hidden');if(v==='home')viewHome.style.display='flex';else if(v==='chats')viewChats.style.display='flex';else if(v==='market'){viewMarketEl.classList.remove('hidden');loadMarketItems()}document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='chats'&&currentUser)renderChatList(chatSearchInput.value)}
 document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',()=>{if(t.classList.contains('active'))return;t.classList.remove('bounce');void t.offsetHeight;t.classList.add('bounce');switchMainView(t.dataset.view)}));
 document.getElementById('topbarLogo').addEventListener('click',()=>switchMainView('home'));
 
@@ -491,12 +493,12 @@ async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);c
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
 initApp();
 </script>
 </body>
