@@ -160,7 +160,6 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
 .market-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .market-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
-.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 .market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
 .market-card:hover{border-color:var(--accent);box-shadow:0 6px 20px var(--shadow);transform:translateY(-2px)}
 .market-preview{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0}
@@ -171,6 +170,22 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-price .material-symbols-outlined{font-size:15px;color:#f59e0b}
 .market-buy-btn{margin-top:4px;width:100%}
 .market-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
+.market-body{display:flex;position:relative;overflow:hidden;border-radius:14px}
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s ease;flex:1;min-width:0}
+.market-body.panel-open .market-grid{transform:translateX(-40px);opacity:.4;pointer-events:none}
+.market-detail{position:absolute;right:0;top:0;bottom:0;width:min(360px,100%);background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);padding:28px 24px;z-index:10;display:flex;flex-direction:column;align-items:center;gap:14px;overflow-y:auto;border-radius:14px;box-shadow:-4px 0 24px var(--shadow)}
+.market-body.panel-open .market-detail{transform:translateX(0)}
+.market-detail-close{position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:8px;transition:all .2s;z-index:11}
+.market-detail-close:hover{background:var(--hover);color:var(--text)}
+.market-detail-preview{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0;animation:popIn .3s ease}
+.market-detail-preview img{width:100%;height:100%;object-fit:cover}
+.market-detail-nick{font-size:16px;font-weight:600;text-align:center;animation:slideUp .3s ease}
+.market-detail-name{font-size:18px;font-weight:700;text-align:center;animation:slideUp .3s ease .05s both}
+.market-detail-desc{font-size:13px;color:var(--text2);text-align:center;animation:slideUp .3s ease .1s both}
+.market-detail-price{display:flex;align-items:center;gap:6px;font-size:18px;font-weight:700;color:var(--text);animation:slideUp .3s ease .15s both}
+.market-detail-price .material-symbols-outlined{font-size:20px;color:#f59e0b}
+.market-detail .btn-block{width:100%;animation:slideUp .3s ease .2s both}
+.market-detail-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
 .market-admin-card{margin-bottom:20px;background:var(--card);border:1px dashed var(--accent);border-radius:14px;padding:16px}
 .market-admin-card .field-row{display:flex;gap:8px;flex-wrap:wrap}
 .market-admin-card .field-row .field{flex:1;min-width:110px}
@@ -283,7 +298,19 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
         <button class="btn btn-primary" id="marketAddBtn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Добавить</button>
         <button class="btn" id="marketSeedBtn" style="margin-top:8px;width:100%"><span class="material-symbols-outlined" style="font-size:16px">auto_awesome</span>Добавить все товары (20 шт.)</button>
       </div>
-      <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
+      <div class="market-body" id="marketBody">
+        <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
+        <div class="market-detail" id="marketDetail">
+          <button class="market-detail-close" id="marketDetailClose"><span class="material-symbols-outlined">close</span></button>
+          <div class="market-detail-preview" id="marketDetailPreview"></div>
+          <div class="market-detail-nick" id="marketDetailNick"></div>
+          <div class="market-detail-name" id="marketDetailName"></div>
+          <div class="market-detail-desc" id="marketDetailDesc"></div>
+          <div class="market-detail-price" id="marketDetailPrice"></div>
+          <button class="btn btn-primary btn-block" id="marketDetailBuy"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>
+          <button class="btn btn-primary btn-block hidden" id="marketDetailEquip"><span class="material-symbols-outlined" style="font-size:16px">checkroom</span>Надеть</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -439,7 +466,7 @@ googleBtn.addEventListener('click',async()=>{
 });
 
 const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap'),profileDisplayNameEl=document.getElementById('profileDisplayName'),secCurrentPass=document.getElementById('secCurrentPass'),secNewPass=document.getElementById('secNewPass'),secChangePassBtn=document.getElementById('secChangePass'),secPassMsg=document.getElementById('secPassMsg'),secUidEl=document.getElementById('secUid'),secEmailEl=document.getElementById('secEmail'),secNickEl=document.getElementById('secNick'),balancePillEl=document.getElementById('balancePill'),balanceAmountEl=document.getElementById('balanceAmount'),profileBalanceEl=document.getElementById('profileBalance'),inventoryListEl=document.getElementById('inventoryList');
-const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn');
+const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn'),marketBodyEl=document.getElementById('marketBody'),marketDetailEl=document.getElementById('marketDetail'),marketDetailClose=document.getElementById('marketDetailClose'),marketDetailPreview=document.getElementById('marketDetailPreview'),marketDetailNick=document.getElementById('marketDetailNick'),marketDetailName=document.getElementById('marketDetailName'),marketDetailDesc=document.getElementById('marketDetailDesc'),marketDetailPrice=document.getElementById('marketDetailPrice'),marketDetailBuy=document.getElementById('marketDetailBuy'),marketDetailEquip=document.getElementById('marketDetailEquip');
 
 let unsubscribeOwnUser=null;
 function subscribeOwnUser(uid){if(unsubscribeOwnUser)unsubscribeOwnUser();unsubscribeOwnUser=onSnapshot(doc(db,'users',uid),snap=>{if(!snap.exists())return;const d=snap.data();updateBalanceUI(d.balance);if(usersCache[uid])usersCache[uid].admin=!!d.admin;if(d.banned&&currentUser)signOut(auth)},()=>{})}
@@ -455,14 +482,85 @@ async function equipItem(itemId,item){
     await updateDoc(doc(db,'users',currentUser.uid),update);
     showToast('Экипировано',item.name);
     renderInventory(currentUser.uid);
+    applyEffects();
   }catch(e){showToast('Ошибка','Не удалось экипировать')}
 }
 async function sellItem(itemId,item){if(!currentUser)return;const price=Math.floor((item.price||0)*0.5);if(price<1){showToast('Ошибка','Нельзя продать');return}try{const ref=doc(db,'users',currentUser.uid,'inventory',itemId);const snap=await getDoc(ref);if(!snap.exists())return;const data=snap.data();const qty=(data.quantity||1)-1;if(qty<=0)await deleteDoc(ref);else await updateDoc(ref,{quantity:qty});const userRef=doc(db,'users',currentUser.uid);const userSnap=await getDoc(userRef);const bal=(userSnap.exists()?userSnap.data().balance:0)||0;await updateDoc(userRef,{balance:bal+price});showToast('Продано','+'+price);renderInventory(currentUser.uid);updateBalanceUI(bal+price)}catch(e){showToast('Ошибка','Не удалось продать')}}
-async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';const myName=usersCache[currentUser.uid]?.name||'?';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';let previewStyle='',nickStyle='';if(it.type==='nickColor')nickStyle='color:'+it.value+';';else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 6px #ec4899,0 0 10px #a855f7;';else if(e==='stars')previewStyle='box-shadow:0 0 6px #eab308,0 0 10px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 6px #06b6d4,0 0 10px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 8px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 6px #22d3ee,0 0 12px #06b6d4;';else if(e==='sakura')previewStyle='box-shadow:0 0 6px #f472b6,0 0 10px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 6px #6366f1,0 0 10px #8b5cf6;';else if(e==='glitch')previewStyle='box-shadow:0 0 4px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);card.innerHTML='<div class="market-preview"'+(previewStyle?' style="'+previewStyle+'"':'')+'>'+avHTML+'</div><div class="market-nick"'+(nickStyle?' style="'+nickStyle+'"':'')+'>'+esc(myName)+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('.market-buy-btn').forEach(b=>b.addEventListener('click',()=>buyItem(b.dataset.id,b)));marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteMarketItem(b.dataset.del)))}catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
+async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';closeMarketDetail();try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';const myName=usersCache[currentUser.uid]?.name||'?';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';card.style.cursor='pointer';card.dataset.itemId=it.id;const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';let previewStyle='',nickStyle='';if(it.type==='nickColor')nickStyle='color:'+it.value+';';else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 6px #ec4899,0 0 10px #a855f7;';else if(e==='stars')previewStyle='box-shadow:0 0 6px #eab308,0 0 10px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 6px #06b6d4,0 0 10px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 8px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 6px #22d3ee,0 0 12px #06b6d4;';else if(e==='sakura')previewStyle='box-shadow:0 0 6px #f472b6,0 0 10px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 6px #6366f1,0 0 10px #8b5cf6;';else if(e==='glitch')previewStyle='box-shadow:0 0 4px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);card.innerHTML='<div class="market-preview"'+(previewStyle?' style="'+previewStyle+'"':'')+'>'+avHTML+'</div><div class="market-nick"'+(nickStyle?' style="'+nickStyle+'"':'')+'>'+esc(myName)+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');card.addEventListener('click',e=>{if(e.target.closest('.market-delete-item'))return;openMarketDetail(it)});marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteMarketItem(b.dataset.del)}))}catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
 
-async function buyItem(itemId,btn){if(!currentUser){openAuth();return}if(btn){btn.disabled=true;btn.textContent='...'}try{await runTransaction(db,async(tx)=>{const userRef=doc(db,'users',currentUser.uid),itemRef=doc(db,'market',itemId),invRef=doc(db,'users',currentUser.uid,'inventory',itemId);const userSnap=await tx.get(userRef),itemSnap=await tx.get(itemRef),invSnap=await tx.get(invRef);if(!itemSnap.exists())throw new Error('Товар не найден');const item=itemSnap.data();if(item.active===false)throw new Error('Недоступен');const bal=(userSnap.exists()?userSnap.data().balance:0)||0;if(bal<(item.price||0))throw new Error('Недостаточно кредитов');const q=invSnap.exists()?(invSnap.data().quantity||0):0;tx.update(userRef,{balance:bal-item.price});tx.set(invRef,{itemId,name:item.name,icon:item.icon,price:item.price,quantity:q+1,purchasedAt:serverTimestamp()},{merge:true})});showToast('Покупка','Товар добавлен');renderInventory(currentUser.uid)}catch(e){showToast('Ошибка',e.message)}finally{loadMarketItems()}}
 
-async function deleteMarketItem(id){if(!isAdmin())return;try{await deleteDoc(doc(db,'market',id));showToast('Удалено','');loadMarketItems()}catch(e){showToast('Ошибка',e.message)}}
+async function deleteMarketItem(id){if(!isAdmin())return;try{await deleteDoc(doc(db,'market',id));showToast('Удалено','');closeMarketDetail();loadMarketItems()}catch(e){showToast('Ошибка',e.message)}}
+
+let currentDetailItem=null;
+function openMarketDetail(it){
+  currentDetailItem=it;
+  const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';
+  const myName=usersCache[currentUser.uid]?.name||'?';
+  let previewStyle='',nickStyle='';
+  if(it.type==='nickColor')nickStyle='color:'+it.value+';';
+  else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';
+  else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';
+  else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';
+  else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 8px #ec4899,0 0 14px #a855f7,0 0 20px #3b82f6;';else if(e==='stars')previewStyle='box-shadow:0 0 8px #eab308,0 0 14px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 8px #06b6d4,0 0 14px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 12px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 8px #22d3ee,0 0 16px #06b6d4,0 0 24px #0891b2;';else if(e==='sakura')previewStyle='box-shadow:0 0 8px #f472b6,0 0 14px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 8px #6366f1,0 0 16px #8b5cf6,0 0 24px #a78bfa;';else if(e==='glitch')previewStyle='box-shadow:0 0 6px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}
+  const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);
+  marketDetailPreview.innerHTML=avHTML;
+  marketDetailPreview.style.cssText=previewStyle;
+  marketDetailNick.innerHTML='<span'+(nickStyle?' style="'+nickStyle.replace(/"/g,'&quot;')+'"':'')+'>'+esc(myName)+'</span>';
+  marketDetailName.textContent=it.name||'';
+  marketDetailDesc.textContent=it.description||'';
+  marketDetailPrice.innerHTML='<span class="material-symbols-outlined filled">toll</span>'+(it.price||0);
+  const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';
+  marketDetailName.innerHTML+=hid;
+  marketDetailBuy.classList.remove('hidden');
+  marketDetailEquip.classList.add('hidden');
+  marketDetailBuy.disabled=false;
+  marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
+  marketBodyEl.classList.add('panel-open');
+}
+function closeMarketDetail(){
+  currentDetailItem=null;
+  marketBodyEl.classList.remove('panel-open');
+}
+marketDetailClose.addEventListener('click',closeMarketDetail);
+marketDetailBuy.addEventListener('click',async()=>{
+  if(!currentDetailItem||!currentUser){openAuth();return}
+  marketDetailBuy.disabled=true;
+  marketDetailBuy.textContent='...';
+  try{
+    await runTransaction(db,async(tx)=>{
+      const userRef=doc(db,'users',currentUser.uid),itemRef=doc(db,'market',currentDetailItem.id),invRef=doc(db,'users',currentUser.uid,'inventory',currentDetailItem.id);
+      const userSnap=await tx.get(userRef),itemSnap=await tx.get(itemRef),invSnap=await tx.get(invRef);
+      if(!itemSnap.exists())throw new Error('Товар не найден');
+      const item=itemSnap.data();
+      if(item.active===false)throw new Error('Недоступен');
+      const bal=(userSnap.exists()?userSnap.data().balance:0)||0;
+      if(bal<(item.price||0))throw new Error('Недостаточно кредитов');
+      const q=invSnap.exists()?(invSnap.data().quantity||0):0;
+      tx.update(userRef,{balance:bal-item.price});
+      tx.set(invRef,{itemId:item.name,name:item.name,icon:item.icon,price:item.price,type:item.type,value:item.value,quantity:q+1,purchasedAt:serverTimestamp()},{merge:true});
+    });
+    showToast('Покупка','Товар добавлен');
+    updateBalanceUI((usersCache[currentUser.uid]?.balance||0)-currentDetailItem.price);
+    renderInventory(currentUser.uid);
+    marketDetailBuy.classList.add('hidden');
+    marketDetailEquip.classList.remove('hidden');
+    marketDetailEquip.onclick=async()=>{
+      const fieldMap={nickColor:'equippedNickColor',nickGlow:'equippedNickGlow',nickFont:'equippedNickFont',nickAnimated:'equippedNickAnim',avatarEffect:'equippedAvatarEffect'};
+      const field=fieldMap[currentDetailItem.type];
+      if(!field){showToast('Ошибка','Этот предмет нельзя надеть');return}
+      try{
+        const update={};update[field]=currentDetailItem.value;
+        await updateDoc(doc(db,'users',currentUser.uid),update);
+        showToast('Экипировано',currentDetailItem.name);
+        renderInventory(currentUser.uid);
+        applyEffects();
+      }catch(e){showToast('Ошибка','Не удалось экипировать')}
+    };
+  }catch(e){showToast('Ошибка',e.message);
+    marketDetailBuy.classList.remove('hidden');
+    marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
+  }finally{marketDetailBuy.disabled=false}
+});
 
 marketAddBtn.addEventListener('click',async()=>{if(!isAdmin())return;const name=marketNewName.value.trim().slice(0,40),desc=marketNewDesc.value.trim().slice(0,120),price=parseInt(marketNewPrice.value,10),icon=marketNewIcon.value.trim().slice(0,4)||'🎁';if(!name||!price||price<1){showToast('Ошибка','Название и цена обязательны');return}marketAddBtn.disabled=true;try{await addDoc(collection(db,'market'),{name,description:desc,price,icon,active:true,createdAt:serverTimestamp()});marketNewName.value='';marketNewDesc.value='';marketNewPrice.value='';marketNewIcon.value='';showToast('Добавлено','');loadMarketItems()}catch(e){showToast('Ошибка',e.message)}finally{marketAddBtn.disabled=false}});
 document.getElementById('marketSeedBtn').addEventListener('click',()=>seedMarket());
@@ -495,7 +593,7 @@ chatBackBtn.addEventListener('click',()=>{chatsSidebar.classList.remove('hidden-
 
 function renderGlobalChatItem(){const item=document.createElement('div');item.className='chat-item-wrap'+(activeChatId===GLOBAL_CHAT_ID?' active':'');item.innerHTML='<div class="chat-item-avatar" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span></div><div class="chat-item-info"><div class="chat-item-name">Общий чат</div><div class="chat-item-last">Все участники</div></div>';item.addEventListener('click',()=>openGlobalChat());chatListEl.appendChild(item)}
 
-function openGlobalChat(){if(!currentUser)return;if(activeChatId===GLOBAL_CHAT_ID)return;activeChatId=GLOBAL_CHAT_ID;activeChatTargetUid=null;renderedMsgIds=new Set();chatBodyEl.innerHTML='';chatMainHeaderEl.classList.remove('hidden');chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span>';chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';chatMainNameEl.textContent='Общий чат';chatMainStatusEl.textContent='Все участники';document.getElementById('adminBanBtn').classList.add('hidden');document.getElementById('adminEditBtn').classList.add('hidden');document.querySelectorAll('.chat-item-wrap').forEach(el=>el.classList.remove('active'));if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');subscribeChat()}
+function openGlobalChat(){if(!currentUser)return;if(activeChatId===GLOBAL_CHAT_ID)return;activeChatId=GLOBAL_CHAT_ID;activeChatTargetUid=null;renderedMsgIds=new Set();chatBodyEl.innerHTML='';chatMainHeaderEl.classList.remove('hidden');chatBackBtn.classList.remove('hidden');chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span>';chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';chatMainNameEl.textContent='Общий чат';chatMainStatusEl.textContent='Все участники';document.getElementById('adminBanBtn').classList.add('hidden');document.getElementById('adminEditBtn').classList.add('hidden');document.querySelectorAll('.chat-item-wrap').forEach(el=>el.classList.remove('active'));if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');subscribeChat()}
 
 async function renderChatList(q){if(!currentUser){chatListEl.innerHTML='<div class="chat-empty">Войдите, чтобы видеть чаты</div>';return}if(q){chatListEl.innerHTML='';renderGlobalChatItem();const s=q.toLowerCase(),results=[];for(const [uid,d] of Object.entries(usersCache)){if(uid===currentUser.uid)continue;if(d.name.toLowerCase().includes(s)||d.nick.toLowerCase().includes(s))results.push({uid,...d})}if(!results.length){chatListEl.innerHTML+='<div class="chat-empty" style="padding:20px">Никого не нашли</div>';return}results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item-wrap';item.style.animationDelay=((i+1)*.05)+'s';const av=sanitizeAvatar(p.avatar);item.innerHTML='<div class="chat-item-avatar">'+(av?'<img src="'+esc(av)+'">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+esc(p.name)+'</div><div class="chat-item-last">@'+esc(p.nick)+'</div></div>';item.addEventListener('click',()=>startChatWith(p.uid));chatListEl.appendChild(item)});return}loadActiveChats()}
 
@@ -506,7 +604,7 @@ async function startChatWith(uid){if(!currentUser||!usersCache[uid]||chatOpening
 
 async function markChatRead(chatId){try{const ref=doc(db,'chats',chatId);const snap=await getDoc(ref);if(snap.exists()){const data=snap.data();const lastRead=data.lastRead||{};lastRead[currentUser.uid]=serverTimestamp();await updateDoc(ref,{lastRead})}}catch(e){}}
 
-function openChatWith(uid){if(!usersCache[uid])return;const chatId=makeChatId(currentUser.uid,uid);if(activeChatId===chatId)return;activeChatId=chatId;activeChatTargetUid=uid;renderedMsgIds=new Set();chatBodyEl.innerHTML='';const other=usersCache[uid];chatMainHeaderEl.classList.remove('hidden');const av=sanitizeAvatar(other.avatar);chatMainAvatarEl.innerHTML=av?'<img src="'+esc(av)+'">':initials(other.name);chatMainAvatarEl.style.background='';chatMainNameEl.textContent=other.name;chatMainStatusEl.textContent='@'+other.nick;document.querySelectorAll('.chat-item-wrap').forEach(el=>{el.classList.remove('active');const b=el.querySelector('.chat-unread-badge');if(b)b.remove()});chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');const banBtn=document.getElementById('adminBanBtn'),editBtn=document.getElementById('adminEditBtn');if(isAdmin()){banBtn.classList.remove('hidden');editBtn.classList.remove('hidden');banBtn.onclick=()=>banUser(uid);editBtn.onclick=()=>openAdminEdit(uid)}else{banBtn.classList.add('hidden');editBtn.classList.add('hidden')}markChatRead(activeChatId);subscribeChat()}
+function openChatWith(uid){if(!usersCache[uid])return;const chatId=makeChatId(currentUser.uid,uid);if(activeChatId===chatId)return;activeChatId=chatId;activeChatTargetUid=uid;renderedMsgIds=new Set();chatBodyEl.innerHTML='';const other=usersCache[uid];chatMainHeaderEl.classList.remove('hidden');chatBackBtn.classList.add('hidden');const av=sanitizeAvatar(other.avatar);chatMainAvatarEl.innerHTML=av?'<img src="'+esc(av)+'">':initials(other.name);chatMainAvatarEl.style.background='';chatMainNameEl.textContent=other.name;chatMainStatusEl.textContent='@'+other.nick;document.querySelectorAll('.chat-item-wrap').forEach(el=>{el.classList.remove('active');const b=el.querySelector('.chat-unread-badge');if(b)b.remove()});chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');const banBtn=document.getElementById('adminBanBtn'),editBtn=document.getElementById('adminEditBtn');if(isAdmin()){banBtn.classList.remove('hidden');editBtn.classList.remove('hidden');banBtn.onclick=()=>banUser(uid);editBtn.onclick=()=>openAdminEdit(uid)}else{banBtn.classList.add('hidden');editBtn.classList.add('hidden')}markChatRead(activeChatId);subscribeChat()}
 
 chatSearchInput.addEventListener('input',e=>renderChatList(e.target.value));
 
