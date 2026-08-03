@@ -160,8 +160,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .profile-section-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 .5rem;padding-top:.8rem;border-top:1px solid var(--border)}
 .profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
 .profile-info-val{color:var(--text2);font-family:monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.market-page{height:100%;overflow-y:auto}
-.market-wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.market-page{height:100%;overflow-y:auto;display:flex;flex-direction:row}
+.market-wrap{flex:1;min-width:0;max-width:960px;margin:0 auto;padding:24px 20px 60px;transition:margin-right .3s cubic-bezier(.4,0,.2,1)}
+.market-page.panel-open .market-wrap{margin-right:0}
 .market-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .market-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
 .market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
@@ -174,11 +175,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-price .material-symbols-outlined{font-size:15px;color:#f59e0b}
 .market-buy-btn{margin-top:4px;width:100%}
 .market-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
-.market-body{display:flex;gap:0;position:relative;min-height:400px}
-.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;flex:1;min-width:0;transition:all .3s cubic-bezier(.4,0,.2,1);padding-right:16px}
-.market-body.panel-open .market-grid{flex:0 0 55%;max-width:55%;opacity:1;pointer-events:auto}
-.market-detail{position:absolute;right:0;top:0;bottom:0;width:0;overflow:hidden;background:var(--card);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;gap:14px;transition:all .3s cubic-bezier(.4,0,.2,1);box-shadow:none}
-.market-body.panel-open .market-detail{width:45%;padding:28px 24px;overflow-y:auto;box-shadow:-4px 0 24px var(--shadow)}
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.market-detail{flex-shrink:0;width:0;overflow:hidden;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;gap:14px;transition:width .3s cubic-bezier(.4,0,.2,1);box-shadow:none}
+.market-page.panel-open .market-detail{width:380px;padding:24px 20px;overflow-y:auto;box-shadow:-4px 0 24px var(--shadow)}
 .market-detail-close{position:sticky;top:0;align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:8px;transition:all .2s;z-index:11;margin-bottom:-8px}
 .market-detail-close:hover{background:var(--hover);color:var(--text)}
 .market-detail-preview{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0;animation:popIn .3s ease}
@@ -198,16 +197,28 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .inventory-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
 .inventory-icon{font-size:16px}
 .inventory-qty{margin-left:auto;color:var(--text2);font-size:12px}
-@keyframes nickRainbow{0%{color:#ef4444}14%{color:#f97316}28%{color:#eab308}42%{color:#22c55e}57%{color:#3b82f6}71%{color:#8b5cf6}85%{color:#ec4899}100%{color:#ef4444}}
-@keyframes nickFire{0%{color:#ef4444}25%{color:#f97316}50%{color:#eab308}75%{color:#f97316}100%{color:#ef4444}}
-@keyframes nickOcean{0%{color:#06b6d4}33%{color:#0ea5e9}66%{color:#0284c7}100%{color:#06b6d4}}
-@keyframes nickSpace{0%{color:#8b5cf6}33%{color:#6366f1}66%{color:#3b82f6}100%{color:#8b5cf6}}
-@keyframes nickLime{0%{color:#84cc16}33%{color:#22c55e}66%{color:#16a34a}100%{color:#84cc16}}
-.nick-anim-rainbow{animation:nickRainbow 3s linear infinite}
-.nick-anim-fire{animation:nickFire 1.5s ease-in-out infinite}
-.nick-anim-ocean{animation:nickOcean 2.5s ease-in-out infinite}
-.nick-anim-space{animation:nickSpace 4s ease-in-out infinite}
-.nick-anim-lime{animation:nickLime 2s ease-in-out infinite}
+@keyframes nickRainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes nickFire{0%,100%{text-shadow:0 0 4px #ef4444,0 0 11px #ef4444,0 0 19px #ef4444,0 0 40px #f97316}50%{text-shadow:0 0 4px #f97316,0 0 10px #f97316,0 0 18px #eab308,0 0 35px #ef4444}}
+@keyframes nickOcean{0%{text-shadow:0 0 6px #06b6d4}33%{text-shadow:0 0 12px #0ea5e9,0 0 20px #0284c7}66%{text-shadow:0 0 8px #0891b2,0 0 16px #06b6d4}100%{text-shadow:0 0 6px #06b6d4}}
+@keyframes nickSpace{0%{text-shadow:0 0 6px #8b5cf6,0 0 15px #6366f1}33%{text-shadow:0 0 10px #a78bfa,0 0 25px #8b5cf6,0 0 40px #6366f1}66%{text-shadow:0 0 8px #3b82f6,0 0 20px #6366f1}100%{text-shadow:0 0 6px #8b5cf6,0 0 15px #6366f1}}
+@keyframes nickLime{0%,100%{text-shadow:0 0 5px #84cc16,0 0 12px #22c55e}50%{text-shadow:0 0 10px #22c55e,0 0 22px #16a34a,0 0 35px #84cc16}}
+@keyframes nickPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes avatarGlow{0%,100%{box-shadow:0 0 8px var(--glow-c1),0 0 16px var(--glow-c2)}50%{box-shadow:0 0 14px var(--glow-c1),0 0 28px var(--glow-c2),0 0 40px var(--glow-c3)}}
+@keyframes avatarRotate{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
+@keyframes avatarBreath{0%,100%{box-shadow:0 0 8px var(--glow-c1),0 0 14px var(--glow-c2)}50%{box-shadow:0 0 12px var(--glow-c1),0 0 22px var(--glow-c2),0 0 34px var(--glow-c3)}}
+.nick-anim-rainbow{background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:nickRainbow 4s ease infinite}
+.nick-anim-fire{color:#ef4444;animation:nickFire 1.2s ease-in-out infinite}
+.nick-anim-ocean{color:#06b6d4;animation:nickOcean 2s ease-in-out infinite}
+.nick-anim-space{color:#8b5cf6;animation:nickSpace 3s ease-in-out infinite}
+.nick-anim-lime{color:#84cc16;animation:nickLime 1.8s ease-in-out infinite}
+.avatar-glow-rainbow{--glow-c1:#ec4899;--glow-c2:#a855f7;--glow-c3:#3b82f6;animation:avatarGlow 2s ease-in-out infinite}
+.avatar-glow-stars{--glow-c1:#eab308;--glow-c2:#f59e0b;--glow-c3:#fbbf24;animation:avatarBreath 2.5s ease-in-out infinite}
+.avatar-glow-waves{--glow-c1:#06b6d4;--glow-c2:#0891b2;--glow-c3:#0ea5e9;animation:avatarBreath 3s ease-in-out infinite}
+.avatar-glow-smoke{--glow-c1:rgba(148,163,184,.5);--glow-c2:rgba(100,116,139,.3);--glow-c3:rgba(71,85,105,.2);animation:avatarBreath 4s ease-in-out infinite}
+.avatar-glow-neon{--glow-c1:#22d3ee;--glow-c2:#06b6d4;--glow-c3:#0891b2;animation:avatarGlow 1.5s ease-in-out infinite}
+.avatar-glow-sakura{--glow-c1:#f472b6;--glow-c2:#ec4899;--glow-c3:#db2777;animation:avatarBreath 2.8s ease-in-out infinite}
+.avatar-glow-space{--glow-c1:#8b5cf6;--glow-c2:#6366f1;--glow-c3:#a78bfa;animation:avatarGlow 3.2s ease-in-out infinite}
+.avatar-glow-glitch{animation:avatarRotate 3s linear infinite;box-shadow:2px 0 0 #ef4444,-2px 0 0 #3b82f6,0 2px 0 #22c55e,0 -2px 0 #eab308}
 .toast-stack{position:fixed;top:64px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
 .toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 20px var(--shadow);padding:12px 16px;font-size:13px;color:var(--text);width:320px;max-width:calc(100vw - 32px);display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateX(20px);transition:all .3s ease;pointer-events:auto}
 .toast.show{opacity:1;transform:translateX(0)}
@@ -302,19 +313,17 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
         <button class="btn btn-primary" id="marketAddBtn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Добавить</button>
         <button class="btn" id="marketSeedBtn" style="margin-top:8px;width:100%"><span class="material-symbols-outlined" style="font-size:16px">auto_awesome</span>Добавить все товары (20 шт.)</button>
       </div>
-      <div class="market-body" id="marketBody">
-        <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
-        <div class="market-detail" id="marketDetail">
-          <button class="market-detail-close" id="marketDetailClose"><span class="material-symbols-outlined">close</span></button>
-          <div class="market-detail-preview" id="marketDetailPreview"></div>
-          <div class="market-detail-nick" id="marketDetailNick"></div>
-          <div class="market-detail-name" id="marketDetailName"></div>
-          <div class="market-detail-desc" id="marketDetailDesc"></div>
-          <div class="market-detail-price" id="marketDetailPrice"></div>
-          <button class="btn btn-primary btn-block" id="marketDetailBuy"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>
-          <button class="btn btn-primary btn-block hidden" id="marketDetailEquip"><span class="material-symbols-outlined" style="font-size:16px">checkroom</span>Надеть</button>
-        </div>
-      </div>
+      <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
+    </div>
+    <div class="market-detail" id="marketDetail">
+      <button class="market-detail-close" id="marketDetailClose"><span class="material-symbols-outlined">close</span></button>
+      <div class="market-detail-preview" id="marketDetailPreview"></div>
+      <div class="market-detail-nick" id="marketDetailNick"></div>
+      <div class="market-detail-name" id="marketDetailName"></div>
+      <div class="market-detail-desc" id="marketDetailDesc"></div>
+      <div class="market-detail-price" id="marketDetailPrice"></div>
+      <button class="btn btn-primary btn-block" id="marketDetailBuy"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>
+      <button class="btn btn-primary btn-block hidden" id="marketDetailEquip"><span class="material-symbols-outlined" style="font-size:16px">checkroom</span>Надеть</button>
     </div>
   </div>
 </div>
@@ -472,7 +481,7 @@ googleBtn.addEventListener('click',async()=>{
 });
 
 const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap'),profileDisplayNameEl=document.getElementById('profileDisplayName'),secCurrentPass=document.getElementById('secCurrentPass'),secNewPass=document.getElementById('secNewPass'),secChangePassBtn=document.getElementById('secChangePass'),secPassMsg=document.getElementById('secPassMsg'),secUidEl=document.getElementById('secUid'),secEmailEl=document.getElementById('secEmail'),secNickEl=document.getElementById('secNick'),balancePillEl=document.getElementById('balancePill'),balanceAmountEl=document.getElementById('balanceAmount'),profileBalanceEl=document.getElementById('profileBalance'),inventoryListEl=document.getElementById('inventoryList');
-const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn'),marketBodyEl=document.getElementById('marketBody'),marketDetailEl=document.getElementById('marketDetail'),marketDetailClose=document.getElementById('marketDetailClose'),marketDetailPreview=document.getElementById('marketDetailPreview'),marketDetailNick=document.getElementById('marketDetailNick'),marketDetailName=document.getElementById('marketDetailName'),marketDetailDesc=document.getElementById('marketDetailDesc'),marketDetailPrice=document.getElementById('marketDetailPrice'),marketDetailBuy=document.getElementById('marketDetailBuy'),marketDetailEquip=document.getElementById('marketDetailEquip');
+const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn'),marketDetailEl=document.getElementById('marketDetail'),marketDetailClose=document.getElementById('marketDetailClose'),marketDetailPreview=document.getElementById('marketDetailPreview'),marketDetailNick=document.getElementById('marketDetailNick'),marketDetailName=document.getElementById('marketDetailName'),marketDetailDesc=document.getElementById('marketDetailDesc'),marketDetailPrice=document.getElementById('marketDetailPrice'),marketDetailBuy=document.getElementById('marketDetailBuy'),marketDetailEquip=document.getElementById('marketDetailEquip');
 
 let unsubscribeOwnUser=null;
 function subscribeOwnUser(uid){if(unsubscribeOwnUser)unsubscribeOwnUser();unsubscribeOwnUser=onSnapshot(doc(db,'users',uid),snap=>{if(!snap.exists())return;const d=snap.data();updateBalanceUI(d.balance);if(usersCache[uid])usersCache[uid].admin=!!d.admin;if(d.banned&&currentUser)signOut(auth)},()=>{})}
@@ -518,11 +527,11 @@ function renderEquippedEffects(){
     const row=document.createElement('div');
     row.className='inventory-item';
     let preview='';
-    if(it.field==='equippedNickColor')preview='<span style="color:'+esc(it.val)+'">Aa</span>';
-    else if(it.field==='equippedNickGlow')preview='<span style="color:'+esc(it.val)+';text-shadow:0 0 6px '+esc(it.val)+',0 0 12px '+esc(it.val)+'">Aa</span>';
+    if(it.field==='equippedNickColor')preview='<span style="color:'+esc(it.val)+';text-shadow:0 0 3px '+esc(it.val)+'40">Aa</span>';
+    else if(it.field==='equippedNickGlow')preview='<span style="color:'+esc(it.val)+';text-shadow:0 0 6px '+esc(it.val)+',0 0 14px '+esc(it.val)+',0 0 22px '+esc(it.val)+'">Aa</span>';
     else if(it.field==='equippedNickFont')preview='<span style="font-family:'+esc(it.val)+'">Aa</span>';
     else if(it.field==='equippedNickAnim')preview='<span class="nick-anim-'+esc(it.val)+'">Aa</span>';
-    else if(it.field==='equippedAvatarEffect')preview='<span style="font-size:18px">◈</span>';
+    else if(it.field==='equippedAvatarEffect')preview='<span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block;vertical-align:middle;'+getAvatarEffectStyleByValue(it.val).replace(/"/g,'&quot;')+'"></span>';
     row.innerHTML='<span style="font-size:14px;font-weight:600">'+preview+'</span><span style="font-size:12px">'+esc(it.label)+'</span>';
     const rmBtn=document.createElement('button');
     rmBtn.className='btn';
@@ -543,7 +552,7 @@ function renderEquippedEffects(){
   });
 }
 async function sellItem(itemId,item){if(!currentUser)return;const price=Math.floor((item.price||0)*0.5);if(price<1){showToast('Ошибка','Нельзя продать');return}try{const ref=doc(db,'users',currentUser.uid,'inventory',itemId);const snap=await getDoc(ref);if(!snap.exists())return;const data=snap.data();const qty=(data.quantity||1)-1;if(qty<=0)await deleteDoc(ref);else await updateDoc(ref,{quantity:qty});const userRef=doc(db,'users',currentUser.uid);const userSnap=await getDoc(userRef);const bal=(userSnap.exists()?userSnap.data().balance:0)||0;await updateDoc(userRef,{balance:bal+price});showToast('Продано','+'+price);renderInventory(currentUser.uid);updateBalanceUI(bal+price)}catch(e){showToast('Ошибка','Не удалось продать')}}
-async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';closeMarketDetail();try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';const myName=usersCache[currentUser.uid]?.name||'?';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';card.style.cursor='pointer';card.dataset.itemId=it.id;const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';let previewStyle='',nickStyle='';if(it.type==='nickColor')nickStyle='color:'+it.value+';';else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 6px #ec4899,0 0 10px #a855f7;';else if(e==='stars')previewStyle='box-shadow:0 0 6px #eab308,0 0 10px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 6px #06b6d4,0 0 10px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 8px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 6px #22d3ee,0 0 12px #06b6d4;';else if(e==='sakura')previewStyle='box-shadow:0 0 6px #f472b6,0 0 10px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 6px #6366f1,0 0 10px #8b5cf6;';else if(e==='glitch')previewStyle='box-shadow:0 0 4px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);card.innerHTML='<div class="market-preview"'+(previewStyle?' style="'+previewStyle+'"':'')+'>'+avHTML+'</div><div class="market-nick"'+(nickStyle?' style="'+nickStyle+'"':'')+'>'+esc(myName)+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');card.addEventListener('click',e=>{if(e.target.closest('.market-delete-item'))return;openMarketDetail(it)});marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteMarketItem(b.dataset.del)}))}catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
+async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';closeMarketDetail();try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';const myName=usersCache[currentUser.uid]?.name||'?';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';card.style.cursor='pointer';card.dataset.itemId=it.id;const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';let previewStyle='',nickStyle='';if(it.type==='nickColor')nickStyle='color:'+it.value+';text-shadow:0 0 3px '+it.value+'40;';else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 14px '+it.value+',0 0 22px '+it.value+';';else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';else if(it.type==='nickAnimated'){if(it.value==='rainbow')nickStyle='background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:nickRainbow 4s ease infinite;';else nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';}else if(it.type==='avatarEffect')previewStyle=getAvatarEffectStyleByValue(it.value);const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);card.innerHTML='<div class="market-preview"'+(previewStyle?' style="'+previewStyle+'"':'')+'>'+avHTML+'</div><div class="market-nick"'+(nickStyle?' style="'+nickStyle+'"':'')+'>'+esc(myName)+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');card.addEventListener('click',e=>{if(e.target.closest('.market-delete-item'))return;openMarketDetail(it)});marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteMarketItem(b.dataset.del)}))}catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
 
 
 async function deleteMarketItem(id){if(!isAdmin())return;try{await deleteDoc(doc(db,'market',id));showToast('Удалено','');closeMarketDetail();loadMarketItems()}catch(e){showToast('Ошибка',e.message)}}
@@ -556,11 +565,11 @@ function openMarketDetail(it){
   const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';
   const myName=usersCache[currentUser.uid]?.name||'?';
   let previewStyle='',nickStyle='';
-  if(it.type==='nickColor')nickStyle='color:'+it.value+';';
-  else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';
+  if(it.type==='nickColor')nickStyle='color:'+it.value+';text-shadow:0 0 3px '+it.value+'40;';
+  else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 14px '+it.value+',0 0 22px '+it.value+';';
   else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';
-  else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';
-  else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 8px #ec4899,0 0 14px #a855f7,0 0 20px #3b82f6;';else if(e==='stars')previewStyle='box-shadow:0 0 8px #eab308,0 0 14px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 8px #06b6d4,0 0 14px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 12px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 8px #22d3ee,0 0 16px #06b6d4,0 0 24px #0891b2;';else if(e==='sakura')previewStyle='box-shadow:0 0 8px #f472b6,0 0 14px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 8px #6366f1,0 0 16px #8b5cf6,0 0 24px #a78bfa;';else if(e==='glitch')previewStyle='box-shadow:0 0 6px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}
+  else if(it.type==='nickAnimated'){const animMap={rainbow:'nickRainbow 4s ease infinite',fire:'nickFire 1.2s ease-in-out infinite',ocean:'nickOcean 2s ease-in-out infinite',space:'nickSpace 3s ease-in-out infinite',lime:'nickLime 1.8s ease-in-out infinite'};if(it.value==='rainbow')nickStyle='background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899,#ef4444);background-size:300% 300%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:nickRainbow 4s ease infinite;';else nickStyle='color:'+it.value+';animation:'+(animMap[it.value]||'nickPulse 2s ease-in-out infinite')+';'}
+  else if(it.type==='avatarEffect'){previewStyle=getAvatarEffectStyleByValue(it.value);}
   const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);
   marketDetailPreview.innerHTML=avHTML;
   marketDetailPreview.style.cssText=previewStyle;
@@ -584,11 +593,11 @@ function openMarketDetail(it){
     marketDetailBuy.disabled=false;
     marketDetailBuy.innerHTML='<span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить';
   }
-  marketBodyEl.classList.add('panel-open');
+  viewMarketEl.classList.add('panel-open');
 }
 function closeMarketDetail(){
   currentDetailItem=null;
-  marketBodyEl.classList.remove('panel-open');
+  viewMarketEl.classList.remove('panel-open');
 }
 marketDetailClose.addEventListener('click',closeMarketDetail);
 marketDetailBuy.addEventListener('click',async()=>{
@@ -792,26 +801,38 @@ async function seedMarket(){
 
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='m'&&isAdmin()){e.preventDefault();seedMarket()}});
 
+function getAvatarEffectStyleByValue(effect){
+  if(!effect)return'';
+  if(effect==='rainbow')return'box-shadow:0 0 8px #ec4899,0 0 16px #a855f7,0 0 24px #3b82f6;animation:avatarGlow 2s ease-in-out infinite;--glow-c1:#ec4899;--glow-c2:#a855f7;--glow-c3:#3b82f6';
+  if(effect==='stars')return'box-shadow:0 0 8px #eab308,0 0 16px #f59e0b;animation:avatarBreath 2.5s ease-in-out infinite;--glow-c1:#eab308;--glow-c2:#f59e0b;--glow-c3:#fbbf24';
+  if(effect==='waves')return'box-shadow:0 0 8px #06b6d4,0 0 16px #0891b2;animation:avatarBreath 3s ease-in-out infinite;--glow-c1:#06b6d4;--glow-c2:#0891b2;--glow-c3:#0ea5e9';
+  if(effect==='smoke')return'box-shadow:0 0 10px rgba(148,163,184,.4),0 0 20px rgba(100,116,139,.2);animation:avatarBreath 4s ease-in-out infinite';
+  if(effect==='neon')return'box-shadow:0 0 10px #22d3ee,0 0 20px #06b6d4,0 0 30px #0891b2;animation:avatarGlow 1.5s ease-in-out infinite;--glow-c1:#22d3ee;--glow-c2:#06b6d4;--glow-c3:#0891b2';
+  if(effect==='sakura')return'box-shadow:0 0 8px #f472b6,0 0 16px #ec4899;animation:avatarBreath 2.8s ease-in-out infinite;--glow-c1:#f472b6;--glow-c2:#ec4899;--glow-c3:#db2777';
+  if(effect==='space')return'box-shadow:0 0 10px #8b5cf6,0 0 20px #6366f1,0 0 30px #a78bfa;animation:avatarGlow 3.2s ease-in-out infinite;--glow-c1:#8b5cf6;--glow-c2:#6366f1;--glow-c3:#a78bfa';
+  if(effect==='glitch')return'box-shadow:2px 0 0 #ef4444,-2px 0 0 #3b82f6,0 2px 0 #22c55e,0 -2px 0 #eab308;animation:avatarRotate 3s linear infinite';
+  return'';
+}
 function getAvatarEffectStyle(uid){
   const u=usersCache[uid];
   const effect=u?u.equippedAvatarEffect:null;
   if(!effect)return'';
-  if(effect==='rainbow')return'box-shadow:0 0 8px #ec4899,0 0 12px #a855f7,0 0 16px #3b82f6';
-  if(effect==='stars')return'box-shadow:0 0 6px #eab308,0 0 12px #f59e0b';
-  if(effect==='waves')return'box-shadow:0 0 8px #06b6d4,0 0 14px #0891b2';
-  if(effect==='smoke')return'box-shadow:0 0 12px rgba(100,100,100,.5)';
-  if(effect==='neon')return'box-shadow:0 0 6px #22d3ee,0 0 14px #06b6d4,0 0 22px #0891b2';
-  if(effect==='sakura')return'box-shadow:0 0 8px #f472b6,0 0 14px #ec4899';
-  if(effect==='space')return'box-shadow:0 0 8px #6366f1,0 0 14px #8b5cf6,0 0 20px #a78bfa';
-  if(effect==='glitch')return'box-shadow:0 0 6px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e';
+  if(effect==='rainbow')return'box-shadow:0 0 8px #ec4899,0 0 16px #a855f7,0 0 24px #3b82f6;animation:avatarGlow 2s ease-in-out infinite;--glow-c1:#ec4899;--glow-c2:#a855f7;--glow-c3:#3b82f6';
+  if(effect==='stars')return'box-shadow:0 0 8px #eab308,0 0 16px #f59e0b;animation:avatarBreath 2.5s ease-in-out infinite;--glow-c1:#eab308;--glow-c2:#f59e0b;--glow-c3:#fbbf24';
+  if(effect==='waves')return'box-shadow:0 0 8px #06b6d4,0 0 16px #0891b2;animation:avatarBreath 3s ease-in-out infinite;--glow-c1:#06b6d4;--glow-c2:#0891b2;--glow-c3:#0ea5e9';
+  if(effect==='smoke')return'box-shadow:0 0 10px rgba(148,163,184,.4),0 0 20px rgba(100,116,139,.2);animation:avatarBreath 4s ease-in-out infinite';
+  if(effect==='neon')return'box-shadow:0 0 10px #22d3ee,0 0 20px #06b6d4,0 0 30px #0891b2;animation:avatarGlow 1.5s ease-in-out infinite;--glow-c1:#22d3ee;--glow-c2:#06b6d4;--glow-c3:#0891b2';
+  if(effect==='sakura')return'box-shadow:0 0 8px #f472b6,0 0 16px #ec4899;animation:avatarBreath 2.8s ease-in-out infinite;--glow-c1:#f472b6;--glow-c2:#ec4899;--glow-c3:#db2777';
+  if(effect==='space')return'box-shadow:0 0 10px #8b5cf6,0 0 20px #6366f1,0 0 30px #a78bfa;animation:avatarGlow 3.2s ease-in-out infinite;--glow-c1:#8b5cf6;--glow-c2:#6366f1;--glow-c3:#a78bfa';
+  if(effect==='glitch')return'box-shadow:2px 0 0 #ef4444,-2px 0 0 #3b82f6,0 2px 0 #22c55e,0 -2px 0 #eab308;animation:avatarRotate 3s linear infinite';
   return'';
 }
 function getUserNickStyle(uid){
   const u=usersCache[uid];
   if(!u)return'';
   let s='';
-  if(u.equippedNickGlow)s+='color:'+u.equippedNickGlow+';text-shadow:0 0 6px '+u.equippedNickGlow+',0 0 12px '+u.equippedNickGlow+',0 0 20px '+u.equippedNickGlow+';';
-  else if(u.equippedNickColor)s+='color:'+u.equippedNickColor+';';
+  if(u.equippedNickGlow)s+='color:'+u.equippedNickGlow+';text-shadow:0 0 6px '+u.equippedNickGlow+',0 0 14px '+u.equippedNickGlow+',0 0 22px '+u.equippedNickGlow+';';
+  else if(u.equippedNickColor)s+='color:'+u.equippedNickColor+';text-shadow:0 0 3px '+u.equippedNickColor+'40;';
   if(u.equippedNickFont)s+='font-family:'+esc(u.equippedNickFont)+';';
   return s?' style="'+s.replace(/"/g,'&quot;')+'"':'';
 }
