@@ -160,9 +160,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .profile-section-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 .5rem;padding-top:.8rem;border-top:1px solid var(--border)}
 .profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
 .profile-info-val{color:var(--text2);font-family:monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.market-page{height:100%;overflow-y:auto;display:flex;flex-direction:row}
-.market-wrap{flex:1;min-width:0;max-width:960px;margin:0 auto;padding:24px 20px 60px;transition:margin-right .3s cubic-bezier(.4,0,.2,1)}
-.market-page.panel-open .market-wrap{margin-right:0}
+.market-page{height:100%;overflow-y:auto}
+.market-wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px;transition:margin-right .3s cubic-bezier(.4,0,.2,1)}
+.market-page.panel-open .market-wrap{margin-right:380px}
 .market-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .market-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
 .market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
@@ -176,7 +176,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-buy-btn{margin-top:4px;width:100%}
 .market-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
 .market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-.market-detail{flex-shrink:0;width:0;overflow:hidden;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;gap:14px;transition:width .3s cubic-bezier(.4,0,.2,1);box-shadow:none}
+.market-detail{position:fixed;top:52px;right:0;bottom:0;width:0;overflow:hidden;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;gap:14px;transition:width .3s cubic-bezier(.4,0,.2,1);box-shadow:none;z-index:50}
 .market-page.panel-open .market-detail{width:380px;padding:24px 20px;overflow-y:auto;box-shadow:-4px 0 24px var(--shadow)}
 .market-detail-close{position:sticky;top:0;align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;border-radius:8px;transition:all .2s;z-index:11;margin-bottom:-8px}
 .market-detail-close:hover{background:var(--hover);color:var(--text)}
