@@ -161,11 +161,12 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .market-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .market-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
 .market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-.market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
+.market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
 .market-card:hover{border-color:var(--accent);box-shadow:0 6px 20px var(--shadow);transform:translateY(-2px)}
-.market-icon{font-size:32px;line-height:1}
-.market-name{font-weight:600;font-size:14px}
-.market-desc{font-size:12px;color:var(--text2);flex:1}
+.market-preview{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0}
+.market-preview img{width:100%;height:100%;object-fit:cover}
+.market-nick{font-size:13px;font-weight:600}
+.market-name{font-weight:600;font-size:13px;color:var(--text2)}
 .market-price{display:flex;align-items:center;gap:4px;font-weight:600;color:var(--text)}
 .market-price .material-symbols-outlined{font-size:15px;color:#f59e0b}
 .market-buy-btn{margin-top:4px;width:100%}
@@ -443,9 +444,21 @@ const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.g
 let unsubscribeOwnUser=null;
 function subscribeOwnUser(uid){if(unsubscribeOwnUser)unsubscribeOwnUser();unsubscribeOwnUser=onSnapshot(doc(db,'users',uid),snap=>{if(!snap.exists())return;const d=snap.data();updateBalanceUI(d.balance);if(usersCache[uid])usersCache[uid].admin=!!d.admin;if(d.banned&&currentUser)signOut(auth)},()=>{})}
 function updateBalanceUI(bal){const b=typeof bal==='number'?bal:0;balanceAmountEl.textContent=b;profileBalanceEl.textContent=b;balancePillEl.classList.add('visible')}
-async function renderInventory(uid){inventoryListEl.innerHTML='';try{const s=await getDocs(collection(db,'users',uid,'inventory'));if(s.empty){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пусто</div>';return}s.forEach(d=>{const it=d.data();const row=document.createElement('div');row.className='inventory-item';row.innerHTML='<span class="inventory-icon">'+esc(it.icon||'🎁')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';inventoryListEl.appendChild(row)})}catch(e){inventoryListEl.innerHTML=''}}
-
-async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';card.innerHTML='<div class="market-icon">'+esc(it.icon||'🎁')+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-desc">'+esc(it.description||'')+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('.market-buy-btn').forEach(b=>b.addEventListener('click',()=>buyItem(b.dataset.id,b)));marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteMarketItem(b.dataset.del)))  }catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки. Проверьте правила Firestore</div>'}}
+async function renderInventory(uid){inventoryListEl.innerHTML='';try{const s=await getDocs(collection(db,'users',uid,'inventory'));const sellWrap=document.getElementById('inventorySellWrap');let hasItems=false;s.forEach(d=>{const it=d.data();if(!it.quantity||it.quantity<1)return;hasItems=true;const row=document.createElement('div');row.className='inventory-item';const iconStyle=it.iconColor?'color:'+esc(it.iconColor)+';font-weight:700':it.iconFont?'font:'+esc(it.iconFont):'';row.innerHTML='<span class="inventory-icon"'+(iconStyle?' style="'+iconStyle+'"':'')+'>'+esc(it.icon||'...')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';const btnWrap=document.createElement('span');btnWrap.style.cssText='display:flex;gap:4px;margin-left:auto';if(it.type&&it.type!=='credits'){const useBtn=document.createElement('button');useBtn.className='btn';useBtn.style.cssText='padding:3px 8px;font-size:11px';useBtn.textContent='Надеть';useBtn.addEventListener('click',()=>equipItem(d.id,it));btnWrap.appendChild(useBtn)}const sellPrice=Math.floor((it.price||0)*0.5);if(sellPrice>0){const sellBtn=document.createElement('button');sellBtn.className='btn';sellBtn.style.cssText='padding:3px 8px;font-size:11px;color:#dc2626';sellBtn.textContent='Продать за '+sellPrice;sellBtn.addEventListener('click',()=>sellItem(d.id,it));btnWrap.appendChild(sellBtn)}row.appendChild(btnWrap);inventoryListEl.appendChild(row)});if(!hasItems){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пусто</div>'}if(sellWrap)sellWrap.classList.toggle('hidden',!hasItems)}catch(e){inventoryListEl.innerHTML=''}}
+async function equipItem(itemId,item){
+  if(!currentUser)return;
+  const fieldMap={nickColor:'equippedNickColor',nickGlow:'equippedNickGlow',nickFont:'equippedNickFont',nickAnimated:'equippedNickAnim',avatarEffect:'equippedAvatarEffect'};
+  const field=fieldMap[item.type];
+  if(!field){showToast('Ошибка','Этот предмет нельзя надеть');return}
+  try{
+    const update={};update[field]=item.value;
+    await updateDoc(doc(db,'users',currentUser.uid),update);
+    showToast('Экипировано',item.name);
+    renderInventory(currentUser.uid);
+  }catch(e){showToast('Ошибка','Не удалось экипировать')}
+}
+async function sellItem(itemId,item){if(!currentUser)return;const price=Math.floor((item.price||0)*0.5);if(price<1){showToast('Ошибка','Нельзя продать');return}try{const ref=doc(db,'users',currentUser.uid,'inventory',itemId);const snap=await getDoc(ref);if(!snap.exists())return;const data=snap.data();const qty=(data.quantity||1)-1;if(qty<=0)await deleteDoc(ref);else await updateDoc(ref,{quantity:qty});const userRef=doc(db,'users',currentUser.uid);const userSnap=await getDoc(userRef);const bal=(userSnap.exists()?userSnap.data().balance:0)||0;await updateDoc(userRef,{balance:bal+price});showToast('Продано','+'+price);renderInventory(currentUser.uid);updateBalanceUI(bal+price)}catch(e){showToast('Ошибка','Не удалось продать')}}
+async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';const myAv=sanitizeAvatar(usersCache[currentUser.uid]?.avatar)||'';const myName=usersCache[currentUser.uid]?.name||'?';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';let previewStyle='',nickStyle='';if(it.type==='nickColor')nickStyle='color:'+it.value+';';else if(it.type==='nickGlow')nickStyle='color:'+it.value+';text-shadow:0 0 6px '+it.value+',0 0 12px '+it.value+';';else if(it.type==='nickFont')nickStyle='font-family:'+it.value+';';else if(it.type==='nickAnimated')nickStyle='color:'+it.value+';animation:nick'+(it.value.charAt(0).toUpperCase()+it.value.slice(1))+' 2s ease-in-out infinite;';else if(it.type==='avatarEffect'){const e=it.value;if(e==='rainbow')previewStyle='box-shadow:0 0 6px #ec4899,0 0 10px #a855f7;';else if(e==='stars')previewStyle='box-shadow:0 0 6px #eab308,0 0 10px #f59e0b;';else if(e==='waves')previewStyle='box-shadow:0 0 6px #06b6d4,0 0 10px #0891b2;';else if(e==='smoke')previewStyle='box-shadow:0 0 8px rgba(100,100,100,.5);';else if(e==='neon')previewStyle='box-shadow:0 0 6px #22d3ee,0 0 12px #06b6d4;';else if(e==='sakura')previewStyle='box-shadow:0 0 6px #f472b6,0 0 10px #ec4899;';else if(e==='space')previewStyle='box-shadow:0 0 6px #6366f1,0 0 10px #8b5cf6;';else if(e==='glitch')previewStyle='box-shadow:0 0 4px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e;';}const avHTML=myAv?'<img src="'+esc(myAv)+'">':initials(myName);card.innerHTML='<div class="market-preview"'+(previewStyle?' style="'+previewStyle+'"':'')+'>'+avHTML+'</div><div class="market-nick"'+(nickStyle?' style="'+nickStyle+'"':'')+'>'+esc(myName)+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('.market-buy-btn').forEach(b=>b.addEventListener('click',()=>buyItem(b.dataset.id,b)));marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteMarketItem(b.dataset.del)))}catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
 
 async function buyItem(itemId,btn){if(!currentUser){openAuth();return}if(btn){btn.disabled=true;btn.textContent='...'}try{await runTransaction(db,async(tx)=>{const userRef=doc(db,'users',currentUser.uid),itemRef=doc(db,'market',itemId),invRef=doc(db,'users',currentUser.uid,'inventory',itemId);const userSnap=await tx.get(userRef),itemSnap=await tx.get(itemRef),invSnap=await tx.get(invRef);if(!itemSnap.exists())throw new Error('Товар не найден');const item=itemSnap.data();if(item.active===false)throw new Error('Недоступен');const bal=(userSnap.exists()?userSnap.data().balance:0)||0;if(bal<(item.price||0))throw new Error('Недостаточно кредитов');const q=invSnap.exists()?(invSnap.data().quantity||0):0;tx.update(userRef,{balance:bal-item.price});tx.set(invRef,{itemId,name:item.name,icon:item.icon,price:item.price,quantity:q+1,purchasedAt:serverTimestamp()},{merge:true})});showToast('Покупка','Товар добавлен');renderInventory(currentUser.uid)}catch(e){showToast('Ошибка',e.message)}finally{loadMarketItems()}}
 
@@ -482,7 +495,7 @@ chatBackBtn.addEventListener('click',()=>{chatsSidebar.classList.remove('hidden-
 
 function renderGlobalChatItem(){const item=document.createElement('div');item.className='chat-item-wrap'+(activeChatId===GLOBAL_CHAT_ID?' active':'');item.innerHTML='<div class="chat-item-avatar" style="background:linear-gradient(135deg,#16a34a,#22c55e)"><span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span></div><div class="chat-item-info"><div class="chat-item-name">Общий чат</div><div class="chat-item-last">Все участники</div></div>';item.addEventListener('click',()=>openGlobalChat());chatListEl.appendChild(item)}
 
-function openGlobalChat(){if(!currentUser)return;activeChatId=GLOBAL_CHAT_ID;activeChatTargetUid=null;renderedMsgIds=new Set();chatMainHeaderEl.classList.remove('hidden');chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span>';chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';chatMainNameEl.textContent='Общий чат';chatMainStatusEl.textContent='Все участники';document.getElementById('adminBanBtn').classList.add('hidden');document.getElementById('adminEditBtn').classList.add('hidden');document.querySelectorAll('.chat-item-wrap').forEach(el=>el.classList.remove('active'));if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');subscribeChat()}
+function openGlobalChat(){if(!currentUser)return;if(activeChatId===GLOBAL_CHAT_ID)return;activeChatId=GLOBAL_CHAT_ID;activeChatTargetUid=null;renderedMsgIds=new Set();chatBodyEl.innerHTML='';chatMainHeaderEl.classList.remove('hidden');chatMainAvatarEl.innerHTML='<span class="material-symbols-outlined" style="color:#fff;font-size:18px">public</span>';chatMainAvatarEl.style.background='linear-gradient(135deg,#16a34a,#22c55e)';chatMainNameEl.textContent='Общий чат';chatMainStatusEl.textContent='Все участники';document.getElementById('adminBanBtn').classList.add('hidden');document.getElementById('adminEditBtn').classList.add('hidden');document.querySelectorAll('.chat-item-wrap').forEach(el=>el.classList.remove('active'));if(chatListEl.firstChild)chatListEl.firstChild.classList.add('active');chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');subscribeChat()}
 
 async function renderChatList(q){if(!currentUser){chatListEl.innerHTML='<div class="chat-empty">Войдите, чтобы видеть чаты</div>';return}if(q){chatListEl.innerHTML='';renderGlobalChatItem();const s=q.toLowerCase(),results=[];for(const [uid,d] of Object.entries(usersCache)){if(uid===currentUser.uid)continue;if(d.name.toLowerCase().includes(s)||d.nick.toLowerCase().includes(s))results.push({uid,...d})}if(!results.length){chatListEl.innerHTML+='<div class="chat-empty" style="padding:20px">Никого не нашли</div>';return}results.forEach((p,i)=>{const item=document.createElement('div');item.className='chat-item-wrap';item.style.animationDelay=((i+1)*.05)+'s';const av=sanitizeAvatar(p.avatar);item.innerHTML='<div class="chat-item-avatar">'+(av?'<img src="'+esc(av)+'">':initials(p.name))+'</div><div class="chat-item-info"><div class="chat-item-name">'+esc(p.name)+'</div><div class="chat-item-last">@'+esc(p.nick)+'</div></div>';item.addEventListener('click',()=>startChatWith(p.uid));chatListEl.appendChild(item)});return}loadActiveChats()}
 
@@ -493,13 +506,23 @@ async function startChatWith(uid){if(!currentUser||!usersCache[uid]||chatOpening
 
 async function markChatRead(chatId){try{const ref=doc(db,'chats',chatId);const snap=await getDoc(ref);if(snap.exists()){const data=snap.data();const lastRead=data.lastRead||{};lastRead[currentUser.uid]=serverTimestamp();await updateDoc(ref,{lastRead})}}catch(e){}}
 
-function openChatWith(uid){if(!usersCache[uid])return;const other=usersCache[uid];activeChatId=makeChatId(currentUser.uid,uid);activeChatTargetUid=uid;renderedMsgIds=new Set();chatMainHeaderEl.classList.remove('hidden');const av=sanitizeAvatar(other.avatar);chatMainAvatarEl.innerHTML=av?'<img src="'+esc(av)+'">':initials(other.name);chatMainAvatarEl.style.background='';chatMainNameEl.textContent=other.name;chatMainStatusEl.textContent='@'+other.nick;document.querySelectorAll('.chat-item-wrap').forEach(el=>{el.classList.remove('active');const b=el.querySelector('.chat-unread-badge');if(b)b.remove()});chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');const banBtn=document.getElementById('adminBanBtn'),editBtn=document.getElementById('adminEditBtn');if(isAdmin()){banBtn.classList.remove('hidden');editBtn.classList.remove('hidden');banBtn.onclick=()=>banUser(uid);editBtn.onclick=()=>openAdminEdit(uid)}else{banBtn.classList.add('hidden');editBtn.classList.add('hidden')}markChatRead(activeChatId);subscribeChat()}
+function openChatWith(uid){if(!usersCache[uid])return;const chatId=makeChatId(currentUser.uid,uid);if(activeChatId===chatId)return;activeChatId=chatId;activeChatTargetUid=uid;renderedMsgIds=new Set();chatBodyEl.innerHTML='';const other=usersCache[uid];chatMainHeaderEl.classList.remove('hidden');const av=sanitizeAvatar(other.avatar);chatMainAvatarEl.innerHTML=av?'<img src="'+esc(av)+'">':initials(other.name);chatMainAvatarEl.style.background='';chatMainNameEl.textContent=other.name;chatMainStatusEl.textContent='@'+other.nick;document.querySelectorAll('.chat-item-wrap').forEach(el=>{el.classList.remove('active');const b=el.querySelector('.chat-unread-badge');if(b)b.remove()});chatLockedEl.classList.add('hidden');chatInputRowEl.classList.remove('hidden');chatsSidebar.classList.add('hidden-mobile');document.querySelector('.chats-main').classList.add('chat-open');const banBtn=document.getElementById('adminBanBtn'),editBtn=document.getElementById('adminEditBtn');if(isAdmin()){banBtn.classList.remove('hidden');editBtn.classList.remove('hidden');banBtn.onclick=()=>banUser(uid);editBtn.onclick=()=>openAdminEdit(uid)}else{banBtn.classList.add('hidden');editBtn.classList.add('hidden')}markChatRead(activeChatId);subscribeChat()}
 
 chatSearchInput.addEventListener('input',e=>renderChatList(e.target.value));
 
-function subscribeChat(){if(unsubscribeChat)unsubscribeChat();isFirstChatSnapshot=true;const q=query(collection(db,'chats',activeChatId,'messages'),orderBy('createdAt','asc'),limit(100));unsubscribeChat=onSnapshot(q,snap=>{renderMessages(snap.docs);if(!isFirstChatSnapshot){snap.docChanges().forEach(ch=>{if(ch.type==='added'){const m=ch.doc.data();if(currentUser&&m.uid!==currentUser.uid){showToast(m.name,m.text);if(activeChatId!==GLOBAL_CHAT_ID)playNotifSound()}}})}isFirstChatSnapshot=false},()=>{})}
+function subscribeChat(){if(unsubscribeChat)unsubscribeChat();renderedMsgIds=new Set();chatBodyEl.innerHTML='';isFirstChatSnapshot=true;const q=query(collection(db,'chats',activeChatId,'messages'),orderBy('createdAt','asc'),limit(100));unsubscribeChat=onSnapshot(q,snap=>{renderMessages(snap.docs);if(!isFirstChatSnapshot){snap.docChanges().forEach(ch=>{if(ch.type==='added'){const m=ch.doc.data();if(currentUser&&m.uid!==currentUser.uid){showToast(m.name,m.text);if(activeChatId!==GLOBAL_CHAT_ID)playNotifSound()}}})}isFirstChatSnapshot=false},()=>{})}
 
-function renderMessages(docs){const currentIds=new Set(docs.map(d=>d.id));Array.from(chatBodyEl.children).forEach(el=>{if(!currentIds.has(el.dataset.mid))el.remove()});docs.forEach(d=>{if(renderedMsgIds.has(d.id)){const el=chatBodyEl.querySelector('[data-mid="'+d.id+'"]');if(el){const timeEl=el.querySelector('.bubble-time');if(timeEl){const m=d.data();const txt=formatTime(m.createdAt);if(timeEl.textContent!==txt)timeEl.textContent=txt}}return}const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');row.dataset.mid=d.id;row.dataset.uid=m.uid||'';const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick'+(m.uid===currentUser?.uid?getNickClasses():'')+'"'+(m.uid===currentUser?.uid?getNickInlineStyle():'')+'>@'+esc(mNick)+'</div>':'';const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+esc(d.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+esc(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});chatBodyEl.scrollTop=chatBodyEl.scrollHeight}
+function renderMessages(docs){
+  const existingMids=new Set();
+  Array.from(chatBodyEl.children).forEach(el=>existingMids.add(el.dataset.mid));
+  const currentIds=new Set(docs.map(d=>d.id));
+  Array.from(chatBodyEl.children).forEach(el=>{if(!currentIds.has(el.dataset.mid))el.remove()});
+  docs.forEach(d=>{
+    if(renderedMsgIds.has(d.id)&&existingMids.has(d.id)){
+      const el=chatBodyEl.querySelector('[data-mid="'+d.id+'"]');
+      if(el){const timeEl=el.querySelector('.bubble-time');if(timeEl){const m=d.data();const txt=formatTime(m.createdAt);if(timeEl.textContent!==txt)timeEl.textContent=txt}}return}
+    if(existingMids.has(d.id))return;
+    const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');row.dataset.mid=d.id;row.dataset.uid=m.uid||'';const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick'+(m.uid===currentUser?.uid?getNickClasses():'')+'"'+(m.uid===currentUser?.uid?getNickInlineStyle():'')+'>@'+esc(mNick)+'</div>':'';const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+esc(d.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+esc(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});chatBodyEl.scrollTop=chatBodyEl.scrollHeight}
 
 async function deleteMessage(msgId){if(!isAdmin()||!activeChatId)return;try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','')}catch(e){showToast('Ошибка',e.message)}}
 async function banUser(uid){if(!isAdmin()||uid===currentUser.uid)return;try{await setDoc(doc(db,'users',uid),{banned:true},{merge:true});await loadAllUsers();showToast('Забанен','')}catch(e){showToast('Ошибка',e.message)}}
@@ -555,41 +578,41 @@ dailyBtn.addEventListener('click',async()=>{
 });
 
 const MARKET_ITEMS=[
-  {name:'Красный ник',icon:'●',description:'Красный цвет ника',price:80,type:'nickColor',value:'#ef4444'},
-  {name:'Синий ник',icon:'●',description:'Синий цвет ника',price:80,type:'nickColor',value:'#3b82f6'},
-  {name:'Зелёный ник',icon:'●',description:'Зелёный цвет ника',price:80,type:'nickColor',value:'#22c55e'},
-  {name:'Фиолетовый ник',icon:'●',description:'Фиолетовый цвет ника',price:80,type:'nickColor',value:'#a855f7'},
-  {name:'Золотой ник',icon:'●',description:'Золотой цвет ника',price:120,type:'nickColor',value:'#eab308'},
-  {name:'Розовый ник',icon:'●',description:'Розовый цвет ника',price:80,type:'nickColor',value:'#ec4899'},
-  {name:'Оранжевый ник',icon:'●',description:'Оранжевый цвет ника',price:80,type:'nickColor',value:'#f97316'},
-  {name:'Белый ник',icon:'●',description:'Белый цвет ника',price:100,type:'nickColor',value:'#f1f5f9'},
-  {name:'Бирюзовый ник',icon:'●',description:'Бирюзовый цвет ника',price:80,type:'nickColor',value:'#06b6d4'},
-  {name:'Лайм ник',icon:'●',description:'Лаймовый цвет ника',price:80,type:'nickColor',value:'#84cc16'},
-  {name:'Светящийся красный',icon:'◆',description:'Красный ник с неоновым свечением',price:200,type:'nickGlow',value:'#ef4444'},
-  {name:'Светящийся синий',icon:'◆',description:'Синий ник с неоновым свечением',price:200,type:'nickGlow',value:'#3b82f6'},
-  {name:'Светящийся золотой',icon:'◆',description:'Золотой ник с неоновым свечением',price:250,type:'nickGlow',value:'#eab308'},
-  {name:'Светящийся зелёный',icon:'◆',description:'Зелёный ник с неоновым свечением',price:200,type:'nickGlow',value:'#22c55e'},
-  {name:'Светящийся фиолетовый',icon:'◆',description:'Фиолетовый ник с неоновым свечением',price:200,type:'nickGlow',value:'#a855f7'},
-  {name:'Светящийся бирюзовый',icon:'◆',description:'Бирюзовый ник с неоновым свечением',price:200,type:'nickGlow',value:'#06b6d4'},
-  {name:'Шрифт Handwriting',icon:'Aa',description:'Стиль рукописного шрифта',price:150,type:'nickFont',value:'"Caveat",cursive'},
-  {name:'Шрифт Mono',icon:'Aa',description:'Моноширинный шрифт',price:150,type:'nickFont',value:'"Courier New",monospace'},
-  {name:'Шрифт Cursive',icon:'Aa',description:'Курсивный шрифт',price:150,type:'nickFont',value:'"Georgia",serif'},
-  {name:'Шрифт Thin',icon:'Aa',description:'Тонкий элегантный шрифт',price:150,type:'nickFont',value:'"Segoe UI Light",sans-serif'},
-  {name:'Шрифт Bold',icon:'Aa',description:'Жирный шрифт',price:150,type:'nickFont',value:'"Impact",sans-serif'},
-  {name:'Шрифт Small Caps',icon:'Aa',description:'Малые заглавные буквы',price:200,type:'nickFont',value:'"Small Caps",sans-serif'},
-  {name:'Анимация Радуга',icon:'≈',description:'Плавная смена цветов радуги',price:300,type:'nickAnimated',value:'rainbow'},
-  {name:'Анимация Огонь',icon:'≈',description:'Переливание красно-оранжевых тонов',price:300,type:'nickAnimated',value:'fire'},
-  {name:'Анимация Океан',icon:'≈',description:'Плавные сине-бирюзовые волны',price:300,type:'nickAnimated',value:'ocean'},
-  {name:'Анимация Космос',icon:'≈',description:'Фиолетово-синие переливы',price:300,type:'nickAnimated',value:'space'},
-  {name:'Анимация Лайминг',icon:'≈',description:'Мерцание зелёных оттенков',price:300,type:'nickAnimated',value:'lime'},
-  {name:'Радуга аватар',icon:'◎',description:'Радужная рамка аватара',price:250,type:'avatarEffect',value:'rainbow'},
-  {name:'Звёзды аватар',icon:'◎',description:'Звёздная рамка аватара',price:200,type:'avatarEffect',value:'stars'},
-  {name:'Волны аватар',icon:'◎',description:'Волновая рамка аватара',price:250,type:'avatarEffect',value:'waves'},
-  {name:'Дым аватар',icon:'◎',description:'Дымовой эффект аватара',price:200,type:'avatarEffect',value:'smoke'},
-  {name:'Неон аватар',icon:'◎',description:'Неоновая рамка аватара',price:300,type:'avatarEffect',value:'neon'},
-  {name:'Сакура аватар',icon:'◎',description:'Рамка сакуры',price:250,type:'avatarEffect',value:'sakura'},
-  {name:'Космос аватар',icon:'◎',description:'Космическая рамка',price:300,type:'avatarEffect',value:'space'},
-  {name:'Глитч аватар',icon:'◎',description:'Глитч-эффект рамки',price:250,type:'avatarEffect',value:'glitch'}
+  {name:'Красный ник',icon:'█',iconColor:'#ef4444',description:'',price:80,type:'nickColor',value:'#ef4444'},
+  {name:'Синий ник',icon:'█',iconColor:'#3b82f6',description:'',price:80,type:'nickColor',value:'#3b82f6'},
+  {name:'Зелёный ник',icon:'█',iconColor:'#22c55e',description:'',price:80,type:'nickColor',value:'#22c55e'},
+  {name:'Фиолетовый ник',icon:'█',iconColor:'#a855f7',description:'',price:80,type:'nickColor',value:'#a855f7'},
+  {name:'Золотой ник',icon:'█',iconColor:'#eab308',description:'',price:120,type:'nickColor',value:'#eab308'},
+  {name:'Розовый ник',icon:'█',iconColor:'#ec4899',description:'',price:80,type:'nickColor',value:'#ec4899'},
+  {name:'Оранжевый ник',icon:'█',iconColor:'#f97316',description:'',price:80,type:'nickColor',value:'#f97316'},
+  {name:'Белый ник',icon:'█',iconColor:'#f1f5f9',description:'',price:100,type:'nickColor',value:'#f1f5f9'},
+  {name:'Бирюзовый ник',icon:'█',iconColor:'#06b6d4',description:'',price:80,type:'nickColor',value:'#06b6d4'},
+  {name:'Лайм ник',icon:'█',iconColor:'#84cc16',description:'',price:80,type:'nickColor',value:'#84cc16'},
+  {name:'Светящийся красный',icon:'✦',iconColor:'#ef4444',description:'',price:200,type:'nickGlow',value:'#ef4444'},
+  {name:'Светящийся синий',icon:'✦',iconColor:'#3b82f6',description:'',price:200,type:'nickGlow',value:'#3b82f6'},
+  {name:'Светящийся золотой',icon:'✦',iconColor:'#eab308',description:'',price:250,type:'nickGlow',value:'#eab308'},
+  {name:'Светящийся зелёный',icon:'✦',iconColor:'#22c55e',description:'',price:200,type:'nickGlow',value:'#22c55e'},
+  {name:'Светящийся фиолетовый',icon:'✦',iconColor:'#a855f7',description:'',price:200,type:'nickGlow',value:'#a855f7'},
+  {name:'Светящийся бирюзовый',icon:'✦',iconColor:'#06b6d4',description:'',price:200,type:'nickGlow',value:'#06b6d4'},
+  {name:'Шрифт Handwriting',icon:'Aa',iconFont:'Caveat,cursive',description:'',price:150,type:'nickFont',value:'Caveat,cursive'},
+  {name:'Шрифт Mono',icon:'Aa',iconFont:'Courier New,monospace',description:'',price:150,type:'nickFont',value:'Courier New,monospace'},
+  {name:'Шрифт Cursive',icon:'Aa',iconFont:'Georgia,serif',description:'',price:150,type:'nickFont',value:'Georgia,serif'},
+  {name:'Шрифт Thin',icon:'Aa',iconFont:'300 14px sans-serif',description:'',price:150,type:'nickFont',value:'sans-serif'},
+  {name:'Шрифт Bold',icon:'Aa',iconFont:'bold 16px Impact,sans-serif',description:'',price:150,type:'nickFont',value:'Impact,sans-serif'},
+  {name:'Шрифт Caps',icon:'AA',iconFont:'small-caps sans-serif',description:'',price:200,type:'nickFont',value:'small-caps,sans-serif'},
+  {name:'Анимация Радуга',icon:'≋',iconColor:'#ec4899',description:'',price:300,type:'nickAnimated',value:'rainbow'},
+  {name:'Анимация Огни',icon:'≋',iconColor:'#f97316',description:'',price:300,type:'nickAnimated',value:'fire'},
+  {name:'Анимация Океан',icon:'≋',iconColor:'#06b6d4',description:'',price:300,type:'nickAnimated',value:'ocean'},
+  {name:'Анимация Космос',icon:'≋',iconColor:'#8b5cf6',description:'',price:300,type:'nickAnimated',value:'space'},
+  {name:'Анимация Лайминг',icon:'≋',iconColor:'#84cc16',description:'',price:300,type:'nickAnimated',value:'lime'},
+  {name:'Радуга аватар',icon:'◈',iconColor:'#ec4899',description:'',price:250,type:'avatarEffect',value:'rainbow'},
+  {name:'Звёзды аватар',icon:'◈',iconColor:'#eab308',description:'',price:200,type:'avatarEffect',value:'stars'},
+  {name:'Волны аватар',icon:'◈',iconColor:'#06b6d4',description:'',price:250,type:'avatarEffect',value:'waves'},
+  {name:'Дым аватар',icon:'◈',iconColor:'#94a3b8',description:'',price:200,type:'avatarEffect',value:'smoke'},
+  {name:'Неон аватар',icon:'◈',iconColor:'#22d3ee',description:'',price:300,type:'avatarEffect',value:'neon'},
+  {name:'Сакура аватар',icon:'◈',iconColor:'#f472b6',description:'',price:250,type:'avatarEffect',value:'sakura'},
+  {name:'Космос аватар',icon:'◈',iconColor:'#8b5cf6',description:'',price:300,type:'avatarEffect',value:'space'},
+  {name:'Глитч аватар',icon:'◈',iconColor:'#ef4444',description:'',price:250,type:'avatarEffect',value:'glitch'}
 ];
 
 async function seedMarket(){
@@ -613,22 +636,16 @@ document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='m'&&isAdmin()){e.
 
 function applyEffects(){
   if(!currentUser)return;
-  const uid=currentUser.uid;
-  getDocs(collection(db,'users',uid,'inventory')).then(s=>{
-    const nickColors=[],nickGlows=[],nickFonts=[],nickAnims=[],avatarEffects=[];
-    s.forEach(d=>{const it=d.data();if(it.quantity>0){
-      if(it.type==='nickColor')nickColors.push(it);
-      else if(it.type==='nickGlow')nickGlows.push(it);
-      else if(it.type==='nickFont')nickFonts.push(it);
-      else if(it.type==='nickAnimated')nickAnims.push(it);
-      else if(it.type==='avatarEffect')avatarEffects.push(it);
-    }});
-    window._myNickColor=nickColors.length?nickColors[nickColors.length-1].value:null;
-    window._myNickGlow=nickGlows.length?nickGlows[nickGlows.length-1].value:null;
-    window._myNickFont=nickFonts.length?nickFonts[nickFonts.length-1].value:null;
-    window._myNickAnim=nickAnims.length?nickAnims[nickAnims.length-1].value:null;
-    window._myAvatarEffect=avatarEffects.length?avatarEffects[avatarEffects.length-1].value:null;
+  getDoc(doc(db,'users',currentUser.uid)).then(snap=>{
+    if(!snap.exists())return;
+    const d=snap.data();
+    window._myNickColor=d.equippedNickColor||null;
+    window._myNickGlow=d.equippedNickGlow||null;
+    window._myNickFont=d.equippedNickFont||null;
+    window._myNickAnim=d.equippedNickAnim||null;
+    window._myAvatarEffect=d.equippedAvatarEffect||null;
     applyNickEffects();
+    document.querySelectorAll('#stageAvatar,#topbarAvatar,#chatMainAvatar,#profileAvatar').forEach(el=>{el.style.boxShadow=''});
     if(window._myAvatarEffect){
       const effect=window._myAvatarEffect;
       let style='';
@@ -640,10 +657,10 @@ function applyEffects(){
       else if(effect==='sakura')style='0 0 8px #f472b6,0 0 14px #ec4899';
       else if(effect==='space')style='0 0 8px #6366f1,0 0 14px #8b5cf6,0 0 20px #a78bfa';
       else if(effect==='glitch')style='0 0 6px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e';
-      document.querySelectorAll('#stageAvatar,#topbarAvatar,#chatMainAvatar,#profileAvatar').forEach(el=>{
-        el.style.boxShadow=style;
-      });
+      document.querySelectorAll('#stageAvatar,#topbarAvatar,#chatMainAvatar,#profileAvatar').forEach(el=>{el.style.boxShadow=style});
     }
+  }).catch(()=>{});
+}
   }).catch(()=>{});
 }
 
@@ -678,7 +695,7 @@ function getNickInlineStyle(){
   if(window._myNickGlow)s+='color:'+window._myNickGlow+';text-shadow:0 0 6px '+window._myNickGlow+',0 0 12px '+window._myNickGlow+',0 0 20px '+window._myNickGlow+';';
   else if(window._myNickColor)s+='color:'+window._myNickColor+';';
   if(window._myNickFont)s+='font-family:'+window._myNickFont+';';
-  return s?' style="'+s+'"':'';
+  return s?' style="'+s.replace(/"/g,'&quot;')+'"':'';
 }
 
 }
