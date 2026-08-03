@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com https://apis.google.com https://accounts.google.com https://*.google.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://*.firebaseio.com https://apis.google.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://*.google.com https://www.google-analytics.com https://analytics.google.com https://accounts.google.com https://apis.google.com; frame-src https://*.google.com https://accounts.google.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: blob: data: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-src https:;">
 <title>quasarNet</title>
 <link rel="icon" type="image/png" sizes="16x16" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -356,9 +356,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 
 <script>
 function initApp(){
-const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged,updateProfile,reauthenticateWithCredential,EmailAuthProvider,updatePassword,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}=window.firebaseFns;
-
-getRedirectResult(auth).then(()=>{}).catch(()=>{});
+const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,reauthenticateWithCredential,EmailAuthProvider,updatePassword,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}=window.firebaseFns;
 
 const html=document.documentElement;
 const themeBtn=document.getElementById('themeToggle');
@@ -396,8 +394,36 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setM
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAuth();closeProfile()}});
 
 let authAttempts=0,authCooldownUntil=0;
-submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){setMessage('Заполни email и пароль','error');return}if(Date.now()<authCooldownUntil){setMessage('Подождите','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else{if(password.length<6){setMessage('Минимум 6 символов','error');submitBtn.disabled=false;return}await createUserWithEmailAndPassword(auth,email,password)}authAttempts=0;closeAuth()}catch(e){authAttempts++;if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток','error')}else setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
-googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider);closeAuth()}catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){try{await signInWithRedirect(auth,window.googleProvider);return}catch(e2){}}if(e.code!=='auth/popup-closed-by-user'&&e.code!=='auth/cancelled-popup-request')setMessage(friendlyError(e.code),'error')}});
+submitBtn.addEventListener('click',async()=>{
+  const email=emailInput.value.trim(),password=passwordInput.value;
+  if(!email||!password){setMessage('Заполни email и пароль','error');return}
+  if(Date.now()<authCooldownUntil){const sec=Math.ceil((authCooldownUntil-Date.now())/1000);setMessage('Подождите '+sec+' сек','error');return}
+  submitBtn.disabled=true;setMessage('');
+  try{
+    if(mode==='login'){
+      await signInWithEmailAndPassword(auth,email,password);
+    }else{
+      if(password.length<6){setMessage('Пароль минимум 6 символов','error');submitBtn.disabled=false;return}
+      await createUserWithEmailAndPassword(auth,email,password);
+    }
+    authAttempts=0;closeAuth();
+  }catch(e){
+    console.error('Auth error:',e);
+    authAttempts++;
+    if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток. Подождите 60 сек','error')}
+    else setMessage(friendlyError(e.code),'error');
+  }finally{submitBtn.disabled=false}
+});
+googleBtn.addEventListener('click',async()=>{
+  setMessage('','');googleBtn.disabled=true;
+  try{
+    await signInWithPopup(auth,window.googleProvider);
+    closeAuth();
+  }catch(e){
+    console.error('Google auth error:',e);
+    setMessage(friendlyError(e.code),'error');
+  }finally{googleBtn.disabled=false}
+});
 
 const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap'),profileDisplayNameEl=document.getElementById('profileDisplayName'),secCurrentPass=document.getElementById('secCurrentPass'),secNewPass=document.getElementById('secNewPass'),secChangePassBtn=document.getElementById('secChangePass'),secPassMsg=document.getElementById('secPassMsg'),secUidEl=document.getElementById('secUid'),secEmailEl=document.getElementById('secEmail'),secNickEl=document.getElementById('secNick'),balancePillEl=document.getElementById('balancePill'),balanceAmountEl=document.getElementById('balanceAmount'),profileBalanceEl=document.getElementById('profileBalance'),inventoryListEl=document.getElementById('inventoryList');
 const viewMarketEl=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn');
@@ -493,12 +519,12 @@ async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);c
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
 initApp();
 </script>
 </body>
