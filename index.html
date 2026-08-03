@@ -188,14 +188,14 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .nick-anim-ocean{animation:nickOcean 2.5s ease-in-out infinite}
 .nick-anim-space{animation:nickSpace 4s ease-in-out infinite}
 .nick-anim-lime{animation:nickLime 2s ease-in-out infinite}
-.toast-stack{position:fixed;top:60px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
-.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px var(--shadow);padding:10px 14px;font-size:13px;color:var(--text);width:300px;max-width:90vw;display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:auto}
-.toast.show{opacity:1;transform:translateY(0) scale(1)}
-.toast .toast-icon{width:22px;height:22px;border-radius:50%;background:var(--accent);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.toast-stack{position:fixed;top:64px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 20px var(--shadow);padding:12px 16px;font-size:13px;color:var(--text);width:320px;max-width:calc(100vw - 32px);display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateX(20px);transition:all .3s ease;pointer-events:auto}
+.toast.show{opacity:1;transform:translateX(0)}
+.toast .toast-icon{width:24px;height:24px;border-radius:50%;background:var(--accent);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .toast .toast-icon .material-symbols-outlined{font-size:14px;color:#fff}
-.toast .toast-text{min-width:0;flex:1;word-break:break-word}
-.toast .toast-text b{display:block;margin-bottom:3px;color:var(--text);font-size:13px;font-weight:600}
-.toast .toast-text span{font-size:12px;color:var(--text2);line-height:1.5;display:block}
+.toast .toast-text{min-width:0;flex:1}
+.toast .toast-text b{display:block;margin-bottom:2px;color:var(--text);font-size:13px;font-weight:600}
+.toast .toast-text span{font-size:12px;color:var(--text2);line-height:1.4;display:block}
 .hidden{display:none !important}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 20;vertical-align:middle;line-height:1}
 .material-symbols-outlined.filled{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
@@ -445,7 +445,7 @@ function subscribeOwnUser(uid){if(unsubscribeOwnUser)unsubscribeOwnUser();unsubs
 function updateBalanceUI(bal){const b=typeof bal==='number'?bal:0;balanceAmountEl.textContent=b;profileBalanceEl.textContent=b;balancePillEl.classList.add('visible')}
 async function renderInventory(uid){inventoryListEl.innerHTML='';try{const s=await getDocs(collection(db,'users',uid,'inventory'));if(s.empty){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пусто</div>';return}s.forEach(d=>{const it=d.data();const row=document.createElement('div');row.className='inventory-item';row.innerHTML='<span class="inventory-icon">'+esc(it.icon||'🎁')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';inventoryListEl.appendChild(row)})}catch(e){inventoryListEl.innerHTML=''}}
 
-async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';card.innerHTML='<div class="market-icon">'+esc(it.icon||'🎁')+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-desc">'+esc(it.description||'')+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('.market-buy-btn').forEach(b=>b.addEventListener('click',()=>buyItem(b.dataset.id,b)));marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteMarketItem(b.dataset.del)))}catch(e){marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки</div>'}}
+async function loadMarketItems(){if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите для просмотра</div>';marketAdminCardEl.classList.add('hidden');return}marketAdminCardEl.classList.toggle('hidden',!isAdmin());marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';try{const s=await getDocs(collection(db,'market'));const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));if(!items.length){marketGridEl.innerHTML='<div class="market-empty">Товаров нет'+(isAdmin()?'. Добавьте!':'')+'</div>';return}marketGridEl.innerHTML='';items.forEach(it=>{const card=document.createElement('div');card.className='market-card';const hid=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';card.innerHTML='<div class="market-icon">'+esc(it.icon||'🎁')+'</div><div class="market-name">'+esc(it.name||'')+hid+'</div><div class="market-desc">'+esc(it.description||'')+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');marketGridEl.appendChild(card)});marketGridEl.querySelectorAll('.market-buy-btn').forEach(b=>b.addEventListener('click',()=>buyItem(b.dataset.id,b)));marketGridEl.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteMarketItem(b.dataset.del)))  }catch(e){console.error(e);marketGridEl.innerHTML='<div class="market-empty">Ошибка загрузки. Проверьте правила Firestore</div>'}}
 
 async function buyItem(itemId,btn){if(!currentUser){openAuth();return}if(btn){btn.disabled=true;btn.textContent='...'}try{await runTransaction(db,async(tx)=>{const userRef=doc(db,'users',currentUser.uid),itemRef=doc(db,'market',itemId),invRef=doc(db,'users',currentUser.uid,'inventory',itemId);const userSnap=await tx.get(userRef),itemSnap=await tx.get(itemRef),invSnap=await tx.get(invRef);if(!itemSnap.exists())throw new Error('Товар не найден');const item=itemSnap.data();if(item.active===false)throw new Error('Недоступен');const bal=(userSnap.exists()?userSnap.data().balance:0)||0;if(bal<(item.price||0))throw new Error('Недостаточно кредитов');const q=invSnap.exists()?(invSnap.data().quantity||0):0;tx.update(userRef,{balance:bal-item.price});tx.set(invRef,{itemId,name:item.name,icon:item.icon,price:item.price,quantity:q+1,purchasedAt:serverTimestamp()},{merge:true})});showToast('Покупка','Товар добавлен');renderInventory(currentUser.uid)}catch(e){showToast('Ошибка',e.message)}finally{loadMarketItems()}}
 
@@ -550,7 +550,7 @@ dailyBtn.addEventListener('click',async()=>{
     const bal=(data.balance||0)+DAILY_REWARD;
     await updateDoc(ref,{balance:bal,lastDaily:serverTimestamp()});
     showToast('Награда','+'+DAILY_REWARD+' кредитов');
-  }catch(e){showToast('Ошибка',e.message)}
+  }catch(e){console.error(e);showToast('Ошибка','Не удалось получить награду')}
   finally{dailyBtn.disabled=false}
 });
 
@@ -606,7 +606,7 @@ async function seedMarket(){
     }
     if(added>0){showToast('Маркет','Добавлено '+added+' товаров');loadMarketItems()}
     else showToast('Маркет','Все товары уже есть');
-  }catch(e){showToast('Ошибка',e.message)}
+  }catch(e){console.error(e);showToast('Ошибка','Нет прав. Обнови правила Firestore')}
 }
 
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='m'&&isAdmin()){e.preventDefault();seedMarket()}});
