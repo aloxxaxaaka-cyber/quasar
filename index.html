@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -178,6 +178,16 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .inventory-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
 .inventory-icon{font-size:16px}
 .inventory-qty{margin-left:auto;color:var(--text2);font-size:12px}
+@keyframes nickRainbow{0%{color:#ef4444}14%{color:#f97316}28%{color:#eab308}42%{color:#22c55e}57%{color:#3b82f6}71%{color:#8b5cf6}85%{color:#ec4899}100%{color:#ef4444}}
+@keyframes nickFire{0%{color:#ef4444}25%{color:#f97316}50%{color:#eab308}75%{color:#f97316}100%{color:#ef4444}}
+@keyframes nickOcean{0%{color:#06b6d4}33%{color:#0ea5e9}66%{color:#0284c7}100%{color:#06b6d4}}
+@keyframes nickSpace{0%{color:#8b5cf6}33%{color:#6366f1}66%{color:#3b82f6}100%{color:#8b5cf6}}
+@keyframes nickLime{0%{color:#84cc16}33%{color:#22c55e}66%{color:#16a34a}100%{color:#84cc16}}
+.nick-anim-rainbow{animation:nickRainbow 3s linear infinite}
+.nick-anim-fire{animation:nickFire 1.5s ease-in-out infinite}
+.nick-anim-ocean{animation:nickOcean 2.5s ease-in-out infinite}
+.nick-anim-space{animation:nickSpace 4s ease-in-out infinite}
+.nick-anim-lime{animation:nickLime 2s ease-in-out infinite}
 .toast-stack{position:fixed;top:60px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
 .toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px var(--shadow);padding:10px 14px;font-size:13px;color:var(--text);width:300px;max-width:90vw;display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:auto}
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
@@ -221,6 +231,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
       <div class="profile-avatar" id="stageAvatar" style="width:80px;height:80px;font-size:28px">?</div>
       <div style="font-size:16px;font-weight:600" id="stageName"></div>
       <div style="color:var(--text2);font-size:13px" id="stageEmail"></div>
+      <button class="stage-btn primary" id="dailyBtn" style="margin-top:12px"><span class="material-symbols-outlined" style="font-size:18px">redeem</span>Ежедневная награда</button>
     </div>
   </div>
 
@@ -269,6 +280,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
         </div>
         <div class="field"><label>Описание</label><input type="text" id="marketNewDesc" maxlength="120" placeholder="Описание товара"></div>
         <button class="btn btn-primary" id="marketAddBtn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Добавить</button>
+        <button class="btn" id="marketSeedBtn" style="margin-top:8px;width:100%"><span class="material-symbols-outlined" style="font-size:16px">auto_awesome</span>Добавить все товары (20 шт.)</button>
       </div>
       <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
     </div>
@@ -440,6 +452,7 @@ async function buyItem(itemId,btn){if(!currentUser){openAuth();return}if(btn){bt
 async function deleteMarketItem(id){if(!isAdmin())return;try{await deleteDoc(doc(db,'market',id));showToast('Удалено','');loadMarketItems()}catch(e){showToast('Ошибка',e.message)}}
 
 marketAddBtn.addEventListener('click',async()=>{if(!isAdmin())return;const name=marketNewName.value.trim().slice(0,40),desc=marketNewDesc.value.trim().slice(0,120),price=parseInt(marketNewPrice.value,10),icon=marketNewIcon.value.trim().slice(0,4)||'🎁';if(!name||!price||price<1){showToast('Ошибка','Название и цена обязательны');return}marketAddBtn.disabled=true;try{await addDoc(collection(db,'market'),{name,description:desc,price,icon,active:true,createdAt:serverTimestamp()});marketNewName.value='';marketNewDesc.value='';marketNewPrice.value='';marketNewIcon.value='';showToast('Добавлено','');loadMarketItems()}catch(e){showToast('Ошибка',e.message)}finally{marketAddBtn.disabled=false}});
+document.getElementById('marketSeedBtn').addEventListener('click',()=>seedMarket());
 
 function openProfile(){profileOverlay.classList.add('open')}
 function closeProfile(){profileOverlay.classList.remove('open');setProfileMessage('')}
@@ -486,7 +499,7 @@ chatSearchInput.addEventListener('input',e=>renderChatList(e.target.value));
 
 function subscribeChat(){if(unsubscribeChat)unsubscribeChat();isFirstChatSnapshot=true;const q=query(collection(db,'chats',activeChatId,'messages'),orderBy('createdAt','asc'),limit(100));unsubscribeChat=onSnapshot(q,snap=>{renderMessages(snap.docs);if(!isFirstChatSnapshot){snap.docChanges().forEach(ch=>{if(ch.type==='added'){const m=ch.doc.data();if(currentUser&&m.uid!==currentUser.uid){showToast(m.name,m.text);if(activeChatId!==GLOBAL_CHAT_ID)playNotifSound()}}})}isFirstChatSnapshot=false},()=>{})}
 
-function renderMessages(docs){const currentIds=new Set(docs.map(d=>d.id));Array.from(chatBodyEl.children).forEach(el=>{if(!currentIds.has(el.dataset.mid))el.remove()});docs.forEach(d=>{if(renderedMsgIds.has(d.id)){const el=chatBodyEl.querySelector('[data-mid="'+d.id+'"]');if(el){const timeEl=el.querySelector('.bubble-time');if(timeEl){const m=d.data();const txt=formatTime(m.createdAt);if(timeEl.textContent!==txt)timeEl.textContent=txt}}return}const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');row.dataset.mid=d.id;const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick">@'+esc(mNick)+'</div>':'';const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+esc(d.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+esc(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});chatBodyEl.scrollTop=chatBodyEl.scrollHeight}
+function renderMessages(docs){const currentIds=new Set(docs.map(d=>d.id));Array.from(chatBodyEl.children).forEach(el=>{if(!currentIds.has(el.dataset.mid))el.remove()});docs.forEach(d=>{if(renderedMsgIds.has(d.id)){const el=chatBodyEl.querySelector('[data-mid="'+d.id+'"]');if(el){const timeEl=el.querySelector('.bubble-time');if(timeEl){const m=d.data();const txt=formatTime(m.createdAt);if(timeEl.textContent!==txt)timeEl.textContent=txt}}return}const m=d.data();const isOwn=currentUser&&m.uid===currentUser.uid;const uA=sanitizeAvatar(usersCache[m.uid]?.avatar||m.avatar||'');const mNick=usersCache[m.uid]?.nick||'';const senderAdmin=usersCache[m.uid]?.admin;const row=document.createElement('div');row.className='chat-msg'+(isOwn?' own':'');row.dataset.mid=d.id;row.dataset.uid=m.uid||'';const avatarHTML=uA?'<img src="'+esc(uA)+'">':initials(m.name);const nickHTML=(!isOwn&&mNick)?'<div class="bubble-nick'+(m.uid===currentUser?.uid?getNickClasses():'')+'"'+(m.uid===currentUser?.uid?getNickInlineStyle():'')+'>@'+esc(mNick)+'</div>':'';const adminHTML=(!isOwn&&senderAdmin)?'<div class="bubble-admin"><span class="material-symbols-outlined">shield</span>ADMIN</div>':'';const deleteHTML=isAdmin()?'<button class="msg-delete" data-id="'+esc(d.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'';row.innerHTML=(!isOwn?'<div class="bubble-avatar">'+avatarHTML+'</div>':'')+'<div class="bubble" style="position:relative">'+deleteHTML+adminHTML+nickHTML+'<div class="bubble-text">'+esc(m.text||'')+'</div><div class="bubble-time">'+formatTime(m.createdAt)+'</div></div>';chatBodyEl.appendChild(row);renderedMsgIds.add(d.id)});chatBodyEl.querySelectorAll('.msg-delete').forEach(btn=>{btn.addEventListener('click',e=>{e.stopPropagation();deleteMessage(btn.dataset.id)})});chatBodyEl.scrollTop=chatBodyEl.scrollHeight}
 
 async function deleteMessage(msgId){if(!isAdmin()||!activeChatId)return;try{await deleteDoc(doc(db,'chats',activeChatId,'messages',msgId));showToast('Удалено','')}catch(e){showToast('Ошибка',e.message)}}
 async function banUser(uid){if(!isAdmin()||uid===currentUser.uid)return;try{await setDoc(doc(db,'users',uid),{banned:true},{merge:true});await loadAllUsers();showToast('Забанен','')}catch(e){showToast('Ошибка',e.message)}}
@@ -511,9 +524,163 @@ document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',(
 document.getElementById('topbarLogo').addEventListener('click',()=>switchMainView('home'));
 
 let currentView='home';
-onAuthStateChanged(auth,async user=>{currentUser=user;if(user){closeAuth();try{const ref=doc(db,'users',user.uid),snap=await getDoc(ref);let data;if(!snap.exists()){await setDoc(ref,{email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',balance:0,createdAt:serverTimestamp()});data={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',balance:0,createdAt:null}}else data=snap.data();if(data.banned){await signOut(auth);showToast('Заблокирован','');return}profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';profileDisplayNameEl.textContent=data.displayName||user.displayName||user.email||'—';secUidEl.textContent=user.uid;secEmailEl.textContent=user.email||'';secNickEl.textContent=data.nick||user.email?.split('@')[0]||'—';updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;await loadAllUsers();ensureGlobalChat();renderChatList(chatSearchInput.value);stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');subscribeOwnUser(user.uid);renderInventory(user.uid)}catch(e){}chatLockedEl.classList.add('hidden')}else{authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';profileOverlay.classList.remove('open');emailInput.value='';passwordInput.value='';currentAvatarData=null;avatarFileInput.value='';chatLockedEl.classList.remove('hidden');chatInputRowEl.classList.add('hidden');usersCache={};activeChatId=null;stageActions.classList.remove('hidden-when-logged');stageLogged.classList.remove('visible');chatsSidebar.classList.remove('hidden-mobile');balancePillEl.classList.remove('visible');if(unsubscribeOwnUser){unsubscribeOwnUser();unsubscribeOwnUser=null}}if(currentUser&&activeChatId)subscribeChat();renderChatList(chatSearchInput.value)});
+onAuthStateChanged(auth,async user=>{currentUser=user;if(user){closeAuth();try{const ref=doc(db,'users',user.uid),snap=await getDoc(ref);let data;if(!snap.exists()){await setDoc(ref,{email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',balance:0,createdAt:serverTimestamp()});data={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',balance:0,createdAt:null}}else data=snap.data();if(data.banned){await signOut(auth);showToast('Заблокирован','');return}profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';profileDisplayNameEl.textContent=data.displayName||user.displayName||user.email||'—';secUidEl.textContent=user.uid;secEmailEl.textContent=user.email||'';secNickEl.textContent=data.nick||user.email?.split('@')[0]||'—';updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;await loadAllUsers();ensureGlobalChat();renderChatList(chatSearchInput.value);stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');subscribeOwnUser(user.uid);renderInventory(user.uid);applyEffects()}catch(e){}chatLockedEl.classList.add('hidden')}else{authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';profileOverlay.classList.remove('open');emailInput.value='';passwordInput.value='';currentAvatarData=null;avatarFileInput.value='';chatLockedEl.classList.remove('hidden');chatInputRowEl.classList.add('hidden');usersCache={};activeChatId=null;stageActions.classList.remove('hidden-when-logged');stageLogged.classList.remove('visible');chatsSidebar.classList.remove('hidden-mobile');balancePillEl.classList.remove('visible');if(unsubscribeOwnUser){unsubscribeOwnUser();unsubscribeOwnUser=null}}if(currentUser&&activeChatId)subscribeChat();renderChatList(chatSearchInput.value)});
 
 async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);const snap=await getDoc(ref);if(!snap.exists())await setDoc(ref,{type:'global',name:'Общий чат',lastMessageAt:serverTimestamp()})}catch(e){}}
+
+const DAILY_REWARD=50;
+const dailyBtn=document.getElementById('dailyBtn');
+dailyBtn.addEventListener('click',async()=>{
+  if(!currentUser)return;
+  dailyBtn.disabled=true;
+  try{
+    const ref=doc(db,'users',currentUser.uid),snap=await getDoc(ref);
+    if(!snap.exists()){showToast('Ошибка','');return}
+    const data=snap.data(),now=Date.now();
+    if(data.lastDaily){
+      const last=data.lastDaily.seconds?data.lastDaily.seconds*1000:new Date(data.lastDaily).getTime();
+      const diff=now-last;
+      if(diff<86400000){
+        const h=Math.ceil((86400000-diff)/3600000);
+        dailyBtn.textContent='Доступно через '+h+' ч.';
+        setTimeout(()=>{dailyBtn.innerHTML='<span class="material-symbols-outlined" style="font-size:18px">redeem</span>Ежедневная награда'},3000);
+        return;
+      }
+    }
+    const bal=(data.balance||0)+DAILY_REWARD;
+    await updateDoc(ref,{balance:bal,lastDaily:serverTimestamp()});
+    showToast('Награда','+'+DAILY_REWARD+' кредитов');
+  }catch(e){showToast('Ошибка',e.message)}
+  finally{dailyBtn.disabled=false}
+});
+
+const MARKET_ITEMS=[
+  {name:'Красный ник',icon:'●',description:'Красный цвет ника',price:80,type:'nickColor',value:'#ef4444'},
+  {name:'Синий ник',icon:'●',description:'Синий цвет ника',price:80,type:'nickColor',value:'#3b82f6'},
+  {name:'Зелёный ник',icon:'●',description:'Зелёный цвет ника',price:80,type:'nickColor',value:'#22c55e'},
+  {name:'Фиолетовый ник',icon:'●',description:'Фиолетовый цвет ника',price:80,type:'nickColor',value:'#a855f7'},
+  {name:'Золотой ник',icon:'●',description:'Золотой цвет ника',price:120,type:'nickColor',value:'#eab308'},
+  {name:'Розовый ник',icon:'●',description:'Розовый цвет ника',price:80,type:'nickColor',value:'#ec4899'},
+  {name:'Оранжевый ник',icon:'●',description:'Оранжевый цвет ника',price:80,type:'nickColor',value:'#f97316'},
+  {name:'Белый ник',icon:'●',description:'Белый цвет ника',price:100,type:'nickColor',value:'#f1f5f9'},
+  {name:'Бирюзовый ник',icon:'●',description:'Бирюзовый цвет ника',price:80,type:'nickColor',value:'#06b6d4'},
+  {name:'Лайм ник',icon:'●',description:'Лаймовый цвет ника',price:80,type:'nickColor',value:'#84cc16'},
+  {name:'Светящийся красный',icon:'◆',description:'Красный ник с неоновым свечением',price:200,type:'nickGlow',value:'#ef4444'},
+  {name:'Светящийся синий',icon:'◆',description:'Синий ник с неоновым свечением',price:200,type:'nickGlow',value:'#3b82f6'},
+  {name:'Светящийся золотой',icon:'◆',description:'Золотой ник с неоновым свечением',price:250,type:'nickGlow',value:'#eab308'},
+  {name:'Светящийся зелёный',icon:'◆',description:'Зелёный ник с неоновым свечением',price:200,type:'nickGlow',value:'#22c55e'},
+  {name:'Светящийся фиолетовый',icon:'◆',description:'Фиолетовый ник с неоновым свечением',price:200,type:'nickGlow',value:'#a855f7'},
+  {name:'Светящийся бирюзовый',icon:'◆',description:'Бирюзовый ник с неоновым свечением',price:200,type:'nickGlow',value:'#06b6d4'},
+  {name:'Шрифт Handwriting',icon:'Aa',description:'Стиль рукописного шрифта',price:150,type:'nickFont',value:'"Caveat",cursive'},
+  {name:'Шрифт Mono',icon:'Aa',description:'Моноширинный шрифт',price:150,type:'nickFont',value:'"Courier New",monospace'},
+  {name:'Шрифт Cursive',icon:'Aa',description:'Курсивный шрифт',price:150,type:'nickFont',value:'"Georgia",serif'},
+  {name:'Шрифт Thin',icon:'Aa',description:'Тонкий элегантный шрифт',price:150,type:'nickFont',value:'"Segoe UI Light",sans-serif'},
+  {name:'Шрифт Bold',icon:'Aa',description:'Жирный шрифт',price:150,type:'nickFont',value:'"Impact",sans-serif'},
+  {name:'Шрифт Small Caps',icon:'Aa',description:'Малые заглавные буквы',price:200,type:'nickFont',value:'"Small Caps",sans-serif'},
+  {name:'Анимация Радуга',icon:'≈',description:'Плавная смена цветов радуги',price:300,type:'nickAnimated',value:'rainbow'},
+  {name:'Анимация Огонь',icon:'≈',description:'Переливание красно-оранжевых тонов',price:300,type:'nickAnimated',value:'fire'},
+  {name:'Анимация Океан',icon:'≈',description:'Плавные сине-бирюзовые волны',price:300,type:'nickAnimated',value:'ocean'},
+  {name:'Анимация Космос',icon:'≈',description:'Фиолетово-синие переливы',price:300,type:'nickAnimated',value:'space'},
+  {name:'Анимация Лайминг',icon:'≈',description:'Мерцание зелёных оттенков',price:300,type:'nickAnimated',value:'lime'},
+  {name:'Радуга аватар',icon:'◎',description:'Радужная рамка аватара',price:250,type:'avatarEffect',value:'rainbow'},
+  {name:'Звёзды аватар',icon:'◎',description:'Звёздная рамка аватара',price:200,type:'avatarEffect',value:'stars'},
+  {name:'Волны аватар',icon:'◎',description:'Волновая рамка аватара',price:250,type:'avatarEffect',value:'waves'},
+  {name:'Дым аватар',icon:'◎',description:'Дымовой эффект аватара',price:200,type:'avatarEffect',value:'smoke'},
+  {name:'Неон аватар',icon:'◎',description:'Неоновая рамка аватара',price:300,type:'avatarEffect',value:'neon'},
+  {name:'Сакура аватар',icon:'◎',description:'Рамка сакуры',price:250,type:'avatarEffect',value:'sakura'},
+  {name:'Космос аватар',icon:'◎',description:'Космическая рамка',price:300,type:'avatarEffect',value:'space'},
+  {name:'Глитч аватар',icon:'◎',description:'Глитч-эффект рамки',price:250,type:'avatarEffect',value:'glitch'}
+];
+
+async function seedMarket(){
+  if(!isAdmin())return;
+  try{
+    const s=await getDocs(collection(db,'market'));
+    const existing=new Set();s.forEach(d=>existing.add(d.data().name));
+    let added=0;
+    for(const it of MARKET_ITEMS){
+      if(!existing.has(it.name)){
+        await addDoc(collection(db,'market'),{...it,active:true,createdAt:serverTimestamp()});
+        added++;
+      }
+    }
+    if(added>0){showToast('Маркет','Добавлено '+added+' товаров');loadMarketItems()}
+    else showToast('Маркет','Все товары уже есть');
+  }catch(e){showToast('Ошибка',e.message)}
+}
+
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='m'&&isAdmin()){e.preventDefault();seedMarket()}});
+
+function applyEffects(){
+  if(!currentUser)return;
+  const uid=currentUser.uid;
+  getDocs(collection(db,'users',uid,'inventory')).then(s=>{
+    const nickColors=[],nickGlows=[],nickFonts=[],nickAnims=[],avatarEffects=[];
+    s.forEach(d=>{const it=d.data();if(it.quantity>0){
+      if(it.type==='nickColor')nickColors.push(it);
+      else if(it.type==='nickGlow')nickGlows.push(it);
+      else if(it.type==='nickFont')nickFonts.push(it);
+      else if(it.type==='nickAnimated')nickAnims.push(it);
+      else if(it.type==='avatarEffect')avatarEffects.push(it);
+    }});
+    window._myNickColor=nickColors.length?nickColors[nickColors.length-1].value:null;
+    window._myNickGlow=nickGlows.length?nickGlows[nickGlows.length-1].value:null;
+    window._myNickFont=nickFonts.length?nickFonts[nickFonts.length-1].value:null;
+    window._myNickAnim=nickAnims.length?nickAnims[nickAnims.length-1].value:null;
+    window._myAvatarEffect=avatarEffects.length?avatarEffects[avatarEffects.length-1].value:null;
+    applyNickEffects();
+    if(window._myAvatarEffect){
+      const effect=window._myAvatarEffect;
+      let style='';
+      if(effect==='rainbow')style='0 0 8px #ec4899,0 0 12px #a855f7,0 0 16px #3b82f6';
+      else if(effect==='stars')style='0 0 6px #eab308,0 0 12px #f59e0b';
+      else if(effect==='waves')style='0 0 8px #06b6d4,0 0 14px #0891b2';
+      else if(effect==='smoke')style='0 0 12px rgba(100,100,100,.5)';
+      else if(effect==='neon')style='0 0 6px #22d3ee,0 0 14px #06b6d4,0 0 22px #0891b2';
+      else if(effect==='sakura')style='0 0 8px #f472b6,0 0 14px #ec4899';
+      else if(effect==='space')style='0 0 8px #6366f1,0 0 14px #8b5cf6,0 0 20px #a78bfa';
+      else if(effect==='glitch')style='0 0 6px #ef4444,2px 0 0 #3b82f6,-2px 0 0 #22c55e';
+      document.querySelectorAll('#stageAvatar,#topbarAvatar,#chatMainAvatar,#profileAvatar').forEach(el=>{
+        el.style.boxShadow=style;
+      });
+    }
+  }).catch(()=>{});
+}
+
+function applyNickEffects(){
+  document.querySelectorAll('.bubble-nick').forEach(el=>{
+    const msgUid=el.closest('.chat-msg')?.dataset?.uid;
+    if(msgUid!==currentUser?.uid)return;
+    el.style.cssText='';
+    el.className='bubble-nick';
+    if(window._myNickGlow){
+      el.style.color=window._myNickGlow;
+      el.style.textShadow='0 0 6px '+window._myNickGlow+',0 0 12px '+window._myNickGlow+',0 0 20px '+window._myNickGlow;
+    }else if(window._myNickColor){
+      el.style.color=window._myNickColor;
+    }
+    if(window._myNickFont){
+      el.style.fontFamily=window._myNickFont;
+    }
+    if(window._myNickAnim){
+      el.classList.add('nick-anim-'+window._myNickAnim);
+    }
+  });
+}
+
+function getNickClasses(){
+  let cls='';
+  if(window._myNickAnim)cls+=' nick-anim-'+window._myNickAnim;
+  return cls;
+}
+function getNickInlineStyle(){
+  let s='';
+  if(window._myNickGlow)s+='color:'+window._myNickGlow+';text-shadow:0 0 6px '+window._myNickGlow+',0 0 12px '+window._myNickGlow+',0 0 20px '+window._myNickGlow+';';
+  else if(window._myNickColor)s+='color:'+window._myNickColor+';';
+  if(window._myNickFont)s+='font-family:'+window._myNickFont+';';
+  return s?' style="'+s+'"':'';
+}
+
 }
 </script>
 <script type="module">
