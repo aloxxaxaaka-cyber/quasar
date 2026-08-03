@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.gstatic.com wss://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.firebaseio.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebase.com https://www.google-analytics.com https://analytics.google.com;">
 <title>quasarNet</title>
+<link rel="icon" type="image/png" sizes="16x16" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
@@ -27,9 +28,12 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .topbar-logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:var(--accent);cursor:pointer;user-select:none;transition:opacity .2s}
 .topbar-logo:hover{opacity:.75}
 .topbar-nav{display:flex;gap:4px;margin-left:20px}
+@keyframes tabPop{0%{transform:scale(1)}50%{transform:scale(.92)}100%{transform:scale(1)}}
+.topbar-nav{display:flex;gap:4px;margin-left:20px}
 .topbar-tab{padding:6px 14px;border:none;background:none;color:var(--text2);font-size:13px;cursor:pointer;border-radius:20px;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:4px}
 .topbar-tab:hover{background:var(--hover);color:var(--text)}
 .topbar-tab.active{background:var(--accent);color:#fff}
+.topbar-tab.bounce{animation:tabPop .3s ease}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .theme-toggle{width:36px;height:36px;border:none;background:var(--hover);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:background .2s}
 .theme-toggle:hover{background:var(--border)}
@@ -42,6 +46,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .topbar-avatar img{width:100%;height:100%;object-fit:cover}
 
 .main{margin-top:52px;height:calc(100vh - 52px)}
+
 .stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
 .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(2.5rem,10vw,5rem);letter-spacing:-1px;user-select:none;line-height:1;animation:popIn .6s ease}
 .logo span{display:inline-block}
@@ -52,7 +57,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .stage-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px var(--shadow)}
 .stage-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 .stage-btn.primary:hover{background:var(--accent2)}
-.stage-logged{display:none;flex-direction:column;align-items:center;gap:12px;animation:slideUp .8s ease .2s both}
+.stage-logged{display:none;flex-direction:column;align-items:center;gap:12px;animation:slideUp .8s ease .2s both;position:relative;z-index:1}
 .stage-logged.visible{display:flex}
 
 .chats-layout{display:none;height:100%;animation:fadeIn .35s ease}
@@ -159,6 +164,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 #avatarFileInput{display:none}
 .profile-email{font-size:12px;color:var(--text2);word-break:break-all}
 .profile-since{font-size:11px;color:var(--text2);margin-top:2px}
+.profile-section-title{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 .5rem;padding-top:.8rem;border-top:1px solid var(--border)}
+.profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.profile-info-val{color:var(--text2);font-family:monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toast-stack{position:fixed;top:60px;right:16px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
 .toast{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 16px var(--shadow);padding:10px 14px;font-size:13px;color:var(--text);width:300px;max-width:90vw;display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(-12px) scale(.95);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:auto}
 .toast.show{opacity:1;transform:translateY(0) scale(1)}
@@ -172,103 +180,39 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 .material-symbols-outlined.filled{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-.sub-view{height:100%;overflow-y:auto}
-.sub-auth{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:2rem}
-.sub-auth-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:min(400px,90vw);box-shadow:0 8px 32px var(--shadow)}
-.sub-brand{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
-.sub-brand-mark{width:36px;height:36px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px}
-.sub-brand strong{display:block;font-size:13px}.sub-brand span{display:block;color:var(--text2);font-size:11px}
-.sub-auth-card h2{margin:0 0 1rem;font-size:20px}
-.sub-tabs{display:flex;gap:0;margin-bottom:1rem;background:var(--hover);border-radius:10px;padding:3px}
-.sub-tab{flex:1;padding:8px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;font-family:inherit;font-size:13px;transition:all .2s}
-.sub-tab.active{background:var(--card);color:var(--text)}
-.sub-tab-content{display:none}.sub-tab-content.active{display:block}
-.sub-shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px)}
-.sub-sidebar{background:var(--sidebar);border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;position:sticky;top:52px;height:calc(100vh - 52px)}
-.sub-sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 0 16px;border-bottom:1px solid var(--border);margin-bottom:12px}
-.sub-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px;flex-shrink:0;background-size:cover;background-position:center}
-.sub-sidebar-user strong{display:block;font-size:13px}.sub-sidebar-user span{display:block;color:var(--text2);font-size:10px;font-family:monospace}
-.sub-nav{display:flex;flex-direction:column;gap:4px;flex:1}
-.sub-nav-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;background:none;color:var(--text2);cursor:pointer;border-radius:8px;font-family:inherit;font-size:13px;transition:all .2s;text-align:left}
-.sub-nav-btn:hover{background:var(--hover);color:var(--text)}
-.sub-nav-btn.active{background:var(--accent);color:#fff}
-.sub-nav-btn .material-symbols-outlined{font-size:18px}
-.sub-admin-btn{color:#dc2626 !important}.sub-admin-btn.active{color:#fff !important}
-.sub-sidebar-footer{margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}
-.sub-main{padding:24px;overflow-y:auto}
-.sub-view-panel{display:none}.sub-view-panel.active{display:block}
-.sub-view-panel h2{margin:0 0 20px;font-size:22px}
-.sub-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.sub-metric{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
-.sub-metric.primary{border-color:var(--accent)}
-.sub-metric span{color:var(--text2);font-size:11px;display:block}
-.sub-metric strong{display:block;margin:10px 0 4px;font-size:22px;color:var(--text)}
-.sub-metric.primary strong{color:var(--accent)}
-.sub-metric small{color:var(--text2);font-size:11px;display:block}
-.sub-sub-header{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
-.sub-sub-header h2{margin:0 0 6px;font-size:24px}.sub-sub-header p{margin:0;color:var(--text2);font-size:13px}
-.sub-days-circle{width:90px;height:90px;border-radius:50%;background:var(--hover);display:grid;place-content:center;text-align:center}
-.sub-days-circle strong{display:block;font-size:28px;color:var(--accent)}.sub-days-circle span{font-size:11px;color:var(--text2)}
-.sub-key-panel,.sub-pass-panel,.sub-history-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.sub-key-panel h3,.sub-pass-panel h3,.sub-history-panel h3{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:8px}
-.sub-key-form{display:grid;grid-template-columns:1fr auto;gap:8px}
-.sub-key-form input{font-family:monospace;text-transform:uppercase}
-.sub-history{max-height:300px;overflow-y:auto}
-.sub-history-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.sub-history-item:last-child{border-bottom:0}
-.sub-history-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0}
-.admin-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
-.admin-tab{padding:6px 14px;border:1px solid var(--border);background:var(--card);color:var(--text2);border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;transition:all .2s}
-.admin-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.admin-panel{display:none}.admin-panel.active{display:block}
-.admin-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px}
-.admin-stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.admin-stat span{display:block;font-size:11px;color:var(--text2)}.admin-stat strong{display:block;font-size:24px;margin:6px 0}
-.admin-toolbar{margin-bottom:12px}.admin-toolbar input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input);color:var(--text);font-family:inherit;font-size:13px}
-.admin-table-wrap{overflow-x:auto}
-.admin-table{width:100%;border-collapse:collapse;font-size:12px}
-.admin-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--text2);font-size:11px;font-weight:600;white-space:nowrap}
-.admin-table td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
-.admin-gen-keys{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap}
-.admin-gen-keys .field{min-width:100px}
-.admin-badge-admin{color:#dc2626;font-weight:600;font-size:11px}
-.admin-btn-sm{padding:3px 8px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:6px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
-.admin-btn-sm:hover{border-color:var(--accent);color:var(--accent)}
-.admin-btn-sm.danger{color:#dc2626;border-color:#dc2626}
-.admin-btn-sm.danger:hover{background:#dc2626;color:#fff}
-.admin-btn-sm.success{color:#16a34a;border-color:#16a34a}
-.admin-view{padding:20px;max-width:1100px;margin:0 auto}
-.admin-view h2{margin:0 0 16px;font-size:20px}
-.admin-view-inner{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-@media(max-width:700px){
-  .sub-shell{grid-template-columns:1fr}
-  .sub-sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border)}
-  .sub-nav{flex-direction:row;overflow-x:auto}
-  .sub-nav-btn{white-space:nowrap}
-  .sub-metrics{grid-template-columns:1fr}
-  .admin-gen-keys{flex-direction:column}
-  .admin-view{padding:12px}
-  .admin-view-inner{padding:16px}
-}
+.balance-pill{display:none;align-items:center;gap:6px;background:var(--pill);border:1px solid var(--pillb);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text)}
+.balance-pill.visible{display:flex}
+.balance-pill .material-symbols-outlined{font-size:16px;color:#f59e0b}
+.market-page{height:100%;overflow-y:auto}
+.market-wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.market-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.market-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px}
+.market-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.market-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:all .25s;animation:popIn .35s ease;position:relative}
+.market-card:hover{border-color:var(--accent);box-shadow:0 6px 20px var(--shadow);transform:translateY(-2px)}
+.market-icon{font-size:32px;line-height:1}
+.market-name{font-weight:600;font-size:14px}
+.market-desc{font-size:12px;color:var(--text2);flex:1}
+.market-price{display:flex;align-items:center;gap:4px;font-weight:600;color:var(--text)}
+.market-price .material-symbols-outlined{font-size:15px;color:#f59e0b}
+.market-buy-btn{margin-top:4px;width:100%}
+.market-empty{grid-column:1/-1;text-align:center;color:var(--text2);padding:40px;font-size:13px}
+.market-admin-card{margin-bottom:20px;background:var(--card);border:1px dashed var(--accent);border-radius:14px;padding:16px}
+.market-admin-card .field-row{display:flex;gap:8px;flex-wrap:wrap}
+.market-admin-card .field-row .field{flex:1;min-width:110px}
+.market-delete-item{position:absolute;top:10px;right:10px;background:none;border:none;color:#dc2626;cursor:pointer;padding:2px;border-radius:6px}
+.market-delete-item:hover{background:var(--hover)}
+.inventory-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.inventory-icon{font-size:16px}
+.inventory-qty{margin-left:auto;color:var(--text2);font-size:12px}
 
 @media(max-width:700px){
-  .topbar-nav{gap:2px;margin-left:12px}
-  .topbar-tab{padding:6px 10px;font-size:12px}
-  .topbar-tab .material-symbols-outlined{display:none}
-  .topbar-logo{font-size:17px}
   .chats-layout{flex-direction:column}
-  .chats-sidebar{width:100%;min-width:0;height:100%;border-right:none;position:relative;z-index:5}
+  .chats-sidebar{width:100%;min-width:100%;border-right:none}
   .chats-sidebar.hidden-mobile{display:none}
-  .chats-main{position:absolute;inset:0;z-index:10;visibility:hidden;pointer-events:none}
-  .chats-main.chat-open{visibility:visible;pointer-events:auto}
-  .chat-back{display:flex !important}
-  .chat-item-wrap{padding:8px 10px}
-  .chat-item-avatar{width:38px;height:38px}
-  .chat-body{padding:10px 12px;gap:3px}
+  .chats-main{position:absolute;inset:0;top:0}
   .chat-msg{max-width:90%}
-  .chat-input-row{padding:8px 10px}
 }
-@media(min-width:701px){.chat-back{display:none !important}}
 </style>
 </head>
 <body>
@@ -278,10 +222,10 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   <div class="topbar-nav">
     <button class="topbar-tab active" data-view="home"><span class="material-symbols-outlined" style="font-size:18px">home</span><span>Главная</span></button>
     <button class="topbar-tab" data-view="chats"><span class="material-symbols-outlined" style="font-size:18px">chat</span><span>Чаты</span></button>
-    <button class="topbar-tab" data-view="sub"><span class="material-symbols-outlined" style="font-size:18px">card_membership</span><span>Подписка</span></button>
-    <button class="topbar-tab" data-view="admin" id="topbarAdminTab" style="display:none"><span class="material-symbols-outlined" style="font-size:18px">admin_panel_settings</span><span>Админ</span></button>
+    <button class="topbar-tab" data-view="market"><span class="material-symbols-outlined" style="font-size:18px">storefront</span><span>Маркет</span></button>
   </div>
   <div class="topbar-right">
+    <div class="balance-pill" id="balancePill"><span class="material-symbols-outlined filled">toll</span><span id="balanceAmount">0</span></div>
     <button class="theme-toggle" id="themeToggle"><span class="material-symbols-outlined">dark_mode</span></button>
     <button class="topbar-btn" id="authTrigger"><span class="material-symbols-outlined" style="font-size:16px">person</span>Войти</button>
     <button class="topbar-user-btn" id="userTrigger"><div class="topbar-avatar" id="topbarAvatar"></div><span id="topbarUserName"></span></button>
@@ -290,8 +234,7 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 
 <div class="main">
   <div class="stage" id="viewHome">
-    <div class="logo"><span style="color:#2563eb">q</span><span style="color:#6b7280">u</span><span style="color:#9ca3af">a</span><span style="color:#d1d5db">s</span><span style="color:#9ca3af">a</span><span style="color:#6b7280">r</span><span style="color:var(--text)">Net</span></div>
-    <div class="tagline">общение без лишнего</div>
+    <div class="logo"><span style="color:#fff">q</span><span style="color:#fff">u</span><span style="color:#fff">a</span><span style="color:#fff">s</span><span style="color:#fff">a</span><span style="color:#fff">r</span><span style="color:#fff">Net</span></div>
     <div class="stage-actions" id="stageActions">
       <button class="stage-btn primary" id="stageLoginBtn"><span class="material-symbols-outlined" style="font-size:18px">login</span>Войти</button>
       <button class="stage-btn" id="stageRegBtn"><span class="material-symbols-outlined" style="font-size:18px">person_add</span>Регистрация</button>
@@ -336,110 +279,22 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
     </div>
   </div>
 
-  <div class="sub-view" id="viewSub" style="display:none">
-    <div class="sub-auth" id="subAuthScreen">
-      <div class="sub-auth-card">
-        <div class="sub-brand"><div class="sub-brand-mark">Q</div><div><strong>QUASAR</strong><span>Account Center</span></div></div>
-        <h2 id="subAuthHeading">Вход в Quasar</h2>
-        <div class="sub-tabs">
-          <button class="sub-tab active" onclick="subSwitchTab('login')">Вход</button>
-          <button class="sub-tab" onclick="subSwitchTab('register')">Регистрация</button>
+  <div class="market-page" id="viewMarket" style="display:none">
+    <div class="market-wrap">
+      <div class="market-header">
+        <div class="market-title">Маркет</div>
+      </div>
+      <div class="market-admin-card hidden" id="marketAdminCard">
+        <div style="font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:18px">add_business</span>Добавить товар</div>
+        <div class="field-row">
+          <div class="field"><label>Иконка (эмодзи)</label><input type="text" id="marketNewIcon" maxlength="4" placeholder="🎁"></div>
+          <div class="field" style="flex:2"><label>Название</label><input type="text" id="marketNewName" maxlength="40" placeholder="Золотая рамка"></div>
+          <div class="field"><label>Цена</label><input type="number" id="marketNewPrice" min="1" placeholder="100"></div>
         </div>
-        <div id="subTabLogin" class="sub-tab-content active">
-          <div class="field"><label>Email</label><input type="email" id="subLoginUser" placeholder="you@example.com" autocomplete="email"></div>
-          <div class="field"><label>Пароль</label><input type="password" id="subLoginPass" placeholder="Пароль" autocomplete="current-password"></div>
-          <button class="btn btn-primary btn-block" onclick="subLogin()">Войти</button>
-          <div class="msg" id="subLoginError"></div>
-        </div>
-        <div id="subTabRegister" class="sub-tab-content">
-          <div class="field"><label>Email</label><input type="email" id="subRegUser" placeholder="you@example.com" autocomplete="email"></div>
-          <div class="field"><label>Пароль</label><input type="password" id="subRegPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
-          <button class="btn btn-primary btn-block" onclick="subRegister()">Создать аккаунт</button>
-          <div class="msg" id="subRegError"></div>
-        </div>
+        <div class="field"><label>Описание</label><input type="text" id="marketNewDesc" maxlength="120" placeholder="Краткое описание товара"></div>
+        <button class="btn btn-primary" id="marketAddBtn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Добавить</button>
       </div>
-    </div>
-    <div class="sub-account hidden" id="subAccountScreen">
-      <div class="sub-shell">
-        <aside class="sub-sidebar">
-          <div class="sub-sidebar-user">
-            <div class="sub-avatar" id="subAvatar"></div>
-            <div><strong id="subSideName">-</strong><span id="subSideUid">UID -</span></div>
-          </div>
-          <nav class="sub-nav">
-            <button class="sub-nav-btn active" onclick="subShowView('overview')"><span class="material-symbols-outlined">dashboard</span>Обзор</button>
-            <button class="sub-nav-btn" onclick="subShowView('subscription')"><span class="material-symbols-outlined">card_membership</span>Подписка</button>
-            <button class="sub-nav-btn" onclick="subShowView('security')"><span class="material-symbols-outlined">shield</span>Безопасность</button>
-          </nav>
-        </aside>
-        <main class="sub-main">
-          <div id="subViewOverview" class="sub-view-panel active">
-            <h2>Обзор</h2>
-            <div class="sub-metrics">
-              <div class="sub-metric primary"><span>Подписка</span><strong id="subStatus">-</strong><small id="subExpires">-</small></div>
-              <div class="sub-metric"><span>Осталось</span><strong id="subDays">0 дн.</strong><small>Текущий тариф</small></div>
-              <div class="sub-metric"><span>Последний вход</span><strong id="subLastLogin">-</strong><small id="subLastIp">IP неизвестен</small></div>
-            </div>
-          </div>
-          <div id="subViewSubscription" class="sub-view-panel">
-            <div class="sub-sub-header">
-              <div><h2 id="subHeadline">Нет активной подписки</h2><p id="subCaption">Активируйте ключ, чтобы продлить доступ.</p></div>
-              <div class="sub-days-circle"><strong id="subDaysVal">0</strong><span>дней</span></div>
-            </div>
-            <div class="sub-key-panel">
-              <h3>Активация ключа</h3>
-              <div class="sub-key-form">
-                <input type="text" id="subKeyInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off">
-                <button class="btn btn-primary" onclick="subActivateKey()">Активировать</button>
-              </div>
-            </div>
-          </div>
-          <div id="subViewSecurity" class="sub-view-panel">
-            <h2>Безопасность</h2>
-            <div class="sub-pass-panel">
-              <h3>Смена пароля</h3>
-              <div class="field"><label>Текущий пароль</label><input type="password" id="subOldPass" autocomplete="current-password"></div>
-              <div class="field"><label>Новый пароль</label><input type="password" id="subNewPass" autocomplete="new-password"></div>
-              <button class="btn btn-primary" onclick="subChangePassword()">Обновить пароль</button>
-            </div>
-            <div class="sub-history-panel">
-              <h3>История входов <button class="btn" onclick="subLoadHistory()" style="font-size:11px;padding:4px 8px">Обновить</button></h3>
-              <div id="subHistoryList" class="sub-history"></div>
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  </div>
-
-  <div class="admin-view" id="viewAdmin" style="display:none">
-    <div class="admin-view-inner">
-      <h2 style="margin-bottom:16px">Админ-панель</h2>
-      <div class="admin-tabs">
-        <button class="admin-tab active" onclick="adminShowTab('dashboard')">Обзор</button>
-        <button class="admin-tab" onclick="adminShowTab('users')">Пользователи</button>
-        <button class="admin-tab" onclick="adminShowTab('keys')">Ключи</button>
-        <button class="admin-tab" onclick="adminShowTab('audit')">Журнал</button>
-      </div>
-      <div id="adminDashboard" class="admin-panel active">
-        <div class="admin-stats" id="adminStats"></div>
-      </div>
-      <div id="adminUsers" class="admin-panel">
-        <div class="admin-toolbar"><input type="text" id="adminSearchUsers" placeholder="Поиск..." oninput="adminFilterUsers()"></div>
-        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>UID</th><th>Username</th><th>Role</th><th>Sub</th><th>Status</th><th>Действия</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
-      </div>
-      <div id="adminKeys" class="admin-panel">
-        <div class="admin-gen-keys">
-          <div class="field"><label>Кол-во</label><input type="number" id="adminKeyCount" value="1" min="1" max="100"></div>
-          <div class="field"><label>Дней</label><input type="number" id="adminKeyDays" value="30" min="1"></div>
-          <div class="field"><label>Роль</label><select id="adminKeyRole"><option value="">Нет</option><option value="USER">User</option><option value="MEDIA">Media</option><option value="BETA">Beta</option></select></div>
-          <button class="btn btn-primary" onclick="adminGenKeys()">Создать</button>
-        </div>
-        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Ключ</th><th>Дней</th><th>Роль</th><th>Статус</th><th>Активировал</th></tr></thead><tbody id="adminKeysBody"></tbody></table></div>
-      </div>
-      <div id="adminAudit" class="admin-panel">
-        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>#</th><th>Действие</th><th>Цель</th><th>Детали</th><th>Время</th></tr></thead><tbody id="adminAuditBody"></tbody></table></div>
-      </div>
+      <div class="market-grid" id="marketGrid"><div class="market-empty">Загрузка...</div></div>
     </div>
   </div>
 </div>
@@ -466,9 +321,9 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
 </div>
 
 <div class="overlay" id="profileOverlay">
-  <div class="card card-profile">
+  <div class="card" style="width:min(420px,92vw);max-height:85vh;overflow-y:auto;padding:1.6rem">
     <div class="card-header">
-      <div class="card-title">Профиль</div>
+      <div class="card-title">Аккаунт</div>
       <button class="card-close" id="profileClose"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="profile-header">
@@ -477,17 +332,38 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
         <div class="profile-avatar-overlay"><span class="material-symbols-outlined">photo_camera</span></div>
         <input type="file" id="avatarFileInput" accept="image/*">
       </div>
-      <div><div class="profile-email" id="profileEmail"></div><div class="profile-since" id="profileSince"></div></div>
+      <div>
+        <div style="font-weight:600;font-size:14px" id="profileDisplayName">—</div>
+        <div class="profile-email" id="profileEmail"></div>
+        <div class="profile-since" id="profileSince"></div>
+      </div>
     </div>
     <div class="field"><label>Имя профиля</label><input type="text" id="profileName" placeholder="Как к тебе обращаться?" maxlength="40"></div>
-    <div class="field"><label>О себе</label><textarea id="profileBio" rows="3" maxlength="200" placeholder="Пара слов о себе"></textarea></div>
+    <div class="field"><label>О себе</label><textarea id="profileBio" rows="2" maxlength="200" placeholder="Пара слов о себе"></textarea></div>
     <button class="btn btn-primary btn-block" id="profileSave"><span class="material-symbols-outlined" style="font-size:16px">save</span>Сохранить</button>
     <div class="msg" id="profileMessage"></div>
-    <button class="btn btn-block" id="authLogout" style="margin-top:.5rem"><span class="material-symbols-outlined" style="font-size:16px">logout</span>Выйти</button>
+
+    <div class="profile-section-title"><span class="material-symbols-outlined" style="font-size:16px">toll</span>Баланс</div>
+    <div class="profile-info-row"><span>Кредиты</span><span class="profile-info-val" id="profileBalance" style="color:var(--text);font-family:inherit;font-weight:600">0</span></div>
+    <div class="profile-section-title"><span class="material-symbols-outlined" style="font-size:16px">inventory_2</span>Инвентарь</div>
+    <div id="inventoryList" style="max-height:150px;overflow-y:auto"></div>
+
+    <div class="profile-section-title"><span class="material-symbols-outlined" style="font-size:16px">shield</span>Безопасность</div>
+    <div class="field"><label>Текущий пароль</label><input type="password" id="secCurrentPass" placeholder="Введите текущий пароль" autocomplete="current-password"></div>
+    <div class="field"><label>Новый пароль</label><input type="password" id="secNewPass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
+    <button class="btn btn-block" id="secChangePass"><span class="material-symbols-outlined" style="font-size:16px">lock_reset</span>Сменить пароль</button>
+    <div class="msg" id="secPassMsg"></div>
+
+    <div class="profile-section-title"><span class="material-symbols-outlined" style="font-size:16px">info</span>Аккаунт</div>
+    <div class="profile-info-row"><span>UID</span><span class="profile-info-val" id="secUid">—</span></div>
+    <div class="profile-info-row"><span>Email</span><span class="profile-info-val" id="secEmail">—</span></div>
+    <div class="profile-info-row"><span>Nick</span><span class="profile-info-val" id="secNick">—</span></div>
+
+    <div style="margin-top:1rem;display:flex;gap:8px">
+      <button class="btn btn-block" id="authLogout" style="flex:1"><span class="material-symbols-outlined" style="font-size:16px">logout</span>Выйти</button>
+    </div>
   </div>
 </div>
-
-<div class="toast-stack" id="toastStack"></div>
 
 <div class="overlay" id="adminEditOverlay">
   <div class="card card-profile">
@@ -506,9 +382,11 @@ body{color:var(--text);font-family:'Inter',Arial,sans-serif;font-size:14px;overf
   </div>
 </div>
 
+<div class="toast-stack" id="toastStack"></div>
+
 <script>
 function initApp(){
-const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where}=window.firebaseFns;
+const{signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updateProfile,reauthenticateWithCredential,EmailAuthProvider,updatePassword,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}=window.firebaseFns;
 
 const html=document.documentElement;
 const themeBtn=document.getElementById('themeToggle');
@@ -541,8 +419,8 @@ function playNotifSound(){try{if(audioCtx.state==='suspended')audioCtx.resume();
 
 const authOverlay=document.getElementById('authOverlay'),authClose=document.getElementById('authClose'),authForms=document.getElementById('authForms'),authTitle=document.getElementById('authTitle'),emailInput=document.getElementById('authEmail'),passwordInput=document.getElementById('authPassword'),submitBtn=document.getElementById('authSubmit'),googleBtn=document.getElementById('authGoogle'),messageEl=document.getElementById('authMessage'),authTrigger=document.getElementById('authTrigger'),userTrigger=document.getElementById('userTrigger'),topbarAvatar=document.getElementById('topbarAvatar'),topbarUserName=document.getElementById('topbarUserName'),stageActions=document.getElementById('stageActions'),stageLogged=document.getElementById('stageLogged'),stageAvatar=document.getElementById('stageAvatar'),stageName=document.getElementById('stageName'),stageEmail=document.getElementById('stageEmail');
 
-function openAuth(){authOverlay.classList.add('open')}
-function closeAuth(){authOverlay.classList.remove('open');setMessage('')}
+function openAuth(){authForms.classList.remove('hidden');authTitle.textContent=mode==='login'?'Вход':'Регистрация';emailInput.value='';passwordInput.value='';messageEl.textContent='';authOverlay.classList.add('open')}
+function closeAuth(){authOverlay.classList.remove('open')}
 function setMessage(t,c){messageEl.textContent=t||'';messageEl.className='msg'+(c?' '+c:'')}
 function setMode(m){mode=m;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===m));submitBtn.innerHTML=m==='login'?'<span class="material-symbols-outlined" style="font-size:16px">login</span>Войти':'<span class="material-symbols-outlined" style="font-size:16px">person_add</span>Создать аккаунт';authTitle.textContent=m==='login'?'Вход':'Регистрация';setMessage('')}
 
@@ -555,10 +433,103 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setM
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAuth();closeProfile()}});
 
 let authAttempts=0,authCooldownUntil=0;
-submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){ setMessage('Заполни email и пароль','error');return}if(Date.now()<authCooldownUntil){ setMessage('Слишком много попыток, подождите','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else{if(password.length<6){setMessage('Пароль минимум 6 символов','error');submitBtn.disabled=false;return}await createUserWithEmailAndPassword(auth,email,password)}authAttempts=0}catch(e){authAttempts++;if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток. Подождите минуту','error')}else setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
-googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider)}catch(e){setMessage(friendlyError(e.code),'error')}});
+submitBtn.addEventListener('click',async()=>{const email=emailInput.value.trim(),password=passwordInput.value;if(!email||!password){ setMessage('Заполни email и пароль','error');return}if(Date.now()<authCooldownUntil){ setMessage('Слишком много попыток, подождите','error');return}submitBtn.disabled=true;setMessage('');try{if(mode==='login')await signInWithEmailAndPassword(auth,email,password);else{if(password.length<6){setMessage('Пароль минимум 6 символов','error');submitBtn.disabled=false;return}await createUserWithEmailAndPassword(auth,email,password)}authAttempts=0;closeAuth()}catch(e){authAttempts++;if(authAttempts>=5){authCooldownUntil=Date.now()+60000;authAttempts=0;setMessage('Слишком много попыток. Подождите минуту','error')}else setMessage(friendlyError(e.code),'error')}finally{submitBtn.disabled=false}});
+googleBtn.addEventListener('click',async()=>{try{await signInWithPopup(auth,window.googleProvider);closeAuth()}catch(e){if(e.code==='auth/popup-blocked'||e.code==='auth/internal-error'){try{await signInWithRedirect(auth,window.googleProvider);return}catch(e2){}}setMessage(friendlyError(e.code),'error')}});
 
-const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap');
+const profileOverlay=document.getElementById('profileOverlay'),profileClose=document.getElementById('profileClose'),profileAvatarEl=document.getElementById('profileAvatar'),profileEmailEl=document.getElementById('profileEmail'),profileSinceEl=document.getElementById('profileSince'),profileNameEl=document.getElementById('profileName'),profileBioEl=document.getElementById('profileBio'),profileSaveBtn=document.getElementById('profileSave'),profileMessageEl=document.getElementById('profileMessage'),authLogoutBtn=document.getElementById('authLogout'),avatarFileInput=document.getElementById('avatarFileInput'),avatarWrap=document.getElementById('avatarWrap'),profileDisplayNameEl=document.getElementById('profileDisplayName'),secCurrentPass=document.getElementById('secCurrentPass'),secNewPass=document.getElementById('secNewPass'),secChangePassBtn=document.getElementById('secChangePass'),secPassMsg=document.getElementById('secPassMsg'),secUidEl=document.getElementById('secUid'),secEmailEl=document.getElementById('secEmail'),secNickEl=document.getElementById('secNick'),balancePillEl=document.getElementById('balancePill'),balanceAmountEl=document.getElementById('balanceAmount'),profileBalanceEl=document.getElementById('profileBalance'),inventoryListEl=document.getElementById('inventoryList');
+
+const viewMarket=document.getElementById('viewMarket'),marketGridEl=document.getElementById('marketGrid'),marketAdminCardEl=document.getElementById('marketAdminCard'),marketNewIcon=document.getElementById('marketNewIcon'),marketNewName=document.getElementById('marketNewName'),marketNewPrice=document.getElementById('marketNewPrice'),marketNewDesc=document.getElementById('marketNewDesc'),marketAddBtn=document.getElementById('marketAddBtn');
+
+function updateBalanceUI(bal){const b=typeof bal==='number'?bal:0;balanceAmountEl.textContent=b;profileBalanceEl.textContent=b;balancePillEl.classList.add('visible')}
+
+let unsubscribeOwnUser=null;
+function subscribeOwnUser(uid){
+  if(unsubscribeOwnUser)unsubscribeOwnUser();
+  unsubscribeOwnUser=onSnapshot(doc(db,'users',uid),snap=>{
+    if(!snap.exists())return;
+    const d=snap.data();
+    updateBalanceUI(d.balance);
+    if(usersCache[uid])usersCache[uid].admin=!!d.admin;
+    if(d.banned&&currentUser)signOut(auth);
+  },()=>{});
+}
+
+async function renderInventory(uid){
+  inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Загрузка...</div>';
+  try{
+    const s=await getDocs(collection(db,'users',uid,'inventory'));
+    if(s.empty){inventoryListEl.innerHTML='<div style="color:var(--text2);font-size:12px;padding:6px 0">Пока нет купленных товаров</div>';return}
+    inventoryListEl.innerHTML='';
+    s.forEach(d=>{const it=d.data();const row=document.createElement('div');row.className='inventory-item';row.innerHTML='<span class="inventory-icon">'+esc(it.icon||'🎁')+'</span><span>'+esc(it.name||'Товар')+'</span><span class="inventory-qty">x'+(it.quantity||1)+'</span>';inventoryListEl.appendChild(row)});
+  }catch(e){inventoryListEl.innerHTML=''}
+}
+
+async function loadMarketItems(){
+  if(!currentUser){marketGridEl.innerHTML='<div class="market-empty">Войдите, чтобы посмотреть маркет</div>';marketAdminCardEl.classList.add('hidden');return}
+  marketAdminCardEl.classList.toggle('hidden',!isAdmin());
+  marketGridEl.innerHTML='<div class="market-empty">Загрузка...</div>';
+  try{
+    const s=await getDocs(collection(db,'market'));
+    const items=[];s.forEach(d=>{const data=d.data();if(data.active===false&&!isAdmin())return;items.push({id:d.id,...data})});
+    items.sort((a,b)=>(a.createdAt?.seconds||0)-(b.createdAt?.seconds||0));
+    if(items.length===0){marketGridEl.innerHTML='<div class="market-empty">Товаров пока нет'+(isAdmin()?'. Добавьте первый!':'')+'</div>';return}
+    marketGridEl.innerHTML='';
+    items.forEach(it=>{
+      const card=document.createElement('div');card.className='market-card';
+      const hiddenTag=it.active===false?' <span style="color:#dc2626;font-size:11px">(скрыт)</span>':'';
+      card.innerHTML='<div class="market-icon">'+esc(it.icon||'🎁')+'</div><div class="market-name">'+esc(it.name||'Товар')+hiddenTag+'</div><div class="market-desc">'+esc(it.description||'')+'</div><div class="market-price"><span class="material-symbols-outlined filled">toll</span>'+(it.price||0)+'</div><button class="btn btn-primary market-buy-btn" data-id="'+esc(it.id)+'"><span class="material-symbols-outlined" style="font-size:16px">shopping_cart</span>Купить</button>'+(isAdmin()?'<button class="market-delete-item" data-del="'+esc(it.id)+'" title="Удалить"><span class="material-symbols-outlined">close</span></button>':'');
+      marketGridEl.appendChild(card);
+    });
+    marketGridEl.querySelectorAll('.market-buy-btn').forEach(btn=>btn.addEventListener('click',()=>buyItem(btn.dataset.id,btn)));
+    marketGridEl.querySelectorAll('[data-del]').forEach(btn=>btn.addEventListener('click',()=>deleteMarketItem(btn.dataset.del)));
+  }catch(e){console.error('loadMarketItems error:',e);marketGridEl.innerHTML='<div class="market-empty">Не удалось загрузить товары</div>'}
+}
+
+async function buyItem(itemId,btn){
+  if(!currentUser){openAuth();return}
+  if(btn){btn.disabled=true;btn.innerHTML='...'}
+  try{
+    await runTransaction(db,async(tx)=>{
+      const userRef=doc(db,'users',currentUser.uid);
+      const itemRef=doc(db,'market',itemId);
+      const invRef=doc(db,'users',currentUser.uid,'inventory',itemId);
+      const userSnap=await tx.get(userRef);
+      const itemSnap=await tx.get(itemRef);
+      const invSnap=await tx.get(invRef);
+      if(!itemSnap.exists())throw new Error('Товар больше не существует');
+      const item=itemSnap.data();
+      if(item.active===false)throw new Error('Товар недоступен');
+      const balance=(userSnap.exists()?userSnap.data().balance:0)||0;
+      const price=item.price||0;
+      if(balance<price)throw new Error('Недостаточно кредитов');
+      const curQty=invSnap.exists()?(invSnap.data().quantity||0):0;
+      tx.update(userRef,{balance:balance-price});
+      tx.set(invRef,{itemId,name:item.name||'Товар',icon:item.icon||'',price,quantity:curQty+1,purchasedAt:serverTimestamp()},{merge:true});
+    });
+    showToast('Покупка','Товар добавлен в инвентарь');
+    renderInventory(currentUser.uid);
+  }catch(e){console.error('buyItem error:',e);showToast('Ошибка',e.message||'Не удалось купить товар')}
+  finally{loadMarketItems()}
+}
+
+async function deleteMarketItem(itemId){
+  if(!isAdmin())return;
+  try{await deleteDoc(doc(db,'market',itemId));showToast('Удалено','Товар удалён из маркета');loadMarketItems()}catch(e){console.error('deleteMarketItem error:',e);showToast('Ошибка',e.message||'Не удалось удалить')}
+}
+
+marketAddBtn.addEventListener('click',async()=>{
+  if(!isAdmin())return;
+  const name=marketNewName.value.trim().slice(0,40),desc=marketNewDesc.value.trim().slice(0,120),price=parseInt(marketNewPrice.value,10),icon=marketNewIcon.value.trim().slice(0,4)||'🎁';
+  if(!name||!price||price<1){showToast('Ошибка','Заполните название и корректную цену (больше 0)');return}
+  marketAddBtn.disabled=true;
+  try{
+    await addDoc(collection(db,'market'),{name,description:desc,price,icon,active:true,createdAt:serverTimestamp()});
+    marketNewName.value='';marketNewDesc.value='';marketNewPrice.value='';marketNewIcon.value='';
+    showToast('Добавлено','Новый товар в маркете');
+    loadMarketItems();
+  }catch(e){console.error('marketAddBtn error:',e);showToast('Ошибка',e.message||'Не удалось добавить товар')}
+  finally{marketAddBtn.disabled=false}
+});
 
 function openProfile(){profileOverlay.classList.add('open')}
 function closeProfile(){profileOverlay.classList.remove('open');setProfileMessage('')}
@@ -572,6 +543,15 @@ avatarFileInput.addEventListener('change',e=>{const file=e.target.files[0];if(!f
 
 profileSaveBtn.addEventListener('click',async()=>{const user=auth.currentUser;if(!user)return;profileSaveBtn.disabled=true;setProfileMessage('');try{const d={displayName:profileNameEl.value.trim().slice(0,40),bio:profileBioEl.value.trim().slice(0,200),nick:sanitizeNick(profileNameEl.value.trim())||user.email?.split('@')[0]||''};if(currentAvatarData)d.avatar=sanitizeAvatar(currentAvatarData)||'';await setDoc(doc(db,'users',user.uid),d,{merge:true});if((user.displayName||'')!==profileNameEl.value.trim())await updateProfile(user,{displayName:profileNameEl.value.trim().slice(0,40)||null});updateIdentityUI(profileNameEl.value.trim(),user.email,currentAvatarData||usersCache[user.uid]?.avatar||'');currentAvatarData=null;avatarFileInput.value='';await loadAllUsers();setProfileMessage('Сохранено','success');showToast('Профиль','Изменения сохранены')}catch(e){setProfileMessage(friendlyError(e.code),'error')}finally{profileSaveBtn.disabled=false}});
 authLogoutBtn.addEventListener('click',async()=>{await signOut(auth);closeProfile()});
+secChangePassBtn.addEventListener('click',async()=>{
+  const cur=secCurrentPass.value.trim(),np=secNewPass.value.trim();
+  if(!cur||!np){secPassMsg.textContent='Заполните оба поля';secPassMsg.className='msg error';return}
+  if(np.length<6){secPassMsg.textContent='Минимум 6 символов';secPassMsg.className='msg error';return}
+  const user=auth.currentUser;if(!user)return;
+  secChangePassBtn.disabled=true;secPassMsg.textContent='';
+  try{const cred=EmailAuthProvider.credential(user.email,cur);await reauthenticateWithCredential(user,cred);await updatePassword(user,np);secCurrentPass.value='';secNewPass.value='';secPassMsg.textContent='Пароль обновлён';secPassMsg.className='msg success';showToast('Безопасность','Пароль изменён')}catch(e){secPassMsg.textContent=e.code==='auth/wrong-password'?'Неверный текущий пароль':friendlyError(e.code);secPassMsg.className='msg error'}
+  finally{secChangePassBtn.disabled=false}
+});
 
 function updateIdentityUI(name,email,avatar){const short=initials(name||email);const av=sanitizeAvatar(avatar);authTrigger.classList.add('hidden');userTrigger.classList.add('visible');topbarAvatar.innerHTML=av?'<img src="'+esc(av)+'">':short;topbarUserName.textContent=name||'Аккаунт';profileAvatarEl.innerHTML=av?'<img src="'+esc(av)+'" style="width:100%;height:100%;object-fit:cover">':short;profileEmailEl.textContent=email||'';stageAvatar.innerHTML=av?'<img src="'+esc(av)+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':short;stageName.textContent=name||'';stageEmail.textContent=email||''}
 
@@ -584,7 +564,7 @@ const chatListEl=document.getElementById('chatList'),chatBodyEl=document.getElem
 
 let activeChatId=null,activeChatTargetUid=null,unsubscribeChat=null,isFirstChatSnapshot=true,chatOpening=false;
 
-chatLoginBtn.addEventListener('click',()=>{closeAuth();openAuth();setMode('login')});
+chatLoginBtn.addEventListener('click',()=>{closeProfile();openAuth();setMode('login')});
 chatBackBtn.addEventListener('click',()=>{
   chatsSidebar.classList.remove('hidden-mobile');
   document.querySelector('.chats-main').classList.remove('chat-open');
@@ -687,7 +667,6 @@ async function startChatWith(uid){
     const ref=doc(db,'chats',chatId);
     const snap=await getDoc(ref);
     if(!snap.exists()){await setDoc(ref,{participants:[currentUser.uid,uid],lastMessage:'',lastMessageAt:serverTimestamp()})}
-    openChatWith(uid);
     openChatWith(uid);
   }finally{chatOpening=false}
 }
@@ -801,22 +780,21 @@ chatInputEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.pr
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
   if(user){
-    authForms.classList.add('hidden');authTitle.textContent='Профиль';
+    closeAuth();
     try{const ref=doc(db,'users',user.uid),snap=await getDoc(ref);let data;
     if(!snap.exists()){await setDoc(ref,{email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:serverTimestamp()});data={email:user.email,displayName:user.displayName||'',bio:'',avatar:'',nick:user.email?.split('@')[0]||'',createdAt:null}}else data=snap.data();
     if(data.banned){await signOut(auth);showToast('Заблокирован','Ваш аккаунт заблокирован');return}
-    profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';
+    profileNameEl.value=data.displayName||user.displayName||'';profileBioEl.value=data.bio||'';profileSinceEl.textContent=data.createdAt?'На сайте с '+new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'';profileEmailEl.textContent=user.email||'';profileDisplayNameEl.textContent=data.displayName||user.displayName||user.email||'—';secUidEl.textContent=user.uid;secEmailEl.textContent=user.email||'';secNickEl.textContent=data.nick||data.displayName||user.email?.split('@')[0]||'—';
     updateIdentityUI(data.displayName||user.displayName,user.email,data.avatar||'');
     if(usersCache[user.uid])usersCache[user.uid].admin=!!data.admin;
     await loadAllUsers();ensureGlobalChat();
-    try{const subSnap=await getDoc(doc(db,'sub_users',user.uid));const isAdmin=data.admin||subSnap.exists()&&subSnap.data().role==='ADMIN';document.getElementById('topbarAdminTab').style.display=isAdmin?'':'none'}catch(e){document.getElementById('topbarAdminTab').style.display=data.admin?'':'none'}
     renderChatList(chatSearchInput.value);
     stageActions.classList.add('hidden-when-logged');stageLogged.classList.add('visible');
     }catch(e){}
     chatLockedEl.classList.add('hidden');
   }else{
-    authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';document.getElementById('topbarAdminTab').style.display='none';
-    authForms.classList.remove('hidden');profileOverlay.classList.remove('open');authTitle.textContent=mode==='login'?'Вход':'Регистрация';
+    authTrigger.classList.remove('hidden');userTrigger.classList.remove('visible');topbarAvatar.innerHTML='';topbarUserName.textContent='';
+    profileOverlay.classList.remove('open');
     emailInput.value='';passwordInput.value='';currentAvatarData=null;avatarFileInput.value='';
     chatLockedEl.classList.remove('hidden');chatInputRowEl.classList.add('hidden');usersCache={};activeChatId=null;
     stageActions.classList.remove('hidden-when-logged');stageLogged.classList.remove('visible');
@@ -826,113 +804,25 @@ onAuthStateChanged(auth,async user=>{
   renderChatList(chatSearchInput.value);
 });
 
-// ── View switching (home/chats/sub/admin) ──
 let currentView='home';
-const viewHome=document.getElementById('viewHome'),viewChats=document.getElementById('viewChats'),viewSubEl=document.getElementById('viewSub'),viewAdminEl=document.getElementById('viewAdmin');
-const viewMap={home:viewHome,chats:viewChats,sub:viewSubEl,admin:viewAdminEl};
-function switchMainView(v){currentView=v;Object.values(viewMap).forEach(el=>el.style.display='none');if(v==='home')viewHome.style.display='flex';else if(v==='chats')viewChats.style.display='flex';else if(viewMap[v])viewMap[v].style.display='';document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='sub'){if(currentUser){subUser=currentUser;subLoadProfile()}else{subShowAuth()}}if(v==='admin')adminLoadDashboard()}
-document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',()=>switchMainView(t.dataset.view)));
+const viewHome=document.getElementById('viewHome'),viewChats=document.getElementById('viewChats');
+function switchMainView(v){currentView=v;Object.values({home:viewHome,chats:viewChats}).forEach(el=>el.style.display='none');if(v==='home')viewHome.style.display='flex';else if(v==='chats')viewChats.style.display='flex';document.querySelectorAll('.topbar-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));if(v==='chats'&&currentUser)renderChatList(chatSearchInput.value)}
+document.querySelectorAll('.topbar-tab').forEach(t=>t.addEventListener('click',()=>{if(t.classList.contains('active'))return;t.classList.remove('bounce');t.offsetHeight;t.classList.add('bounce');switchMainView(t.dataset.view)}));
 document.getElementById('topbarLogo').addEventListener('click',()=>switchMainView('home'));
-
-// ── Subscription system (Firestore) ──
-let subUser=null,subProfile=null;
-const SUB_COLLECTIONS={users:'sub_users',keys:'sub_keys',audit:'sub_audit',history:'sub_history'};
-function subToast(msg,type){showToast(msg,type==='error'?'Ошибка':'Уведомление')}
-function subSwitchTab(n){document.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.sub-tab-content').forEach(c=>c.classList.remove('active'));document.querySelector('.sub-tab[onclick*="'+n+'"]').classList.add('active');document.getElementById('subTab'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active');document.getElementById('subAuthHeading').textContent=n==='login'?'Вход в Quasar':'Новый аккаунт'}
-function subShowView(n){document.querySelectorAll('.sub-view-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.sub-nav-btn').forEach(b=>b.classList.remove('active'));const panels={overview:'subViewOverview',subscription:'subViewSubscription',security:'subViewSecurity'};const el=document.getElementById(panels[n]);if(el)el.classList.add('active');document.querySelectorAll('.sub-nav-btn').forEach(b=>{if(b.textContent.includes({overview:'Обзор',subscription:'Подписка',security:'Безопасность'}[n]||''))b.classList.add('active')})}
-function subShowAuth(){document.getElementById('subAuthScreen').classList.remove('hidden');document.getElementById('subAccountScreen').classList.add('hidden')}
-function subShowAccount(){
-  document.getElementById('subAuthScreen').classList.add('hidden');document.getElementById('subAccountScreen').classList.remove('hidden');
-  const p=subProfile||{};const u=subUser||{};const chatUser=usersCache[u.uid]||{};
-  const days=p.subscription_days||0,start=p.subscription_start?new Date(p.subscription_start):null,end=start&&days?new Date(start.getTime()+days*86400000):null,active=end&&Date.now()<end.getTime();
-  const uname=chatUser.nick||chatUser.name||p.username||u.email?.split('@')[0]||'-';
-  document.getElementById('subSideName').textContent=uname;document.getElementById('subSideUid').textContent='UID '+(u.uid||'-');
-  document.getElementById('subStatus').textContent=active?'Активна':'Неактивна';document.getElementById('subStatus').style.color=active?'#16a34a':'#dc2626';
-  document.getElementById('subExpires').textContent=end?'До '+end.toLocaleDateString('ru-RU'):'Ключ не активирован';
-  document.getElementById('subDays').textContent=days+' дн.';
-  document.getElementById('subLastLogin').textContent=p.last_login?new Date(p.last_login).toLocaleString('ru-RU'):'-';
-  document.getElementById('subLastIp').textContent=p.last_ip?'IP '+p.last_ip:'IP неизвестен';
-  document.getElementById('subDaysVal').textContent=days;
-  document.getElementById('subHeadline').textContent=active?'Доступ активен':'Нет активной подписки';
-  document.getElementById('subCaption').textContent=active&&end?`Доступ действует до ${end.toLocaleDateString('ru-RU')}.`:'Активируйте ключ, чтобы открыть доступ.';
-  document.getElementById('subAvatar').textContent=uname[0]?.toUpperCase()||'?';
-  subShowView('overview');
-}
-async function subLogin(){
-  const email=document.getElementById('subLoginUser').value.trim(),pass=document.getElementById('subLoginPass').value,e=document.getElementById('subLoginError');e.textContent='';
-  if(!email||!pass){e.textContent='Заполните оба поля';return}
-  try{const cred=await signInWithEmailAndPassword(auth,email,pass);subUser=cred.user;await subLoadProfile()}catch(err){e.textContent=err.code==='auth/invalid-credential'?'Неверный email или пароль':err.code==='auth/user-not-found'?'Пользователь не найден':err.code==='auth/wrong-password'?'Неверный пароль':err.message}
-}
-async function subRegister(){
-  const email=document.getElementById('subRegUser').value.trim(),pass=document.getElementById('subRegPass').value,e=document.getElementById('subRegError');e.textContent='';
-  if(!email||!pass){e.textContent='Заполните оба поля';return}
-  if(pass.length<6){e.textContent='Пароль минимум 6 символов';return}
-  try{const cred=await createUserWithEmailAndPassword(auth,email,pass);await setDoc(doc(db,SUB_COLLECTIONS.users,cred.user.uid),{uid:cred.user.uid,username:email.split('@')[0],role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''});subToast('Аккаунт создан');subSwitchTab('login');document.getElementById('subLoginUser').value=email}catch(err){e.textContent=err.code==='auth/email-already-in-use'?'Email уже зарегистрирован':err.message}
-}
-async function subLoadProfile(){
-  if(!subUser)return;
-  try{const snap=await getDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid));if(snap.exists()){subProfile=snap.data()}else{subProfile={uid:subUser.uid,username:subUser.email?.split('@')[0]||'User',role:'USER',subscription_days:0,subscription_start:null,is_banned:0,ban_reason:'',hwid:'',created_at:new Date().toISOString(),last_login:null,last_ip:'',avatar:''};await setDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),subProfile)}const chatAdmin=usersCache[subUser.uid]?.admin;document.getElementById('topbarAdminTab').style.display=chatAdmin||subProfile?.role==='ADMIN'?'':'none';subShowAccount()}catch(e){console.error('subLoadProfile:',e)}
-}
-async function subActivateKey(){
-  const inp=document.getElementById('subKeyInput'),key=inp.value.trim().toUpperCase();if(!key){subToast('Введите ключ','error');return}
-  if(!subUser){subToast('Войдите в аккаунт','error');return}
-  try{await runTransaction(db,async tx=>{
-    const keyRef=doc(db,SUB_COLLECTIONS.keys,key);const keySnap=await tx.get(keyRef);if(!keySnap.exists())throw new Error('Ключ не найден');const kd=keySnap.data();if(kd.activated_by)throw new Error('Ключ уже использован');
-    const userRef=doc(db,SUB_COLLECTIONS.users,subUser.uid);const userSnap=await tx.get(userRef);if(!userSnap.exists())throw new Error('Профиль не найден');const ud=userSnap.data();if(ud.is_banned)throw new Error('Аккаунт заблокирован');
-    const now=new Date();const subStart=ud.subscription_start?new Date(ud.subscription_start):null;const newStart=subStart&&subStart>now?subStart:now;const newDays=(ud.subscription_days||0)+(kd.days||0);
-    tx.update(userRef,{subscription_days:newDays,subscription_start:newStart.toISOString()});
-    tx.update(keyRef,{activated_by:subUser.uid,activated_at:now.toISOString()});
-    tx.set(doc(db,SUB_COLLECTIONS.audit,key+subUser.uid),{action:'key_activate',target_uid:subUser.uid,details:'Key: '+key+' +'+kd.days+'d',created_at:now.toISOString()});
-  });inp.value='';subToast('Ключ активирован');await subLoadProfile()}catch(e){subToast(e.message,'error')}
-}
-async function subChangePassword(){
-  const op=document.getElementById('subOldPass').value,np=document.getElementById('subNewPass').value;
-  if(!op||!np){subToast('Заполните оба поля','error');return}
-  if(!subUser){subToast('Войдите','error');return}
-  try{await reauthenticateWithCredential(subUser,EmailAuthProvider.credential(subUser.email,op));await updatePassword(subUser,np);document.getElementById('subOldPass').value='';document.getElementById('subNewPass').value='';subToast('Пароль обновлён')}catch(e){subToast(e.code==='auth/wrong-password'?'Неверный текущий пароль':e.message,'error')}
-}
-async function subLoadHistory(){
-  if(!subUser)return;
-  try{const q=query(collection(db,SUB_COLLECTIONS.history),where('uid','==',subUser.uid),orderBy('created_at','desc'),limit(20));const snap=await getDocs(q);const c=document.getElementById('subHistoryList');c.innerHTML='';snap.forEach(d=>{const h=d.data();const i=document.createElement('div');i.className='sub-history-item';i.innerHTML='<span class="sub-history-dot"></span><span style="font-family:monospace">'+(h.ip||'-')+'</span><span>'+(h.type==='login'?'Вход':h.type||'Вход')+'</span><span style="color:var(--text2)">'+new Date(h.created_at).toLocaleString('ru-RU')+'</span>';c.appendChild(i)});if(snap.empty)c.innerHTML='<div style="color:var(--text2);font-size:12px;padding:12px">История пуста</div>'}catch(e){console.error(e)}
-}
-function subLogout(){signOut(auth);subUser=null;subProfile=null;subShowAuth();document.getElementById('subLoginPass').value='';document.getElementById('subLoginError').textContent=''}
-async function subRecordLogin(){if(!subUser)return;try{await addDoc(collection(db,SUB_COLLECTIONS.history),{uid:subUser.uid,ip:'',type:'login',created_at:new Date().toISOString()});await updateDoc(doc(db,SUB_COLLECTIONS.users,subUser.uid),{last_login:new Date().toISOString()})}catch(e){}}
-function subInitAuth(){onAuthStateChanged(auth,async user=>{if(user){subUser=user;if(currentView==='sub')await subLoadProfile()}else{subUser=null;subProfile=null;if(currentView==='sub')subShowAuth()}})}
-
-// ── Admin panel (Firestore) ──
-let adminData={users:[],keys:[],audit:[]};
-function adminShowTab(n){document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));document.querySelector('.admin-tab[onclick*="'+n+'"]').classList.add('active');document.getElementById('admin'+n.charAt(0).toUpperCase()+n.slice(1)).classList.add('active');if(n==='dashboard')adminLoadDashboard();if(n==='users')adminLoadUsers();if(n==='keys')adminLoadKeys();if(n==='audit')adminLoadAudit()}
-async function adminLoadDashboard(){
-  try{const[usersSnap,keysSnap]=await Promise.all([getDocs(collection(db,SUB_COLLECTIONS.users)),getDocs(collection(db,SUB_COLLECTIONS.keys))]);
-  const users=[];usersSnap.forEach(d=>users.push(d.data()));const keys=[];keysSnap.forEach(d=>keys.push(d.data()));
-  const total=users.length,banned=users.filter(u=>u.is_banned).length,admins=users.filter(u=>u.role==='ADMIN').length,media=users.filter(u=>u.role==='MEDIA').length,betas=users.filter(u=>u.role==='BETA').length,regUsers=users.filter(u=>u.role==='USER').length;
-  const freeKeys=keys.filter(k=>!k.activated_by).length,usedKeys=keys.filter(k=>k.activated_by).length;
-  const c=document.getElementById('adminStats');c.innerHTML='';[{l:'Всего',v:total,c:'var(--accent)'},{l:'Админы',v:admins,c:'var(--text2)'},{l:'Медиа',v:media,c:'var(--text2)'},{l:'Бета',v:betas,c:'var(--text2)'},{l:'Юзеры',v:regUsers,c:'#16a34a'},{l:'Забанены',v:banned,c:'#dc2626'},{l:'Свободные ключи',v:freeKeys,c:'var(--accent)'},{l:'Исп. ключи',v:usedKeys,c:'var(--text2)'}].forEach(s=>{const e=document.createElement('div');e.className='admin-stat';e.innerHTML='<span>'+s.l+'</span><strong style="color:'+s.c+'">'+s.v+'</strong>';c.appendChild(e)})}catch(e){console.error(e)}}
-async function adminLoadUsers(){try{const snap=await getDocs(collection(db,SUB_COLLECTIONS.users));adminData.users=[];snap.forEach(d=>adminData.users.push(d.data()));adminRenderUsers(adminData.users)}catch(e){console.error(e)}}
-function adminRenderUsers(users){const b=document.getElementById('adminUsersBody');b.innerHTML='';users.forEach(u=>{const now=new Date(),subEnd=u.subscription_start&&u.subscription_days?new Date(new Date(u.subscription_start).getTime()+u.subscription_days*86400000):null,active=subEnd&&now<subEnd;const r=document.createElement('tr');r.innerHTML='<td>'+(u.uid||'-')+'</td><td>'+(u.username||'-')+'</td><td><span style="font-size:11px;padding:2px 6px;border:1px solid var(--border);border-radius:4px">'+(u.role||'USER')+'</span></td><td>'+(u.subscription_days||0)+'d</td><td>'+(u.is_banned?'<span style="color:#dc2626">Забанен</span>':active?'<span style="color:#16a34a">Активен</span>':'<span style="color:var(--text2)">Нет</span>')+'</td><td style="display:flex;gap:4px;flex-wrap:wrap">'+(u.role!=='ADMIN'?'<button class="admin-btn-sm" onclick="adminSubDays(\''+u.uid+'\')">+Дней</button><button class="admin-btn-sm danger" onclick="adminBan(\''+u.uid+'\')">Ban</button>':'')+'</td>';b.appendChild(r)})}
-function adminFilterUsers(){const q=document.getElementById('adminSearchUsers').value.toLowerCase();adminRenderUsers(adminData.users.filter(u=>(u.username||'').toLowerCase().includes(q)||(u.uid||'').includes(q)))}
-async function adminSubDays(uid){const d=prompt('Дней для добавления:');if(!d||parseInt(d)<=0)return;try{const ref=doc(db,SUB_COLLECTIONS.users,uid);const snap=await getDoc(ref);if(!snap.exists())return;const ud=snap.data();const now=new Date();const start=ud.subscription_start&&new Date(ud.subscription_start)>now?new Date(ud.subscription_start):now;await updateDoc(ref,{subscription_days:(ud.subscription_days||0)+parseInt(d),subscription_start:start.toISOString()});subToast('Дни добавлены');adminLoadUsers()}catch(e){subToast(e.message,'error')}}
-async function adminBan(uid){if(!confirm('Забанить?'))return;try{await updateDoc(doc(db,SUB_COLLECTIONS.users,uid),{is_banned:1,ban_reason:'Banned from admin'});subToast('Забанен');adminLoadUsers()}catch(e){subToast(e.message,'error')}}
-async function adminLoadKeys(){try{const snap=await getDocs(collection(db,SUB_COLLECTIONS.keys));adminData.keys=[];snap.forEach(d=>adminData.keys.push({id:d.id,...d.data()}));adminRenderKeys(adminData.keys)}catch(e){console.error(e)}}
-function adminRenderKeys(keys){const b=document.getElementById('adminKeysBody');b.innerHTML='';keys.forEach(k=>{const r=document.createElement('tr');r.innerHTML='<td style="font-family:monospace;font-size:11px">'+k.key+'</td><td>'+(k.days||0)+'d</td><td>'+(k.role||'-')+'</td><td>'+(k.activated_by?'<span style="color:var(--text2)">Used</span>':'<span style="color:#16a34a">Active</span>')+'</td><td>'+(k.activated_by?k.activated_by:'-')+'</td>';b.appendChild(r)})}
-async function adminGenKeys(){const count=parseInt(document.getElementById('adminKeyCount').value)||1,days=parseInt(document.getElementById('adminKeyDays').value)||30,role=document.getElementById('adminKeyRole').value||null;const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let created=0;for(let i=0;i<count;i++){let key;do{key='';for(let s=0;s<4;s++){if(s>0)key+='-';for(let j=0;j<5;j++)key+=chars[Math.floor(Math.random()*chars.length)]}}while(adminData.keys.some(k=>k.key===key));try{await setDoc(doc(db,SUB_COLLECTIONS.keys,key),{key,days,role:role||null,created_by:subUser?.uid||'',created_at:new Date().toISOString(),activated_by:null,activated_at:null});created++}catch(e){}}subToast('Создано '+created+' ключей');adminLoadKeys()}
-async function adminLoadAudit(){try{const q=query(collection(db,SUB_COLLECTIONS.audit),orderBy('created_at','desc'),limit(100));const snap=await getDocs(q);const b=document.getElementById('adminAuditBody');b.innerHTML='';let i=0;snap.forEach(d=>{const e=d.data();i++;const r=document.createElement('tr');r.innerHTML='<td style="font-family:monospace;font-size:10px;color:var(--text2)">#'+i+'</td><td style="font-weight:600">'+(e.action||'-')+'</td><td>'+(e.target_uid||'-')+'</td><td style="font-size:11px">'+(e.details||'-')+'</td><td style="font-size:11px;color:var(--text2)">'+new Date(e.created_at).toLocaleString('ru-RU')+'</td>';b.appendChild(r)})}catch(e){console.error(e)}}
 
 async function ensureGlobalChat(){try{const ref=doc(db,'chats',GLOBAL_CHAT_ID);const snap=await getDoc(ref);if(!snap.exists())await setRef(ref,{type:'global',name:'Общий чат',lastMessageAt:serverTimestamp()})}catch(e){}}
 function setRef(ref,data){return setDoc(ref,data).catch(()=>{})}
-window.subShowView=subShowView;window.subSwitchTab=subSwitchTab;window.subLogin=subLogin;window.subRegister=subRegister;window.subActivateKey=subActivateKey;window.subChangePassword=subChangePassword;window.subLoadHistory=subLoadHistory;window.adminShowTab=adminShowTab;window.adminGenKeys=adminGenKeys;window.adminSubDays=adminSubDays;window.adminBan=adminBan;window.adminFilterUsers=adminFilterUsers;
-subInitAuth();
 }
 </script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
 import{getAnalytics}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile,GoogleAuthProvider,signInWithPopup,signInWithRedirect,reauthenticateWithCredential,EmailAuthProvider,updatePassword}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction}from"https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAl-7MdIaWrEbtJr140530WlF-wCu9bKAE",authDomain:"quasar-63d58.firebaseapp.com",projectId:"quasar-63d58",storageBucket:"quasar-63d58.firebasestorage.app",messagingSenderId:"719943993300",appId:"1:719943993300:web:9e44c1247c10639397f841",measurementId:"G-33NN2R9Z1S"};
 const app=initializeApp(firebaseConfig);getAnalytics(app);
 window.auth=getAuth(app);window.db=getFirestore(app);window.googleProvider=new GoogleAuthProvider();
-window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
+window.firebaseFns={signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithPopup,signInWithRedirect,signOut,onAuthStateChanged,updateProfile,doc,getDoc,setDoc,updateDoc,deleteDoc,serverTimestamp,collection,addDoc,query,orderBy,limit,onSnapshot,getDocs,where,runTransaction,reauthenticateWithCredential,EmailAuthProvider,updatePassword};
 initApp();
 </script>
 </body>
